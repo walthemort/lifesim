@@ -1,4 +1,12 @@
 import {
+  hireMusicManager,
+  dismissMusicManager,
+  careerActivity,
+  bookMusicInterview,
+} from "./career-support.js";
+import { buyCareerEquipment } from "./career-equipment.js";
+import { childhoodScreen } from "./childhood-screens.js";
+import {
   bankingScreen,
   seasonScreen,
   storyScreen,
@@ -23,6 +31,10 @@ import {
   acceptSportSponsor,
   deliverSportAppearance,
   deliverStoryCommission,
+  ageUp,
+  childhoodActivity,
+  chooseChildInterest,
+  childhoodStage,
   VERSION,
   TIME_BLOCKS,
   DATE_PLANS,
@@ -245,36 +257,39 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 6,
+  migrationVersion = 7,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v7`) ||
     localStorage.getItem(`${STORAGE}-before-v6`) ||
     localStorage.getItem(`${STORAGE}-before-v5`) ||
     localStorage.getItem(`${STORAGE}-before-v4`) ||
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v6`)
-    ? 6
-    : localStorage.getItem(`${STORAGE}-before-v5`)
-      ? 5
-      : localStorage.getItem(`${STORAGE}-before-v4`)
-        ? 4
-        : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v7`)
+    ? 7
+    : localStorage.getItem(`${STORAGE}-before-v6`)
+      ? 6
+      : localStorage.getItem(`${STORAGE}-before-v5`)
+        ? 5
+        : localStorage.getItem(`${STORAGE}-before-v4`)
+          ? 4
+          : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v6`)
+      !localStorage.getItem(`${STORAGE}-before-v7`)
     ) {
       migrationSave = saved;
-      migrationVersion = 6;
-      localStorage.setItem(`${STORAGE}-before-v6`, saved);
+      migrationVersion = 7;
+      localStorage.setItem(`${STORAGE}-before-v7`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -348,6 +363,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 }
 const nav = [
   ["overview", "grid", "Overview"],
+  ["childhood", "heart", "Childhood & school"],
   ["calendar", "calendar", "Weekly calendar"],
   ["career", "briefcase", "Work & education"],
   ["sports", "football", "Sport & development"],
@@ -367,7 +383,7 @@ function sidebar() {
 }
 function header() {
   const date = new Date(Date.UTC(2026, 0, 5 + state.week * 7));
-  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>YEAR ${Math.floor(state.week / 52) + 1} · WEEK ${(state.week % 52) + 1}</small></span></span><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
+  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>YEAR ${Math.floor(state.week / 52) + 1} · WEEK ${(state.week % 52) + 1}</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
 }
 function stats() {
   const cards = [
@@ -416,6 +432,9 @@ function scene() {
   return `<div class="city-scene" aria-hidden="true"><div class="sun"></div><div class="city-back"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="city-front"><i></i><i></i><i></i><i></i><i></i></div><div class="scene-ground"></div><div class="scene-caption">THE WORLD IS YOURS</div></div>`;
 }
 function overview() {
+  if (age(state) < 12) return childhoodScreen(state, ui());
+  const choiceInterval =
+    state.childhood.startedAtBirth && age(state) < 18 ? 13 : 2;
   return `${title("THE BIG PICTURE", `A life of your own<span class="heading-dot">.</span>`, `Welcome back, ${e(state.name.split(" ")[0])}. Every small choice is part of a bigger story.`, `<button class="button secondary" data-action="character">${icon("users")} Your character</button>`)}${stats()}<div class="dashboard-grid"><div class="dashboard-main"><section class="chapter-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> CHAPTER ${Math.floor(state.week / 52) + 1} · ${age(state) < 25 ? "FINDING YOUR FEET" : age(state) < 40 ? "MAKING YOUR MARK" : age(state) < 60 ? "BUILDING YOUR LEGACY" : "LIFE ON YOUR TERMS"}</div><h2>Your next chapter<br>is unwritten.</h2><p>A career to build. People to meet.<br>A whole world of possibilities.</p><button class="button hero-button" data-view="career">Explore work & education ${icon("arrow")}</button></div>${scene()}</section>${workingOverview()}${lifeOverview()}<section class="panel">${panelHeading("This week’s focus", "You decide what deserves your time.", tag("Weekly plan", "blue"))}<div class="focus-grid">${Object.entries(
     ACTIVITIES,
   )
@@ -433,7 +452,7 @@ function overview() {
     )
     .join(
       "",
-    )}</div></section></div><div class="dashboard-aside"><section class="panel life-choice">${panelHeading("Life happens", "", `<span class="notification-dot"></span>`)}<span class="choice-illustration">${icon("spark")}</span><div class="eyebrow">${state.event ? e(state.event.tag).toUpperCase() : "A LITTLE REMINDER"}</div><h3>${state.event ? e(state.event.title) : "Make room for the unexpected."}</h3><p>${state.event ? e(state.event.text) : "Opportunities, dilemmas, and chance encounters arrive as your story unfolds. Your next life choice appears every two weeks."}</p>${state.event ? `<button class="button primary full-width" data-action="event">Make your choice ${icon("arrow")}</button>` : `<div class="quiet-note">${icon("calendar")} Your next choice in ${2 - (state.week % 2)} weeks</div>`}</section><section class="panel">${panelHeading("Your inner circle", "", `<button class="icon-button" data-view="relationships" aria-label="View relationships">${icon("arrow")}</button>`)}${state.relationships
+    )}</div></section></div><div class="dashboard-aside"><section class="panel life-choice">${panelHeading("Life happens", "", `<span class="notification-dot"></span>`)}<span class="choice-illustration">${icon("spark")}</span><div class="eyebrow">${state.event ? e(state.event.tag).toUpperCase() : "A LITTLE REMINDER"}</div><h3>${state.event ? e(state.event.title) : "Make room for the unexpected."}</h3><p>${state.event ? e(state.event.text) : `Opportunities, dilemmas, and chance encounters arrive as your story unfolds. Your next life choice appears every ${choiceInterval} weeks.`}</p>${state.event ? `<button class="button primary full-width" data-action="event">Make your choice ${icon("arrow")}</button>` : `<div class="quiet-note">${icon("calendar")} Your next choice in ${choiceInterval - (state.week % choiceInterval)} weeks</div>`}</section><section class="panel">${panelHeading("Your inner circle", "", `<button class="icon-button" data-view="relationships" aria-label="View relationships">${icon("arrow")}</button>`)}${state.relationships
     .slice(0, 3)
     .map((r) => personRow(r))
     .join(
@@ -503,6 +522,7 @@ function teamsView() {
 const pages = {
   overview,
   career: careerView,
+  childhood: () => childhoodScreen(state, ui()),
   calendar: () =>
     calendarScreen(state, ui()) +
     fixtureCalendar(state, ui()) +
@@ -520,6 +540,26 @@ const pages = {
   hobbies: () => hobbiesScreen(state, ui()) + storyScreen(state, ui()),
   debug: () => debugScreen(state, ui()),
 };
+for (const id of [
+  "career",
+  "investments",
+  "banking",
+  "teams",
+  "housing",
+  "hobbies",
+  "social",
+  "family",
+  "relationships",
+  "music",
+  "sports",
+]) {
+  const original = pages[id];
+  pages[id] = () =>
+    age(state) < (id === "sports" ? 5 : id === "music" ? 6 : 12)
+      ? `<div class="info-banner">${icon("heart")}<span>${age(state) < 5 ? "Your family cares for you while you learn through supervised play." : "Your school years and childhood activities come first. More independence opens as you grow."}</span></div>` +
+        childhoodScreen(state, ui())
+      : original();
+}
 function render() {
   app.innerHTML = `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`;
 }
@@ -539,16 +579,10 @@ function characterDialog() {
 }
 function newGameDialog() {
   dialog(
-    `<div class="eyebrow">A NEW CHAPTER</div><h2>Who will you become?</h2><p>Start in your school years or as an adult. Teenagers have $500 savings, family housing, and a weekly allowance; adults start with $12,500.</p><form id="character-form"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><div class="form-row"><label class="field-label">Starting age<input name="age" type="number" min="12" max="60" step="1" value="18" required></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label></div><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career">${Object.entries(
-      CAREERS,
-    )
-      .filter(([id]) => id !== "unemployed")
-      .map(([id, c]) => `<option value="${id}">${c.name}</option>`)
-      .join(
-        "",
-      )}</select></label><label class="field-label">Starting education<select name="education"><option value="school">Secondary school completed</option><option value="none">No formal qualifications</option><option value="business-degree">Business degree completed (age 21+)</option></select></label><p class="muted">School-age characters study while developing hobbies. Choosing a sport starts local participation; contracts come through scouting. Choosing music starts a creative hobby. Other interests guide your plans without awarding a job. Pick age 14 for a school or karting start. All cities share the prototype economy. Starting a new life replaces your current save. Export it first if you want to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>Who will you become?</h2><p>Every new life begins at birth, age 0. Your family covers your needs while you grow through infancy, childhood, school and adulthood.</p><form id="character-form"><input type="hidden" name="age" value="0"><input type="hidden" name="education" value="none"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career"><option value="unemployed">Still discovering</option><option value="football">Football</option><option value="racing">Karting & motorsport</option><option value="basketball">Basketball</option><option value="tennis">Tennis</option><option value="music">Music</option></select></label><p class="muted">An interest becomes available when you are old enough: football from five, other sports and music lessons from six. You can discover different interests later. School starts at five; qualifications must be earned. Use Age up to grow to your next birthday, pausing for important choices. Weekly play is also available. Starting a new life replaces your current save; export it first to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
   );
 }
+
 function eventDialog() {
   if (!state.event) return;
   const ev = state.event;
@@ -558,7 +592,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.6 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.7 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -808,6 +842,18 @@ document.addEventListener("click", (event) => {
       break;
     case "focus":
       update((s) => setActivity(s, id), "Weekly focus updated");
+      break;
+    case "age-up":
+      if (state.event) eventDialog();
+      else if (update(ageUp, "Your life is growing.")) {
+        if (state.event) eventDialog();
+      }
+      break;
+    case "childhood-activity":
+      update((s) => childhoodActivity(s, id), "A little moment in your story.");
+      break;
+    case "childhood-interest":
+      update((s) => chooseChildInterest(s, id), "A new interest to explore.");
       break;
     case "next-week":
       if (state.event) eventDialog();
@@ -1167,6 +1213,24 @@ document.addEventListener("click", (event) => {
       );
       break;
     }
+    case "hire-music-manager":
+      update((s) => hireMusicManager(s, id), "Music manager hired.");
+      break;
+    case "dismiss-music-manager":
+      update(dismissMusicManager, "Management agreement ended.");
+      break;
+    case "career-activity":
+      update((s) => careerActivity(s, id), "Career activity complete.");
+      break;
+    case "music-interview":
+      update((s) => bookMusicInterview(s, id), "Interview booked.");
+      break;
+    case "career-buy":
+      update(
+        (s) => buyCareerEquipment(s, button.dataset.group, id),
+        "Career equipment purchased.",
+      );
+      break;
     case "buy":
       update((s) => buy(s, id), "A little more your own. Purchase complete.");
       break;
@@ -1320,7 +1384,11 @@ document.addEventListener("submit", (event) => {
     "debug-skill-form": (s, data) => {
       const [group, id] = data.get("skill").split(":");
       return debugEdit(s, {
-        [group === "career" ? "skills" : "hobbySkills"]: {
+        [group === "career"
+          ? "skills"
+          : group === "specialist"
+            ? "specialistSkills"
+            : "hobbySkills"]: {
           [id]: Number(data.get("value")),
         },
       });
@@ -1543,13 +1611,7 @@ document.addEventListener("change", async (event) => {
     };
     render();
   }
-  if (
-    event.target.matches('#character-form select[name="career"]') &&
-    ["football", "racing", "basketball", "tennis"].includes(event.target.value)
-  ) {
-    event.target.form.elements.age.value = 14;
-    event.target.form.elements.education.value = "none";
-  }
+
   if (event.target.matches("[data-business-strategy]"))
     update(
       (s) =>

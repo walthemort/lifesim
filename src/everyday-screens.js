@@ -1,3 +1,4 @@
+import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
 import {
   age,
   availableCash,
@@ -143,7 +144,7 @@ export function debugScreen(s, u) {
     .map((k) => `<option value="career:${k}">${e(k)}</option>`)
     .join(
       "",
-    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
+    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}${DEBUG_SPECIALIST_SKILLS.map((k) => `<option value="specialist:${k.id}">${e(k.label)}</option>`).join("")}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
     s.social.profiles,
   )
     .map((id) => `<option>${id}</option>`)

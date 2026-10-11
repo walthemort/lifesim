@@ -235,7 +235,7 @@ export function inviteDate(state, id, planId, approach = "attentive") {
     throw new Error("Choose a person, date and conversation approach.");
   if (
     age(state) < 16 ||
-    ["Sibling", "Best friend", "Former partner"].includes(r.role) ||
+    ["Parent", "Sibling", "Best friend", "Former partner"].includes(r.role) ||
     age(state) < 18 !== age(state) + p.ageOffset < 18
   )
     throw new Error("This connection is not available for dating.");
@@ -318,9 +318,14 @@ export function askExclusive(state, id) {
   if (
     !r ||
     !p ||
-    ["Sibling", "Best friend", "Former partner", "Partner", "Spouse"].includes(
-      r.role,
-    )
+    [
+      "Parent",
+      "Sibling",
+      "Best friend",
+      "Former partner",
+      "Partner",
+      "Spouse",
+    ].includes(r.role)
   )
     throw new Error("Choose someone you are dating.");
   if (state.relationships.some((x) => ["Partner", "Spouse"].includes(x.role)))
@@ -591,8 +596,14 @@ export function advanceConnections(s) {
     p.wealth = Math.max(
       0,
       p.wealth +
-        (age(s) + p.ageOffset < 18 ? 25 : p.weeklyPay) -
-        (age(s) + p.ageOffset < 18 ? 15 : 350),
+        (age(s) + p.ageOffset < 6
+          ? 0
+          : age(s) + p.ageOffset < 12
+            ? 5
+            : age(s) + p.ageOffset < 18
+              ? 25
+              : p.weeklyPay) -
+        (age(s) + p.ageOffset < 12 ? 0 : age(s) + p.ageOffset < 18 ? 15 : 350),
     );
     p.mood = clamp(p.mood + (p.wealth < 300 ? -1 : 0.1));
     if (
@@ -614,7 +625,7 @@ export function advanceConnections(s) {
     }
     if (
       s.week % 26 === 0 &&
-      !["Partner", "Spouse", "Sibling"].includes(r.role) &&
+      !["Parent", "Partner", "Spouse", "Sibling"].includes(r.role) &&
       rng(s) < 0.08
     ) {
       p.city = p.city === s.city ? "Elsewhere" : s.city;
@@ -700,7 +711,7 @@ export function advanceConnections(s) {
 export function validateConnections(s) {
   const n = (v, min = 0, max = Infinity) =>
     typeof v === "number" && Number.isFinite(v) && v >= min && v <= max;
-  const profile = (p) =>
+  const profile = (p, r) =>
     p &&
     ["Outgoing", "Thoughtful", "Ambitious", "Practical"].includes(
       p.personality,
@@ -710,7 +721,11 @@ export function validateConnections(s) {
     p.interests.every((i) => INTERESTS.includes(i)) &&
     VALUES.includes(p.values) &&
     ["trust", "mood"].every((k) => n(p[k], 0, 100)) &&
-    n(p.ageOffset, -2, 2) &&
+    n(
+      p.ageOffset,
+      r?.role === "Parent" ? 18 : -2,
+      r?.role === "Parent" ? 60 : 2,
+    ) &&
     typeof p.city === "string" &&
     typeof p.job === "string" &&
     typeof p.plans === "string" &&
@@ -732,7 +747,7 @@ export function validateConnections(s) {
     typeof c.profiles !== "object" ||
     Array.isArray(c.profiles) ||
     Object.keys(c.profiles).length !== s.relationships.length ||
-    s.relationships.some((r) => !profile(c.profiles[r.id])) ||
+    s.relationships.some((r) => !profile(c.profiles[r.id], r)) ||
     !n(c.serial) ||
     !Number.isInteger(c.serial) ||
     typeof c.appActive !== "boolean" ||

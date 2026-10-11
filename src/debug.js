@@ -1,6 +1,37 @@
 import { PROGRAMS, reservedCash } from "./world.js";
 import { HOBBIES } from "./everyday.js";
 
+export const DEBUG_SPECIALIST_SKILLS = [
+  ...["vocals", "lyrics", "production"].map((key) => ({
+    id: `music.${key}`,
+    label: `Music: ${key}`,
+    path: ["music", "skills", key],
+  })),
+  ...["ability", "discipline", "coachTrust", "reputation"].map((key) => ({
+    id: `football.${key}`,
+    label: `Football: ${key}`,
+    path: ["football", key],
+  })),
+  ...["racing", "basketball", "tennis"].flatMap((sport) =>
+    ["ability", "discipline", "reputation"].map((key) => ({
+      id: `${sport}.${key}`,
+      label: `${sport}: ${key}`,
+      path: ["sports", sport, key],
+    })),
+  ),
+  {
+    id: "social.contentSkill",
+    label: "Creator: content production",
+    path: ["social", "contentSkill"],
+  },
+  { id: "school.grade", label: "School: grade", path: ["school", "grade"] },
+  ...["movement", "language", "curiosity", "confidence"].map((key) => ({
+    id: `childhood.${key}`,
+    label: `Childhood: ${key}`,
+    path: ["childhood", "development", key],
+  })),
+];
+
 function audit(s, text) {
   s.debug.used = true;
   s.debug.edits.unshift({ week: s.week, text });
@@ -39,6 +70,7 @@ export function debugEdit(state, changes) {
     "actions",
     "skills",
     "hobbySkills",
+    "specialistSkills",
     "followers",
     "recognition",
     "qualification",
@@ -53,6 +85,24 @@ export function debugEdit(state, changes) {
     (!integer || Number.isInteger(n));
   const s = structuredClone(state),
     summary = [];
+  if (Object.hasOwn(changes, "specialistSkills")) {
+    const values = changes.specialistSkills;
+    if (
+      !values ||
+      typeof values !== "object" ||
+      Array.isArray(values) ||
+      !Object.keys(values).length
+    )
+      throw new Error("Choose valid specialist skills.");
+    for (const [id, value] of Object.entries(values)) {
+      const skill = DEBUG_SPECIALIST_SKILLS.find((k) => k.id === id);
+      if (!skill || !number(value, 0, 100))
+        throw new Error("Invalid specialist skill value. Enter 0 to 100.");
+      const target = skill.path.slice(0, -1).reduce((o, k) => o[k], s);
+      target[skill.path.at(-1)] = value;
+      summary.push(`${skill.label}: ${value}`);
+    }
+  }
   for (const k of [
     "money",
     "health",

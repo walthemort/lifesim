@@ -648,7 +648,13 @@ export const collectibleValue = (s) =>
   );
 export const positionName = (s) =>
   s.startAge + Math.floor(s.week / 52) < 18 && !s.employment
-    ? "School student"
+    ? s.startAge + Math.floor(s.week / 52) < 1
+      ? "Newborn"
+      : s.startAge + Math.floor(s.week / 52) < 3
+        ? "Toddler"
+        : s.startAge + Math.floor(s.week / 52) < 5
+          ? "Preschool child"
+          : "School student"
     : s.employment
       ? jobDefinition(s.employment.jobId).title
       : s.company && s.career === "business"
@@ -938,6 +944,10 @@ export function requestRaise(state) {
 }
 export function enrolEducation(state, id) {
   writable(state);
+  if (state.startAge + Math.floor(state.week / 52) < 12)
+    throw new Error(
+      "Your family handles preschool and primary school. Independent courses start from age twelve.",
+    );
   const p = program(id);
   if (!p) throw new Error("Choose an available programme.");
   if (state.education.active)
@@ -983,6 +993,8 @@ export function withdrawEducation(state) {
 }
 export function foundCompany(state, { name, sector }) {
   writable(state);
+  if (state.startAge + Math.floor(state.week / 52) < 18)
+    throw new Error("Founding a company independently requires age 18+.");
   if (state.company) throw new Error("You already have a founded company.");
   if (state.skills.business < 30)
     throw new Error("Develop 30 business skill before launching a company.");

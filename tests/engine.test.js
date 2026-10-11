@@ -19,7 +19,7 @@ import {
   age,
 } from "../src/engine.js";
 
-const fresh = (options) => createGame({ seed: 42, ...options });
+const fresh = (options) => createGame({ seed: 42, age:18, career:"office", ...options });
 function next(s) {
   if (s.event) s = resolveEvent(s, s.event.options.length - 1);
   return advanceWeek(s);

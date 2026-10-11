@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as g from "../src/engine.js";
-const fresh = (options) => g.createGame({ seed: 1, ...options });
+const fresh = (options) => g.createGame({ seed: 1, age:18, career:"office", ...options });
 function next(s) {
   if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
   return g.advanceWeek(s);

@@ -1,3 +1,8 @@
+import { careerSupportScreen } from "./career-support.js";
+import {
+  careerEquipmentScreen,
+  equipmentRequirements,
+} from "./career-equipment.js";
 import {
   SPORTS,
   FOOTBALL_TRAINING,
@@ -26,7 +31,7 @@ export function sportsScreen(s, u) {
           `<div class="application-row"><div><strong>${e(o.club)}</strong><small>${e(o.kind.replaceAll("-", " "))}${o.kind === "contract" ? ` · ${money(o.pay)}/wk gross base income · ${o.terms?.weeks || o.duration || 104} weeks` : ""} · respond in ${o.expiresWeek - s.week} weeks</small></div><div class="inline-actions"><button class="button primary" data-action="sport-offer" data-sport="${sport}" data-id="${e(o.id)}">Review invitation</button><button class="text-button" data-action="decline-sport" data-sport="${sport}" data-id="${e(o.id)}">Decline</button></div></div>`,
       )
       .join("");
-  return `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `Secondary school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly.` : "You can continue local sport alongside work or study. Youth academy places have age limits; a professional offer is never guaranteed."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div><section class="panel sport-panel" data-sport-card="football">${panelHeading("Football", f.club || "Start with school or your local club.", tag(f.stage, "green"))}<div class="sport-summary"><span class="feature-icon green">${icon("football")}</span><div><h2>${e(f.club || "The football path")}</h2><p>${e(f.position)} · ${f.matches} matches · ${f.goals} goals</p></div></div><div class="life-metrics"><div><span>Football ability</span><strong>${Math.round(f.ability)} / 100</strong>${meter(f.ability, "green")}</div><div><span>Coach trust</span><strong>${Math.round(f.coachTrust)} / 100</strong>${meter(f.coachTrust, "blue")}</div><div><span>Sport reputation</span><strong>${Math.round(f.reputation)} / 100</strong>${meter(f.reputation, "purple")}</div></div><div class="path-steps">${["School / local", "Academy", "Development squad", "Professional contract"].map((x) => `<span>${x}</span>`).join("")}</div>${
+  return `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `${age(s) < 12 ? "Primary" : "Secondary"} school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. ${age(s) < 12 ? "Your family covers basic needs and local sports fees; your allowance starts at six." : "Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly."}` : "You can continue local sport alongside work or study. Youth academy places have age limits; a professional offer is never guaranteed."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div><section class="panel sport-panel" data-sport-card="football">${panelHeading("Football", f.club || "Start with school or your local club.", tag(f.stage, "green"))}<div class="sport-summary"><span class="feature-icon green">${icon("football")}</span><div><h2>${e(f.club || "The football path")}</h2><p>${e(f.position)} · ${f.matches} matches · ${f.goals} goals</p></div></div><div class="life-metrics"><div><span>Football ability</span><strong>${Math.round(f.ability)} / 100</strong>${meter(f.ability, "green")}</div><div><span>Coach trust</span><strong>${Math.round(f.coachTrust)} / 100</strong>${meter(f.coachTrust, "blue")}</div><div><span>Sport reputation</span><strong>${Math.round(f.reputation)} / 100</strong>${meter(f.reputation, "purple")}</div></div><div class="path-steps">${["School / local", "Academy", "Development squad", "Professional contract"].map((x) => `<span>${x}</span>`).join("")}</div>${
     f.stage === "none" || f.stage === "retired"
       ? `<p class="muted">Young players begin through school. Adults can join grassroots football; late professional recruitment is uncommon.</p><button class="button primary" data-action="join-football">${age(s) < 18 ? "Join school football" : "Join local football"}</button>`
       : `<div class="form-row"><label class="field-label">Playing position<select id="football-position">${FOOTBALL_POSITIONS.map((p) => `<option ${p === f.position ? "selected" : ""}>${p}</option>`).join("")}</select></label><label class="field-label">Football training<select id="football-training">${Object.entries(
@@ -55,7 +60,9 @@ export function sportsScreen(s, u) {
               "",
             )}</select></label><p class="muted">${p.injuryWeeks ? `${p.injuryWeeks} injury recovery weeks remain.` : p.lastResult ? `Last outing: ${p.lastResult.score}/100 · ${p.lastResult.won ? "win" : "no win"}.` : "Events run during the active season."} ${p.contract?.expiresWeek ? `Contract: ${p.contract.expiresWeek - s.week} weeks remaining.` : ""}</p>${p.trial ? `<p class="opportunity-note">Development assessment: ${p.trial.decisionWeek - s.week} weeks until the decision.</p>` : ""}<div class="application-list">${invitations(p.offers, d.id) || '<p class="muted">No open invitations. Development takes time.</p>'}</div><button class="text-button" data-action="leave-sport" data-sport="${d.id}">Step away from ${d.name.toLowerCase()}</button>`
     }</section>`;
-  }).join("")}</div>`;
+  }).join(
+    "",
+  )}</div>${careerSupportScreen(s, u, "football", false)}${careerEquipmentScreen(s, u, "football")}${careerEquipmentScreen(s, u, "racing")}`;
 }
 export function socialScreen(s, u) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
@@ -97,7 +104,7 @@ export function socialScreen(s, u) {
       )
       .join("") ||
     '<p class="muted">Your first post starts here. An ordinary post can reach very few people.</p>'
-  }</div></section>`;
+  }</div></section>${careerEquipmentScreen(s, u, "creator")}`;
 }
 export function musicScreen(s, u) {
   const { title, panelHeading, tag, meter, money, e } = u,
@@ -120,7 +127,7 @@ export function musicScreen(s, u) {
     )
     .join(
       "",
-    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} music income last week · ${money(m.totalIncome, 2)} earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section><section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
+    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
     .filter((p) => p.status === "recording")
     .map(
       (p) =>
@@ -182,8 +189,9 @@ export function shoppingScreen(
           min =
             i.minAge ||
             (["Garage", "Property", "Travel"].includes(i.category) ? 18 : 12),
-          young = age(s) < min;
-        return `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${e(i.category.toUpperCase())}</span>${held ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${e(i.category)}</span><h2>${e(i.name)}</h2><p>${e(i.description)}</p><div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${held ? "secondary" : "primary"} full-width" data-action="${held ? "sell-item" : "buy"}" data-id="${i.id}" ${!held && (young || availableCash(s) < i.price) ? "disabled" : ""}>${held ? `Sell for ${money(i.price * 0.8)}` : young ? `Available at age ${min}` : availableCash(s) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(held ? "arrow" : "bag")}</button></div></section>`;
+          young = age(s) < min,
+          requirements = equipmentRequirements(s, i.id);
+        return `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${e(i.category.toUpperCase())}</span>${held ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${e(i.category)}</span><h2>${e(i.name)}</h2><p>${e(i.description)}</p>${!held && requirements.length ? `<p class="muted">Requires: ${e(requirements.join(", "))}</p>` : ""}<div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${held ? "secondary" : "primary"} full-width" data-action="${held ? "sell-item" : "buy"}" data-id="${i.id}" ${!held && (young || requirements.length || availableCash(s) < i.price) ? "disabled" : ""}>${held ? `Sell for ${money(i.price * 0.8)}` : young ? `Available at age ${min}` : requirements.length ? "Requirements not met" : availableCash(s) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(held ? "arrow" : "bag")}</button></div></section>`;
       })
       .join("") || '<p class="muted">No possessions match these filters.</p>'
   }</div><section class="panel experiences-panel">${panelHeading("Spend time, make memories", "Repeatable experiences use cash and one free-time action.")}<div class="education-grid">${EXPERIENCES.map(

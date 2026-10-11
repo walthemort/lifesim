@@ -1,0 +1,6361 @@
+{
+  "version": 6,
+  "name": "Legacy Player",
+  "startAge": 18,
+  "city": "London",
+  "trait": "Ambitious",
+  "career": "office",
+  "week": 357,
+  "money": 10658556.9,
+  "health": 100,
+  "energy": 98.5,
+  "happiness": 100,
+  "skills": {
+    "athletics": 15,
+    "driving": 12,
+    "business": 60,
+    "finance": 12,
+    "charisma": 100,
+    "knowledge": 15,
+    "technical": 15,
+    "empathy": 20
+  },
+  "progress": {
+    "office": {
+      "level": 2,
+      "weeks": 557,
+      "unlocked": true
+    },
+    "football": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "racing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "business": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "investor": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "unemployed": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "basketball": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "tennis": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "music": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "creator": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "medicine": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "nursing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "teaching": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "engineering": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "trades": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "hospitality": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "law": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    }
+  },
+  "market": {
+    "index": 158.19,
+    "tech": 147.31,
+    "energy": 51.8,
+    "crypto": 257.11,
+    "bonds": 99.72,
+    "property": 62.55
+  },
+  "marketHistory": {
+    "index": [
+      153.33,
+      153.38,
+      152.31,
+      152.13,
+      151.41,
+      152.41,
+      153.48,
+      152.1,
+      153.49,
+      153.86,
+      155.6,
+      155.25,
+      155.84,
+      156,
+      158.77,
+      159.65,
+      160.3,
+      158.21,
+      159.97,
+      160.58,
+      159.85,
+      157.56,
+      158.22,
+      158.19
+    ],
+    "tech": [
+      154.97,
+      158.09,
+      161.43,
+      162.21,
+      159.53,
+      164.25,
+      162.1,
+      164.69,
+      168.49,
+      170.22,
+      164.45,
+      160.27,
+      155.79,
+      152.14,
+      153.77,
+      157.23,
+      162.15,
+      160.29,
+      157.56,
+      158.54,
+      154.17,
+      154.22,
+      151.9,
+      147.31
+    ],
+    "energy": [
+      61.21,
+      62.05,
+      60.41,
+      59.44,
+      57.71,
+      56.23,
+      55.2,
+      56.69,
+      57.43,
+      57.93,
+      58.28,
+      56.81,
+      56.12,
+      55.2,
+      55.85,
+      55.2,
+      53.77,
+      52.37,
+      50.97,
+      50.63,
+      50.62,
+      49.62,
+      50.95,
+      51.8
+    ],
+    "crypto": [
+      338.37,
+      342.63,
+      313.77,
+      341.62,
+      335.13,
+      316.27,
+      326.26,
+      321.18,
+      335.56,
+      343.87,
+      331.8,
+      358.61,
+      324.93,
+      337.83,
+      308.5,
+      287.54,
+      307.43,
+      328.41,
+      336.23,
+      322.65,
+      297.17,
+      303.51,
+      283.13,
+      257.11
+    ],
+    "bonds": [
+      99.59,
+      99.69,
+      99.5,
+      100.12,
+      99.35,
+      99.72,
+      99.85,
+      99.5,
+      98.99,
+      99.55,
+      99.35,
+      99.17,
+      99.37,
+      99.07,
+      99.35,
+      99.96,
+      100.33,
+      99.21,
+      98.83,
+      99.17,
+      99.74,
+      99.45,
+      99.68,
+      99.72
+    ],
+    "property": [
+      68.7,
+      67.55,
+      68.05,
+      67.69,
+      68.65,
+      68.37,
+      68.95,
+      69.1,
+      67.59,
+      67.6,
+      66.97,
+      66.09,
+      65.42,
+      64.94,
+      65.08,
+      64.36,
+      63.11,
+      61.6,
+      62.09,
+      61.93,
+      61.55,
+      61.97,
+      63.05,
+      62.55
+    ]
+  },
+  "holdings": {
+    "index": 0,
+    "tech": 100,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "inventory": [
+    "watch"
+  ],
+  "relationships": [
+    {
+      "id": "sam",
+      "name": "Sam Taylor",
+      "role": "Best friend",
+      "bond": 97,
+      "icon": "ST",
+      "color": "purple"
+    },
+    {
+      "id": "jordan",
+      "name": "Jordan Morgan",
+      "role": "Sibling",
+      "bond": 94,
+      "icon": "JM",
+      "color": "orange"
+    },
+    {
+      "id": "person-2",
+      "name": "Riley Chen",
+      "color": "blue",
+      "role": "Partner",
+      "bond": 94,
+      "icon": "RC"
+    }
+  ],
+  "activity": "rest",
+  "actions": 3,
+  "seed": 4290499539,
+  "event": null,
+  "log": [
+    {
+      "week": 357,
+      "text": "Week 357: $2,435 gross earned · $619.25 pay tax · $285.75 running costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 356,
+      "text": "Life choice: send a thoughtful message.",
+      "kind": "info"
+    },
+    {
+      "week": 356,
+      "text": "Week 356: $2,435 gross earned · $619.25 pay tax · $285.75 running costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 355,
+      "text": "Week 355: $2,435 gross earned · $619.25 pay tax · $285.75 running costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 354,
+      "text": "Life choice: wish them luck this time.",
+      "kind": "info"
+    },
+    {
+      "week": 354,
+      "text": "Week 354: $2,435 gross earned · $619.25 pay tax · $285.75 running costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 353,
+      "text": "Week 353: $2,435 earned · $285.75 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 352,
+      "text": "Life choice: wish them luck this time.",
+      "kind": "info"
+    },
+    {
+      "week": 352,
+      "text": "Life milestone: A new companion.",
+      "kind": "milestone"
+    },
+    {
+      "week": 352,
+      "text": "Week 352: $2,435 earned · $285.75 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Adopted Pepper, a dog. Food, care, and vet visits become part of your household budget.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Life milestone: Someone calls you home.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Welcomed Emilia to the family.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Week 351: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Legacy Ventures paid a $819.98 side-business dividend.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Horizon Technologies paid you a quarterly dividend of $44.56.",
+      "kind": "positive"
+    },
+    {
+      "week": 350,
+      "text": "Life choice: protect your time.",
+      "kind": "info"
+    },
+    {
+      "week": 350,
+      "text": "Week 350: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 349,
+      "text": "Week 349: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 348,
+      "text": "Life choice: put a bucket underneath for now.",
+      "kind": "info"
+    },
+    {
+      "week": 348,
+      "text": "Week 348: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 347,
+      "text": "Week 347: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 346,
+      "text": "Life choice: spread the word.",
+      "kind": "info"
+    },
+    {
+      "week": 346,
+      "text": "Week 346: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 345,
+      "text": "Week 345: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 344,
+      "text": "Life choice: recommend a useful book.",
+      "kind": "info"
+    },
+    {
+      "week": 344,
+      "text": "Week 344: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 343,
+      "text": "Week 343: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 342,
+      "text": "Life choice: recommend a useful book.",
+      "kind": "info"
+    },
+    {
+      "week": 342,
+      "text": "Week 342: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 341,
+      "text": "Week 341: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 340,
+      "text": "Life choice: take a walk and reflect.",
+      "kind": "info"
+    },
+    {
+      "week": 340,
+      "text": "Week 340: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 339,
+      "text": "Week 339: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Life choice: enjoy the quiet.",
+      "kind": "info"
+    },
+    {
+      "week": 338,
+      "text": "Week 338: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Legacy Ventures paid a $857.72 side-business dividend.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Horizon Technologies paid you a quarterly dividend of $48.34.",
+      "kind": "positive"
+    },
+    {
+      "week": 337,
+      "text": "Week 337: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 336,
+      "text": "Life choice: maybe next time.",
+      "kind": "info"
+    }
+  ],
+  "history": [
+    {
+      "week": 306,
+      "value": 10817835
+    },
+    {
+      "week": 307,
+      "value": 10820370
+    },
+    {
+      "week": 308,
+      "value": 10820765
+    },
+    {
+      "week": 309,
+      "value": 10820628
+    },
+    {
+      "week": 310,
+      "value": 10820092
+    },
+    {
+      "week": 311,
+      "value": 10820666
+    },
+    {
+      "week": 312,
+      "value": 10822948
+    },
+    {
+      "week": 313,
+      "value": 10816505
+    },
+    {
+      "week": 314,
+      "value": 10817631
+    },
+    {
+      "week": 315,
+      "value": 10818745
+    },
+    {
+      "week": 316,
+      "value": 10818441
+    },
+    {
+      "week": 317,
+      "value": 10819330
+    },
+    {
+      "week": 318,
+      "value": 10820941
+    },
+    {
+      "week": 319,
+      "value": 10822015
+    },
+    {
+      "week": 320,
+      "value": 10822597
+    },
+    {
+      "week": 321,
+      "value": 10822357
+    },
+    {
+      "week": 322,
+      "value": 10822726
+    },
+    {
+      "week": 323,
+      "value": 10825275
+    },
+    {
+      "week": 324,
+      "value": 10826547
+    },
+    {
+      "week": 325,
+      "value": 10829408
+    },
+    {
+      "week": 326,
+      "value": 10829226
+    },
+    {
+      "week": 327,
+      "value": 10830831
+    },
+    {
+      "week": 328,
+      "value": 10831851
+    },
+    {
+      "week": 329,
+      "value": 10832705
+    },
+    {
+      "week": 330,
+      "value": 10833125
+    },
+    {
+      "week": 331,
+      "value": 10833661
+    },
+    {
+      "week": 332,
+      "value": 10834072
+    },
+    {
+      "week": 333,
+      "value": 10834661
+    },
+    {
+      "week": 334,
+      "value": 10835123
+    },
+    {
+      "week": 335,
+      "value": 10835063
+    },
+    {
+      "week": 336,
+      "value": 10835196
+    },
+    {
+      "week": 337,
+      "value": 10836717
+    },
+    {
+      "week": 338,
+      "value": 10839360
+    },
+    {
+      "week": 339,
+      "value": 10840524
+    },
+    {
+      "week": 340,
+      "value": 10841882
+    },
+    {
+      "week": 341,
+      "value": 10844563
+    },
+    {
+      "week": 342,
+      "value": 10844446
+    },
+    {
+      "week": 343,
+      "value": 10845703
+    },
+    {
+      "week": 344,
+      "value": 10845451
+    },
+    {
+      "week": 345,
+      "value": 10846315
+    },
+    {
+      "week": 346,
+      "value": 10847020
+    },
+    {
+      "week": 347,
+      "value": 10848329
+    },
+    {
+      "week": 348,
+      "value": 10848851
+    },
+    {
+      "week": 349,
+      "value": 10850009
+    },
+    {
+      "week": 350,
+      "value": 10852218
+    },
+    {
+      "week": 351,
+      "value": 10854281
+    },
+    {
+      "week": 352,
+      "value": 10854010
+    },
+    {
+      "week": 353,
+      "value": 10855573
+    },
+    {
+      "week": 354,
+      "value": 10855111
+    },
+    {
+      "week": 355,
+      "value": 10855866
+    },
+    {
+      "week": 356,
+      "value": 10855959
+    },
+    {
+      "week": 357,
+      "value": 10857614
+    }
+  ],
+  "teamStrategy": "balanced",
+  "teams": {
+    "football-team": {
+      "rating": 0,
+      "wins": 14,
+      "races": 279,
+      "profit": -1207
+    }
+  },
+  "company": {
+    "name": "Legacy Ventures",
+    "sector": "Technology",
+    "strategy": "balanced",
+    "value": 4135,
+    "employees": 1,
+    "cash": 39570.57,
+    "revenue": 662.84,
+    "costs": 414.99,
+    "profit": 247.85,
+    "periodProfit": 1512.7199999999998
+  },
+  "ended": false,
+  "tradeVolumes": {
+    "index": 0,
+    "tech": 0,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "aspiration": "office",
+  "education": {
+    "completed": [
+      "school"
+    ],
+    "active": null
+  },
+  "employment": {
+    "jobId": "office-2",
+    "weeklyPay": 2435,
+    "startingPay": 2100,
+    "tenure": 557,
+    "performance": 73,
+    "nextRaiseWeek": 13,
+    "legacy": true
+  },
+  "applications": [],
+  "vacancies": [
+    {
+      "id": "office-0:356",
+      "jobId": "office-0",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "support-0:356",
+      "jobId": "support-0",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "engineering-2:356",
+      "jobId": "engineering-2",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "office-4:356",
+      "jobId": "office-4",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "law-2:356",
+      "jobId": "law-2",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "nursing-1:356",
+      "jobId": "nursing-1",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "medicine-2:356",
+      "jobId": "medicine-2",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    },
+    {
+      "id": "nursing-3:356",
+      "jobId": "nursing-3",
+      "postedWeek": 356,
+      "expiresWeek": 360,
+      "exceptional": false
+    }
+  ],
+  "opportunities": [],
+  "negotiations": [],
+  "ownership": {
+    "football-team": {
+      "stake": 100,
+      "basis": 750000,
+      "acquiredWeek": 0
+    }
+  },
+  "assetValues": {
+    "football-team": 122798,
+    "harbor-fc": 1800000,
+    "gt-team": 311004,
+    "f1-team": 76302018,
+    "cafe": 195952,
+    "studio": 947892,
+    "logistics": 11245663
+  },
+  "businessResults": {
+    "football-team": {
+      "profit": -1207,
+      "cash": -70113.9,
+      "strategy": "balanced",
+      "periodProfit": -10722
+    },
+    "harbor-fc": {
+      "profit": -71888,
+      "cash": -5715295.9,
+      "strategy": "balanced",
+      "periodProfit": -362609
+    },
+    "gt-team": {
+      "profit": -5253,
+      "cash": -195864.5,
+      "strategy": "balanced",
+      "periodProfit": -28519
+    },
+    "f1-team": {
+      "profit": -91698,
+      "cash": -5343445,
+      "strategy": "balanced",
+      "periodProfit": -695328
+    },
+    "cafe": {
+      "profit": -114,
+      "cash": 191263.99999999997,
+      "strategy": "balanced",
+      "periodProfit": 2513
+    },
+    "studio": {
+      "profit": 3760,
+      "cash": 552656.2,
+      "strategy": "balanced",
+      "periodProfit": 13712
+    },
+    "logistics": {
+      "profit": -2051,
+      "cash": 6659737.799999999,
+      "strategy": "balanced",
+      "periodProfit": 88411
+    },
+    "horizon": {
+      "profit": 11981352,
+      "cash": 3227394117.9999995,
+      "strategy": "balanced",
+      "periodProfit": 66672250
+    },
+    "solstice": {
+      "profit": 2222308,
+      "cash": 949282828.7000003,
+      "strategy": "balanced",
+      "periodProfit": 22039749
+    }
+  },
+  "collectibles": {
+    "prices": {
+      "vintage-watch": 4380,
+      "rookie-card": 1847,
+      "print": 2252,
+      "classic-car": 73709
+    },
+    "owned": {},
+    "listings": [
+      {
+        "id": "print:352",
+        "collectibleId": "print",
+        "price": 2442,
+        "expiresWeek": 360
+      },
+      {
+        "id": "classic-car:352",
+        "collectibleId": "classic-car",
+        "price": 84859,
+        "expiresWeek": 360
+      }
+    ],
+    "auctions": []
+  },
+  "sports": {
+    "racing": {
+      "stage": "none",
+      "club": null,
+      "ability": 10,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "basketball": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "tennis": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    }
+  },
+  "music": {
+    "active": false,
+    "role": "singer",
+    "genre": "Pop",
+    "skills": {
+      "vocals": 15,
+      "lyrics": 15,
+      "production": 15
+    },
+    "sessions": 0,
+    "fans": 0,
+    "projects": [],
+    "releases": [],
+    "gigs": [],
+    "labelOffers": [],
+    "label": null,
+    "nextGigWeek": 8,
+    "nextLabelWeek": 13,
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "school": {
+    "enrolled": false,
+    "grade": 70,
+    "weeks": 0
+  },
+  "football": {
+    "stage": "none",
+    "club": null,
+    "position": "Midfielder",
+    "training": "balanced",
+    "ability": 11.25,
+    "discipline": 65,
+    "coachTrust": 50,
+    "reputation": 0,
+    "schoolWeeks": 0,
+    "grassrootsWeeks": 0,
+    "academyWeeks": 0,
+    "matches": 0,
+    "goals": 0,
+    "lastMatch": null,
+    "injuryWeeks": 0,
+    "nextScoutWeek": 13,
+    "offers": [],
+    "trial": null,
+    "contract": null
+  },
+  "social": {
+    "niche": "lifestyle",
+    "privacy": "public",
+    "contentSkill": 20,
+    "profiles": {
+      "lens": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "loop": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "tube": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "stream": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      }
+    },
+    "posts": [],
+    "offers": [],
+    "deals": [],
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextSponsorWeek": 364,
+    "history": [
+      {
+        "week": 332,
+        "followers": 0
+      },
+      {
+        "week": 333,
+        "followers": 0
+      },
+      {
+        "week": 334,
+        "followers": 0
+      },
+      {
+        "week": 335,
+        "followers": 0
+      },
+      {
+        "week": 336,
+        "followers": 0
+      },
+      {
+        "week": 337,
+        "followers": 0
+      },
+      {
+        "week": 338,
+        "followers": 0
+      },
+      {
+        "week": 339,
+        "followers": 0
+      },
+      {
+        "week": 340,
+        "followers": 0
+      },
+      {
+        "week": 341,
+        "followers": 0
+      },
+      {
+        "week": 342,
+        "followers": 0
+      },
+      {
+        "week": 343,
+        "followers": 0
+      },
+      {
+        "week": 344,
+        "followers": 0
+      },
+      {
+        "week": 345,
+        "followers": 0
+      },
+      {
+        "week": 346,
+        "followers": 0
+      },
+      {
+        "week": 347,
+        "followers": 0
+      },
+      {
+        "week": 348,
+        "followers": 0
+      },
+      {
+        "week": 349,
+        "followers": 0
+      },
+      {
+        "week": 350,
+        "followers": 0
+      },
+      {
+        "week": 351,
+        "followers": 0
+      },
+      {
+        "week": 352,
+        "followers": 0
+      },
+      {
+        "week": 353,
+        "followers": 0
+      },
+      {
+        "week": 354,
+        "followers": 0
+      },
+      {
+        "week": 355,
+        "followers": 0
+      },
+      {
+        "week": 356,
+        "followers": 0
+      },
+      {
+        "week": 357,
+        "followers": 0
+      }
+    ]
+  },
+  "fame": {
+    "recognition": 0,
+    "reputation": 65
+  },
+  "experienceCooldowns": {},
+  "experienceHistory": [],
+  "debug": {
+    "enabled": true,
+    "used": true,
+    "edits": [
+      {
+        "week": 0,
+        "text": "money: 10000000"
+      },
+      {
+        "week": 0,
+        "text": "Enabled sandbox controls."
+      }
+    ]
+  },
+  "housing": {
+    "rental": null,
+    "deposit": 0,
+    "residence": "property:312:0",
+    "properties": [
+      {
+        "id": "property:312:0",
+        "type": "townhouse",
+        "paid": 247227,
+        "value": 248324.89,
+        "purchasedWeek": 312,
+        "tenant": false,
+        "endLease": false,
+        "nextTenantWeek": null,
+        "saleWeek": null,
+        "loan": {
+          "balance": 193236.52,
+          "payment": 326.67,
+          "missed": 0,
+          "weeks": 995
+        }
+      }
+    ],
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "family": {
+    "partnerId": "person-2",
+    "sinceWeek": 260,
+    "engagement": null,
+    "pending": null,
+    "children": [
+      {
+        "id": "child:1",
+        "name": "Emilia",
+        "parentId": "person-2",
+        "bornWeek": 351,
+        "bond": 78.94999999999996,
+        "wellbeing": 85,
+        "education": 50,
+        "interest": "cooking",
+        "club": "none",
+        "schoolType": "state",
+        "confidence": 60,
+        "independence": 50,
+        "future": "undecided",
+        "support": false,
+        "lastSupportWeek": 351
+      }
+    ],
+    "parenting": "balanced",
+    "pets": [
+      {
+        "id": "pet:2",
+        "kind": "dog",
+        "name": "Pepper",
+        "bond": 47.60000000000001,
+        "health": 89.70000000000002,
+        "adoptedWeek": 351,
+        "nextVetWeek": 377
+      }
+    ],
+    "petMemories": [],
+    "serial": 3,
+    "livingTogether": false,
+    "issues": [],
+    "issueSerial": 0,
+    "weeklyContribution": 0
+  },
+  "pastimes": {
+    "routine": "balanced",
+    "community": 0,
+    "hobbies": {
+      "writing": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "photography": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "coding": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "cooking": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "gardening": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "art": {
+        "skill": 10,
+        "sessions": 0
+      }
+    },
+    "projects": [],
+    "offers": [],
+    "serial": 0,
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextOffer": 360
+  },
+  "milestones": [
+    {
+      "id": "first-job",
+      "week": 1
+    },
+    {
+      "id": "millionaire",
+      "week": 1
+    },
+    {
+      "id": "owner",
+      "week": 1
+    },
+    {
+      "id": "homeowner",
+      "week": 313
+    },
+    {
+      "id": "parent",
+      "week": 351
+    },
+    {
+      "id": "pet",
+      "week": 352
+    }
+  ],
+  "calendar": {
+    "mode": "automatic",
+    "sleep": 8,
+    "hours": {
+      "study": 8,
+      "football": 6,
+      "racing": 6,
+      "basketball": 6,
+      "tennis": 6,
+      "music": 6,
+      "project": 6,
+      "relationships": 4
+    },
+    "spent": 0,
+    "actions": [],
+    "entries": [],
+    "serial": 0,
+    "last": {
+      "week": 357,
+      "required": {
+        "sleep": 56,
+        "everyday": 28,
+        "work": 40,
+        "school": 0,
+        "commute": 5,
+        "care": 11
+      },
+      "mandatory": 140,
+      "appointments": 0,
+      "spent": 0,
+      "desired": {
+        "study": 0,
+        "football": 0,
+        "racing": 0,
+        "basketball": 0,
+        "tennis": 0,
+        "music": 0,
+        "project": 0,
+        "relationships": 4
+      },
+      "allocations": {
+        "study": 0,
+        "football": 0,
+        "racing": 0,
+        "basketball": 0,
+        "tennis": 0,
+        "music": 0,
+        "project": 0,
+        "relationships": 4
+      },
+      "deficit": 0,
+      "free": 24,
+      "total": 144,
+      "stress": 0
+    },
+    "history": [
+      {
+        "week": 352,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 353,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 354,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 355,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 356,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 357,
+        "stress": 0,
+        "deficit": 0
+      }
+    ]
+  },
+  "workLife": {
+    "jobId": "office-2",
+    "arrangement": "standard",
+    "managerBond": 50,
+    "colleagueBond": 50,
+    "warnings": 0,
+    "poorWeeks": 0,
+    "probationEnds": null,
+    "probationReviewed": true,
+    "nextPromotion": 377,
+    "promotion": null,
+    "pension": 1022.7,
+    "pensionRate": 5,
+    "history": []
+  },
+  "connections": {
+    "profiles": {
+      "sam": {
+        "personality": "Ambitious",
+        "interests": [
+          "travel",
+          "technology"
+        ],
+        "values": "creativity",
+        "trust": 80.90000000000003,
+        "mood": 65.59999999999997,
+        "ageOffset": 2,
+        "city": "London",
+        "job": "Nurse",
+        "weeklyPay": 1004,
+        "wealth": 8924,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 357,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      },
+      "jordan": {
+        "personality": "Practical",
+        "interests": [
+          "cooking",
+          "art"
+        ],
+        "values": "security",
+        "trust": 80.90000000000003,
+        "mood": 65.59999999999997,
+        "ageOffset": 0,
+        "city": "London",
+        "job": "Designer",
+        "weeklyPay": 837,
+        "wealth": 7922,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 357,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      },
+      "person-2": {
+        "personality": "Outgoing",
+        "interests": [
+          "music",
+          "travel"
+        ],
+        "values": "career",
+        "trust": 80.90000000000003,
+        "mood": 65.59999999999997,
+        "ageOffset": -1,
+        "city": "London",
+        "job": "Teacher",
+        "weeklyPay": 906,
+        "wealth": 8336,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 357,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      }
+    },
+    "discoveries": [],
+    "serial": 0,
+    "appActive": false,
+    "nextDiscoveryWeek": 0
+  },
+  "banking": {
+    "savings": 1001.96,
+    "baseRate": 0.035,
+    "savingsRate": 0.03,
+    "credit": 650,
+    "serial": 0,
+    "loans": [],
+    "statements": [
+      {
+        "week": 357,
+        "label": "Savings interest, after tax",
+        "amount": 0.49
+      },
+      {
+        "week": 356,
+        "label": "Savings interest, after tax",
+        "amount": 0.49
+      },
+      {
+        "week": 355,
+        "label": "Savings interest, after tax",
+        "amount": 0.49
+      },
+      {
+        "week": 354,
+        "label": "Savings interest, after tax",
+        "amount": 0.49
+      },
+      {
+        "week": 353,
+        "label": "Savings deposit",
+        "amount": 1000
+      }
+    ],
+    "incomeHistory": [
+      {
+        "week": 354,
+        "employmentIncome": 2435,
+        "gross": 2435.58,
+        "tax": 619.34
+      },
+      {
+        "week": 355,
+        "employmentIncome": 2435,
+        "gross": 2435.58,
+        "tax": 619.34
+      },
+      {
+        "week": 356,
+        "employmentIncome": 2435,
+        "gross": 2435.58,
+        "tax": 619.34
+      },
+      {
+        "week": 357,
+        "employmentIncome": 2435,
+        "gross": 2435.58,
+        "tax": 619.34
+      }
+    ],
+    "tax": {
+      "year": 6,
+      "earned": 9253,
+      "investment": 2.32,
+      "capitalNet": 0,
+      "withheld": 2477.36,
+      "paid": 2477.36,
+      "lastWeekly": 619.34,
+      "lastGross": 2435.58,
+      "lastNet": 1816.24,
+      "history": []
+    },
+    "basis": {
+      "index": 0,
+      "tech": 15854,
+      "energy": 0,
+      "crypto": 0,
+      "bonds": 0,
+      "property": 0
+    }
+  },
+  "seasons": {
+    "football": {
+      "year": 6,
+      "club": null,
+      "stage": "none",
+      "level": 0,
+      "fixtures": [
+        {
+          "id": "football:6:0",
+          "week": 313,
+          "opponent": "Stonegate FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:1",
+          "week": 314,
+          "opponent": "Elmwood FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 18,
+              "away": 0
+            },
+            {
+              "home": 19,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:2",
+          "week": 315,
+          "opponent": "Ashford FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:3",
+          "week": 316,
+          "opponent": "Wellington FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 16,
+              "away": 0
+            },
+            {
+              "home": 17,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:4",
+          "week": 317,
+          "opponent": "Hillcrest FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:5",
+          "week": 318,
+          "opponent": "Lakeside FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 14,
+              "away": 0
+            },
+            {
+              "home": 15,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:6",
+          "week": 319,
+          "opponent": "Bayview FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:7",
+          "week": 320,
+          "opponent": "Solstice FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 12,
+              "away": 0
+            },
+            {
+              "home": 13,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:8",
+          "week": 321,
+          "opponent": "Atlas FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:9",
+          "week": 322,
+          "opponent": "Cedar FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 10,
+              "away": 0
+            },
+            {
+              "home": 11,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 18
+            },
+            {
+              "home": 19,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:10",
+          "week": 323,
+          "opponent": "Kingsbridge FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 18
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:11",
+          "week": 324,
+          "opponent": "Juniper FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 8,
+              "away": 0
+            },
+            {
+              "home": 9,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 16
+            },
+            {
+              "home": 17,
+              "away": 18
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:12",
+          "week": 325,
+          "opponent": "Easton FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 16
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:13",
+          "week": 326,
+          "opponent": "Northline FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 6,
+              "away": 0
+            },
+            {
+              "home": 7,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 14
+            },
+            {
+              "home": 15,
+              "away": 16
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:14",
+          "week": 327,
+          "opponent": "Meridian FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 14
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:15",
+          "week": 328,
+          "opponent": "Oakfield FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 4,
+              "away": 0
+            },
+            {
+              "home": 5,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 12
+            },
+            {
+              "home": 13,
+              "away": 14
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:16",
+          "week": 329,
+          "opponent": "Westbridge FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 12
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:17",
+          "week": 330,
+          "opponent": "Harbor FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 2,
+              "away": 0
+            },
+            {
+              "home": 3,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 12
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:18",
+          "week": 331,
+          "opponent": "Riverside FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 1
+            },
+            {
+              "home": 19,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:19",
+          "week": 332,
+          "opponent": "Stonegate FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 19,
+              "away": 0
+            },
+            {
+              "home": 1,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:20",
+          "week": 333,
+          "opponent": "Elmwood FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 18
+            },
+            {
+              "home": 17,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:21",
+          "week": 334,
+          "opponent": "Ashford FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 17,
+              "away": 0
+            },
+            {
+              "home": 18,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:22",
+          "week": 335,
+          "opponent": "Wellington FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 16
+            },
+            {
+              "home": 15,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:23",
+          "week": 336,
+          "opponent": "Hillcrest FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 15,
+              "away": 0
+            },
+            {
+              "home": 16,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:24",
+          "week": 337,
+          "opponent": "Lakeside FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 14
+            },
+            {
+              "home": 13,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:25",
+          "week": 338,
+          "opponent": "Bayview FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 13,
+              "away": 0
+            },
+            {
+              "home": 14,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:26",
+          "week": 339,
+          "opponent": "Solstice FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 12
+            },
+            {
+              "home": 11,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:27",
+          "week": 340,
+          "opponent": "Atlas FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 11,
+              "away": 0
+            },
+            {
+              "home": 12,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 19
+            },
+            {
+              "home": 1,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:28",
+          "week": 341,
+          "opponent": "Cedar FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 19
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:29",
+          "week": 342,
+          "opponent": "Kingsbridge FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 9,
+              "away": 0
+            },
+            {
+              "home": 10,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 17
+            },
+            {
+              "home": 18,
+              "away": 19
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:30",
+          "week": 343,
+          "opponent": "Juniper FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 17
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:31",
+          "week": 344,
+          "opponent": "Easton FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 7,
+              "away": 0
+            },
+            {
+              "home": 8,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 15
+            },
+            {
+              "home": 16,
+              "away": 17
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:32",
+          "week": 345,
+          "opponent": "Northline FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 15
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:33",
+          "week": 346,
+          "opponent": "Meridian FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 5,
+              "away": 0
+            },
+            {
+              "home": 6,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 13
+            },
+            {
+              "home": 14,
+              "away": 15
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:34",
+          "week": 347,
+          "opponent": "Oakfield FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 13
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:35",
+          "week": 348,
+          "opponent": "Westbridge FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 3,
+              "away": 0
+            },
+            {
+              "home": 4,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 11
+            },
+            {
+              "home": 12,
+              "away": 13
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:36",
+          "week": 349,
+          "opponent": "Harbor FC",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "football:6:37",
+          "week": 350,
+          "opponent": "Riverside FC",
+          "home": false,
+          "matches": [
+            {
+              "home": 1,
+              "away": 0
+            },
+            {
+              "home": 2,
+              "away": 19
+            },
+            {
+              "home": 18,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 17
+            },
+            {
+              "home": 16,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 15
+            },
+            {
+              "home": 14,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 13
+            },
+            {
+              "home": 12,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        }
+      ],
+      "table": [
+        {
+          "id": 0,
+          "name": "Your local side",
+          "played": 38,
+          "wins": 16,
+          "draws": 13,
+          "losses": 9,
+          "for": 56,
+          "against": 35,
+          "points": 61,
+          "rating": 60
+        },
+        {
+          "id": 1,
+          "name": "Riverside FC",
+          "played": 38,
+          "wins": 10,
+          "draws": 13,
+          "losses": 15,
+          "for": 48,
+          "against": 51,
+          "points": 43,
+          "rating": 57
+        },
+        {
+          "id": 2,
+          "name": "Harbor FC",
+          "played": 38,
+          "wins": 14,
+          "draws": 16,
+          "losses": 8,
+          "for": 51,
+          "against": 40,
+          "points": 58,
+          "rating": 54
+        },
+        {
+          "id": 3,
+          "name": "Westbridge FC",
+          "played": 38,
+          "wins": 16,
+          "draws": 16,
+          "losses": 6,
+          "for": 44,
+          "against": 31,
+          "points": 64,
+          "rating": 51
+        },
+        {
+          "id": 4,
+          "name": "Oakfield FC",
+          "played": 38,
+          "wins": 11,
+          "draws": 13,
+          "losses": 14,
+          "for": 36,
+          "against": 53,
+          "points": 46,
+          "rating": 48
+        },
+        {
+          "id": 5,
+          "name": "Meridian FC",
+          "played": 38,
+          "wins": 10,
+          "draws": 10,
+          "losses": 18,
+          "for": 39,
+          "against": 60,
+          "points": 40,
+          "rating": 45
+        },
+        {
+          "id": 6,
+          "name": "Northline FC",
+          "played": 38,
+          "wins": 11,
+          "draws": 10,
+          "losses": 17,
+          "for": 33,
+          "against": 46,
+          "points": 43,
+          "rating": 42
+        },
+        {
+          "id": 7,
+          "name": "Easton FC",
+          "played": 38,
+          "wins": 18,
+          "draws": 11,
+          "losses": 9,
+          "for": 56,
+          "against": 34,
+          "points": 65,
+          "rating": 59
+        },
+        {
+          "id": 8,
+          "name": "Juniper FC",
+          "played": 38,
+          "wins": 8,
+          "draws": 12,
+          "losses": 18,
+          "for": 45,
+          "against": 52,
+          "points": 36,
+          "rating": 56
+        },
+        {
+          "id": 9,
+          "name": "Kingsbridge FC",
+          "played": 38,
+          "wins": 11,
+          "draws": 15,
+          "losses": 12,
+          "for": 47,
+          "against": 44,
+          "points": 48,
+          "rating": 53
+        },
+        {
+          "id": 10,
+          "name": "Cedar FC",
+          "played": 38,
+          "wins": 16,
+          "draws": 14,
+          "losses": 8,
+          "for": 43,
+          "against": 31,
+          "points": 62,
+          "rating": 50
+        },
+        {
+          "id": 11,
+          "name": "Atlas FC",
+          "played": 38,
+          "wins": 11,
+          "draws": 14,
+          "losses": 13,
+          "for": 40,
+          "against": 56,
+          "points": 47,
+          "rating": 47
+        },
+        {
+          "id": 12,
+          "name": "Solstice FC",
+          "played": 38,
+          "wins": 13,
+          "draws": 10,
+          "losses": 15,
+          "for": 38,
+          "against": 53,
+          "points": 49,
+          "rating": 44
+        },
+        {
+          "id": 13,
+          "name": "Bayview FC",
+          "played": 38,
+          "wins": 25,
+          "draws": 6,
+          "losses": 7,
+          "for": 59,
+          "against": 24,
+          "points": 81,
+          "rating": 61
+        },
+        {
+          "id": 14,
+          "name": "Lakeside FC",
+          "played": 38,
+          "wins": 16,
+          "draws": 12,
+          "losses": 10,
+          "for": 53,
+          "against": 40,
+          "points": 60,
+          "rating": 58
+        },
+        {
+          "id": 15,
+          "name": "Hillcrest FC",
+          "played": 38,
+          "wins": 7,
+          "draws": 15,
+          "losses": 16,
+          "for": 45,
+          "against": 48,
+          "points": 36,
+          "rating": 55
+        },
+        {
+          "id": 16,
+          "name": "Wellington FC",
+          "played": 38,
+          "wins": 9,
+          "draws": 19,
+          "losses": 10,
+          "for": 43,
+          "against": 37,
+          "points": 46,
+          "rating": 52
+        },
+        {
+          "id": 17,
+          "name": "Ashford FC",
+          "played": 38,
+          "wins": 12,
+          "draws": 16,
+          "losses": 10,
+          "for": 38,
+          "against": 36,
+          "points": 52,
+          "rating": 49
+        },
+        {
+          "id": 18,
+          "name": "Elmwood FC",
+          "played": 38,
+          "wins": 7,
+          "draws": 12,
+          "losses": 19,
+          "for": 39,
+          "against": 65,
+          "points": 33,
+          "rating": 46
+        },
+        {
+          "id": 19,
+          "name": "Stonegate FC",
+          "played": 38,
+          "wins": 8,
+          "draws": 15,
+          "losses": 15,
+          "for": 37,
+          "against": 54,
+          "points": 39,
+          "rating": 43
+        }
+      ],
+      "appearances": 0,
+      "form": 50,
+      "trainedWeek": -1,
+      "blocked": "unavailable",
+      "agent": null,
+      "sponsor": null,
+      "sponsorOffers": [],
+      "nextSponsorWeek": 366,
+      "history": [],
+      "fundingMisses": 0
+    },
+    "racing": {
+      "year": 6,
+      "club": null,
+      "stage": "none",
+      "level": 0,
+      "fixtures": [
+        {
+          "id": "racing:6:0",
+          "week": 315,
+          "opponent": "Riverside Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:1",
+          "week": 317,
+          "opponent": "Harbor Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:2",
+          "week": 319,
+          "opponent": "Westbridge Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:3",
+          "week": 321,
+          "opponent": "Oakfield Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:4",
+          "week": 323,
+          "opponent": "Meridian Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:5",
+          "week": 325,
+          "opponent": "Northline Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:6",
+          "week": 327,
+          "opponent": "Easton Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:7",
+          "week": 329,
+          "opponent": "Juniper Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:8",
+          "week": 331,
+          "opponent": "Kingsbridge Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:9",
+          "week": 333,
+          "opponent": "Cedar Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:10",
+          "week": 335,
+          "opponent": "Atlas Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:11",
+          "week": 337,
+          "opponent": "Solstice Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:12",
+          "week": 339,
+          "opponent": "Bayview Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:13",
+          "week": 341,
+          "opponent": "Lakeside Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:14",
+          "week": 343,
+          "opponent": "Hillcrest Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:15",
+          "week": 345,
+          "opponent": "Wellington Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:16",
+          "week": 347,
+          "opponent": "Ashford Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:17",
+          "week": 349,
+          "opponent": "Elmwood Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:18",
+          "week": 351,
+          "opponent": "Stonegate Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:19",
+          "week": 353,
+          "opponent": "Redwood Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "racing:6:20",
+          "week": 355,
+          "opponent": "Southport Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        },
+        {
+          "id": "racing:6:21",
+          "week": 357,
+          "opponent": "Riverside Grand Prix",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        }
+      ],
+      "table": [
+        {
+          "id": 0,
+          "name": "Legacy Player",
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 0,
+          "rating": 60
+        },
+        {
+          "id": 1,
+          "name": "Leo Martinez",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 122,
+          "rating": 57
+        },
+        {
+          "id": 2,
+          "name": "Maya Petersen",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 151,
+          "rating": 54
+        },
+        {
+          "id": 3,
+          "name": "Noah Reed",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 112,
+          "rating": 51
+        },
+        {
+          "id": 4,
+          "name": "Sofia Laurent",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 48,
+          "rating": 48
+        },
+        {
+          "id": 5,
+          "name": "Ethan Brooks",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 20,
+          "rating": 45
+        },
+        {
+          "id": 6,
+          "name": "Luca Romano",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 32,
+          "rating": 42
+        },
+        {
+          "id": 7,
+          "name": "Ava Silva",
+          "played": 20,
+          "wins": 4,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 177,
+          "rating": 59
+        },
+        {
+          "id": 8,
+          "name": "Oscar Kim",
+          "played": 20,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 166,
+          "rating": 56
+        },
+        {
+          "id": 9,
+          "name": "Amir Hassan",
+          "played": 20,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 131,
+          "rating": 53
+        },
+        {
+          "id": 10,
+          "name": "Chloe Bennett",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 82,
+          "rating": 50
+        },
+        {
+          "id": 11,
+          "name": "Theo Fischer",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 59,
+          "rating": 47
+        },
+        {
+          "id": 12,
+          "name": "Isla Morgan",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 56,
+          "rating": 44
+        },
+        {
+          "id": 13,
+          "name": "Daniel Novak",
+          "played": 20,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 192,
+          "rating": 61
+        },
+        {
+          "id": 14,
+          "name": "Zoe Alvarez",
+          "played": 20,
+          "wins": 2,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 158,
+          "rating": 58
+        },
+        {
+          "id": 15,
+          "name": "Finn Taylor",
+          "played": 20,
+          "wins": 4,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 201,
+          "rating": 55
+        },
+        {
+          "id": 16,
+          "name": "Yuki Tanaka",
+          "played": 20,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 173,
+          "rating": 52
+        },
+        {
+          "id": 17,
+          "name": "Eva Jensen",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 64,
+          "rating": 49
+        },
+        {
+          "id": 18,
+          "name": "Louis Moreau",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 30,
+          "rating": 46
+        },
+        {
+          "id": 19,
+          "name": "Nora Berg",
+          "played": 20,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 46,
+          "rating": 43
+        }
+      ],
+      "appearances": 0,
+      "form": 50,
+      "trainedWeek": -1,
+      "blocked": "unavailable",
+      "agent": null,
+      "sponsor": null,
+      "sponsorOffers": [],
+      "nextSponsorWeek": 366,
+      "history": [],
+      "fundingMisses": 0
+    },
+    "basketball": {
+      "year": 6,
+      "club": null,
+      "stage": "none",
+      "level": 0,
+      "fixtures": [
+        {
+          "id": "basketball:6:0",
+          "week": 313,
+          "opponent": "Atlas Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:1",
+          "week": 313,
+          "opponent": "Cedar Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 10,
+              "away": 0
+            },
+            {
+              "home": 11,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:2",
+          "week": 314,
+          "opponent": "Kingsbridge Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:3",
+          "week": 315,
+          "opponent": "Juniper Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 8,
+              "away": 0
+            },
+            {
+              "home": 9,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:4",
+          "week": 316,
+          "opponent": "Easton Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:5",
+          "week": 317,
+          "opponent": "Northline Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 6,
+              "away": 0
+            },
+            {
+              "home": 7,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:6",
+          "week": 318,
+          "opponent": "Meridian Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:7",
+          "week": 319,
+          "opponent": "Oakfield Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 4,
+              "away": 0
+            },
+            {
+              "home": 5,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:8",
+          "week": 319,
+          "opponent": "Westbridge Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:9",
+          "week": 320,
+          "opponent": "Harbor Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 2,
+              "away": 0
+            },
+            {
+              "home": 3,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:10",
+          "week": 321,
+          "opponent": "Riverside Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:11",
+          "week": 322,
+          "opponent": "Atlas Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 11,
+              "away": 0
+            },
+            {
+              "home": 1,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:12",
+          "week": 323,
+          "opponent": "Cedar Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:13",
+          "week": 324,
+          "opponent": "Kingsbridge Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 9,
+              "away": 0
+            },
+            {
+              "home": 10,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:14",
+          "week": 325,
+          "opponent": "Juniper Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:15",
+          "week": 325,
+          "opponent": "Easton Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 7,
+              "away": 0
+            },
+            {
+              "home": 8,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:16",
+          "week": 326,
+          "opponent": "Northline Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:17",
+          "week": 327,
+          "opponent": "Meridian Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 5,
+              "away": 0
+            },
+            {
+              "home": 6,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:18",
+          "week": 328,
+          "opponent": "Oakfield Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:19",
+          "week": 329,
+          "opponent": "Westbridge Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 3,
+              "away": 0
+            },
+            {
+              "home": 4,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:20",
+          "week": 330,
+          "opponent": "Harbor Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:21",
+          "week": 331,
+          "opponent": "Riverside Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 1,
+              "away": 0
+            },
+            {
+              "home": 2,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:22",
+          "week": 332,
+          "opponent": "Atlas Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:23",
+          "week": 332,
+          "opponent": "Cedar Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 10,
+              "away": 0
+            },
+            {
+              "home": 11,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 5
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:24",
+          "week": 333,
+          "opponent": "Kingsbridge Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:25",
+          "week": 334,
+          "opponent": "Juniper Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 8,
+              "away": 0
+            },
+            {
+              "home": 9,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 1
+            },
+            {
+              "home": 2,
+              "away": 3
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:26",
+          "week": 335,
+          "opponent": "Easton Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 7
+            },
+            {
+              "home": 6,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:27",
+          "week": 336,
+          "opponent": "Northline Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 6,
+              "away": 0
+            },
+            {
+              "home": 7,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 10
+            },
+            {
+              "home": 11,
+              "away": 1
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:28",
+          "week": 337,
+          "opponent": "Meridian Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 5
+            },
+            {
+              "home": 4,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:29",
+          "week": 338,
+          "opponent": "Oakfield Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 4,
+              "away": 0
+            },
+            {
+              "home": 5,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 8
+            },
+            {
+              "home": 9,
+              "away": 10
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:30",
+          "week": 338,
+          "opponent": "Westbridge Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 3
+            },
+            {
+              "home": 2,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:31",
+          "week": 339,
+          "opponent": "Harbor Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 2,
+              "away": 0
+            },
+            {
+              "home": 3,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 6
+            },
+            {
+              "home": 7,
+              "away": 8
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:32",
+          "week": 340,
+          "opponent": "Riverside Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 1
+            },
+            {
+              "home": 11,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:33",
+          "week": 341,
+          "opponent": "Atlas Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 11,
+              "away": 0
+            },
+            {
+              "home": 1,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 4
+            },
+            {
+              "home": 5,
+              "away": 6
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:34",
+          "week": 342,
+          "opponent": "Cedar Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 10
+            },
+            {
+              "home": 9,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:35",
+          "week": 343,
+          "opponent": "Kingsbridge Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 9,
+              "away": 0
+            },
+            {
+              "home": 10,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 2
+            },
+            {
+              "home": 3,
+              "away": 4
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:36",
+          "week": 344,
+          "opponent": "Juniper Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 8
+            },
+            {
+              "home": 7,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:37",
+          "week": 344,
+          "opponent": "Easton Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 7,
+              "away": 0
+            },
+            {
+              "home": 8,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 11
+            },
+            {
+              "home": 1,
+              "away": 2
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:38",
+          "week": 345,
+          "opponent": "Northline Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 6
+            },
+            {
+              "home": 5,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:39",
+          "week": 346,
+          "opponent": "Meridian Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 5,
+              "away": 0
+            },
+            {
+              "home": 6,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 9
+            },
+            {
+              "home": 10,
+              "away": 11
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:40",
+          "week": 347,
+          "opponent": "Oakfield Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 4
+            },
+            {
+              "home": 3,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:41",
+          "week": 348,
+          "opponent": "Westbridge Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 3,
+              "away": 0
+            },
+            {
+              "home": 4,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 7
+            },
+            {
+              "home": 8,
+              "away": 9
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:42",
+          "week": 349,
+          "opponent": "Harbor Hoops",
+          "home": true,
+          "matches": [
+            {
+              "home": 0,
+              "away": 2
+            },
+            {
+              "home": 1,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "basketball:6:43",
+          "week": 350,
+          "opponent": "Riverside Hoops",
+          "home": false,
+          "matches": [
+            {
+              "home": 1,
+              "away": 0
+            },
+            {
+              "home": 2,
+              "away": 11
+            },
+            {
+              "home": 10,
+              "away": 3
+            },
+            {
+              "home": 4,
+              "away": 9
+            },
+            {
+              "home": 8,
+              "away": 5
+            },
+            {
+              "home": 6,
+              "away": 7
+            }
+          ],
+          "status": "past",
+          "result": null
+        }
+      ],
+      "table": [
+        {
+          "id": 0,
+          "name": "Your local side",
+          "played": 44,
+          "wins": 22,
+          "draws": 0,
+          "losses": 22,
+          "for": 4472,
+          "against": 4268,
+          "points": 44,
+          "rating": 60
+        },
+        {
+          "id": 1,
+          "name": "Riverside Hoops",
+          "played": 44,
+          "wins": 22,
+          "draws": 0,
+          "losses": 22,
+          "for": 4429,
+          "against": 4331,
+          "points": 44,
+          "rating": 57
+        },
+        {
+          "id": 2,
+          "name": "Harbor Hoops",
+          "played": 44,
+          "wins": 23,
+          "draws": 0,
+          "losses": 21,
+          "for": 4371,
+          "against": 4338,
+          "points": 46,
+          "rating": 54
+        },
+        {
+          "id": 3,
+          "name": "Westbridge Hoops",
+          "played": 44,
+          "wins": 26,
+          "draws": 0,
+          "losses": 18,
+          "for": 4315,
+          "against": 4298,
+          "points": 52,
+          "rating": 51
+        },
+        {
+          "id": 4,
+          "name": "Oakfield Hoops",
+          "played": 44,
+          "wins": 23,
+          "draws": 0,
+          "losses": 21,
+          "for": 4206,
+          "against": 4356,
+          "points": 46,
+          "rating": 48
+        },
+        {
+          "id": 5,
+          "name": "Meridian Hoops",
+          "played": 44,
+          "wins": 23,
+          "draws": 0,
+          "losses": 21,
+          "for": 4203,
+          "against": 4342,
+          "points": 46,
+          "rating": 45
+        },
+        {
+          "id": 6,
+          "name": "Northline Hoops",
+          "played": 44,
+          "wins": 22,
+          "draws": 0,
+          "losses": 22,
+          "for": 4141,
+          "against": 4300,
+          "points": 44,
+          "rating": 42
+        },
+        {
+          "id": 7,
+          "name": "Easton Hoops",
+          "played": 44,
+          "wins": 18,
+          "draws": 0,
+          "losses": 26,
+          "for": 4442,
+          "against": 4304,
+          "points": 36,
+          "rating": 59
+        },
+        {
+          "id": 8,
+          "name": "Juniper Hoops",
+          "played": 44,
+          "wins": 19,
+          "draws": 0,
+          "losses": 25,
+          "for": 4408,
+          "against": 4338,
+          "points": 38,
+          "rating": 56
+        },
+        {
+          "id": 9,
+          "name": "Kingsbridge Hoops",
+          "played": 44,
+          "wins": 21,
+          "draws": 0,
+          "losses": 23,
+          "for": 4347,
+          "against": 4322,
+          "points": 42,
+          "rating": 53
+        },
+        {
+          "id": 10,
+          "name": "Cedar Hoops",
+          "played": 44,
+          "wins": 22,
+          "draws": 0,
+          "losses": 22,
+          "for": 4270,
+          "against": 4304,
+          "points": 44,
+          "rating": 50
+        },
+        {
+          "id": 11,
+          "name": "Atlas Hoops",
+          "played": 44,
+          "wins": 23,
+          "draws": 0,
+          "losses": 21,
+          "for": 4237,
+          "against": 4340,
+          "points": 46,
+          "rating": 47
+        }
+      ],
+      "appearances": 0,
+      "form": 50,
+      "trainedWeek": -1,
+      "blocked": "unavailable",
+      "agent": null,
+      "sponsor": null,
+      "sponsorOffers": [],
+      "nextSponsorWeek": 366,
+      "history": [],
+      "fundingMisses": 0
+    },
+    "tennis": {
+      "year": 6,
+      "club": null,
+      "stage": "none",
+      "level": 0,
+      "fixtures": [
+        {
+          "id": "tennis:6:0",
+          "week": 313,
+          "opponent": "Riverside Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:1",
+          "week": 315,
+          "opponent": "Harbor Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:2",
+          "week": 317,
+          "opponent": "Westbridge Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:3",
+          "week": 319,
+          "opponent": "Oakfield Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:4",
+          "week": 321,
+          "opponent": "Meridian Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:5",
+          "week": 323,
+          "opponent": "Northline Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:6",
+          "week": 325,
+          "opponent": "Easton Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:7",
+          "week": 327,
+          "opponent": "Juniper Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:8",
+          "week": 329,
+          "opponent": "Kingsbridge Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:9",
+          "week": 331,
+          "opponent": "Cedar Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:10",
+          "week": 333,
+          "opponent": "Atlas Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:11",
+          "week": 335,
+          "opponent": "Solstice Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:12",
+          "week": 337,
+          "opponent": "Bayview Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:13",
+          "week": 339,
+          "opponent": "Lakeside Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:14",
+          "week": 341,
+          "opponent": "Hillcrest Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:15",
+          "week": 343,
+          "opponent": "Wellington Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:16",
+          "week": 345,
+          "opponent": "Ashford Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:17",
+          "week": 347,
+          "opponent": "Elmwood Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:18",
+          "week": 349,
+          "opponent": "Stonegate Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:19",
+          "week": 351,
+          "opponent": "Redwood Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:20",
+          "week": 353,
+          "opponent": "Southport Open",
+          "home": false,
+          "matches": [],
+          "status": "past",
+          "result": null
+        },
+        {
+          "id": "tennis:6:21",
+          "week": 355,
+          "opponent": "Riverside Open",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        },
+        {
+          "id": "tennis:6:22",
+          "week": 357,
+          "opponent": "Harbor Open",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        },
+        {
+          "id": "tennis:6:23",
+          "week": 359,
+          "opponent": "Westbridge Open",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        },
+        {
+          "id": "tennis:6:24",
+          "week": 361,
+          "opponent": "Oakfield Open",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        },
+        {
+          "id": "tennis:6:25",
+          "week": 363,
+          "opponent": "Meridian Open",
+          "home": false,
+          "matches": [],
+          "status": "scheduled",
+          "result": null
+        }
+      ],
+      "table": [
+        {
+          "id": 0,
+          "name": "Legacy Player",
+          "played": 0,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 0,
+          "rating": 60
+        },
+        {
+          "id": 1,
+          "name": "Leo Martinez",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 805,
+          "rating": 57
+        },
+        {
+          "id": 2,
+          "name": "Maya Petersen",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1040,
+          "rating": 54
+        },
+        {
+          "id": 3,
+          "name": "Noah Reed",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 775,
+          "rating": 51
+        },
+        {
+          "id": 4,
+          "name": "Sofia Laurent",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 345,
+          "rating": 48
+        },
+        {
+          "id": 5,
+          "name": "Ethan Brooks",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 100,
+          "rating": 45
+        },
+        {
+          "id": 6,
+          "name": "Luca Romano",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 160,
+          "rating": 42
+        },
+        {
+          "id": 7,
+          "name": "Ava Silva",
+          "played": 21,
+          "wins": 5,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1730,
+          "rating": 59
+        },
+        {
+          "id": 8,
+          "name": "Oscar Kim",
+          "played": 21,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1320,
+          "rating": 56
+        },
+        {
+          "id": 9,
+          "name": "Amir Hassan",
+          "played": 21,
+          "wins": 1,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 940,
+          "rating": 53
+        },
+        {
+          "id": 10,
+          "name": "Chloe Bennett",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 570,
+          "rating": 50
+        },
+        {
+          "id": 11,
+          "name": "Theo Fischer",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 325,
+          "rating": 47
+        },
+        {
+          "id": 12,
+          "name": "Isla Morgan",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 325,
+          "rating": 44
+        },
+        {
+          "id": 13,
+          "name": "Daniel Novak",
+          "played": 21,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1725,
+          "rating": 61
+        },
+        {
+          "id": 14,
+          "name": "Zoe Alvarez",
+          "played": 21,
+          "wins": 2,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1235,
+          "rating": 58
+        },
+        {
+          "id": 15,
+          "name": "Finn Taylor",
+          "played": 21,
+          "wins": 4,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1630,
+          "rating": 55
+        },
+        {
+          "id": 16,
+          "name": "Yuki Tanaka",
+          "played": 21,
+          "wins": 3,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 1455,
+          "rating": 52
+        },
+        {
+          "id": 17,
+          "name": "Eva Jensen",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 470,
+          "rating": 49
+        },
+        {
+          "id": 18,
+          "name": "Louis Moreau",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 150,
+          "rating": 46
+        },
+        {
+          "id": 19,
+          "name": "Nora Berg",
+          "played": 21,
+          "wins": 0,
+          "draws": 0,
+          "losses": 0,
+          "for": 0,
+          "against": 0,
+          "points": 230,
+          "rating": 43
+        }
+      ],
+      "appearances": 0,
+      "form": 50,
+      "trainedWeek": -1,
+      "blocked": "unavailable",
+      "agent": null,
+      "sponsor": null,
+      "sponsorOffers": [],
+      "nextSponsorWeek": 366,
+      "history": [],
+      "fundingMisses": 0
+    }
+  },
+  "stories": {
+    "effects": [],
+    "history": [],
+    "serial": 0,
+    "cooldowns": {}
+  }
+}

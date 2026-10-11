@@ -16,7 +16,10 @@ const nav = [
   "Lifestyle & shopping",
   "Businesses & clubs",
 ];
-async function load(page, state = g.createGame({ seed: 1 })) {
+async function load(
+  page,
+  state = g.createGame({ seed: 1, age: 18, career: "office" }),
+) {
   await page.addInitScript(
     ({ state, key }) => {
       if (!localStorage.getItem(key))
@@ -41,7 +44,7 @@ function next(s) {
   return g.advanceWeek(s);
 }
 function hired() {
-  let s = g.createGame({ seed: 1 });
+  let s = g.createGame({ seed: 1, age: 18, career: "office" });
   s = g.applyForJob(s, s.vacancies[0].id);
   s = next(next(s));
   s = g.acceptJobOffer(s, s.applications[0].id);
@@ -64,7 +67,7 @@ test("all screens load without browser errors and instant career switching is go
   expect(await page.locator('[data-action="join-career"]').count()).toBe(0);
   expect(errors).toEqual([]);
 });
-test("character interest is an aspiration, and invalid completed-degree backgrounds cannot start", async ({
+test("new characters start at birth with deferred interests and no qualifications", async ({
   page,
 }) => {
   await load(page);
@@ -75,22 +78,22 @@ test("character interest is an aspiration, and invalid completed-degree backgrou
   await page.getByLabel("Your name").fill("Riley Andersen");
   await page.getByLabel("Home city").selectOption("Copenhagen");
   await page.getByLabel("Life path / interest").selectOption("racing");
-  await page.getByLabel("Starting age").fill("18");
-  await page.getByLabel("Starting education").selectOption("business-degree");
-  await page.getByRole("button", { name: "Begin my story" }).click();
-  await expect(page.locator("#toast")).toContainText("age of at least 21");
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByLabel("Starting education").selectOption("school");
+  expect(await page.getByLabel("Starting age").count()).toBe(0);
+  expect(await page.getByLabel("Starting education").count()).toBe(0);
   await page.getByRole("button", { name: "Begin my story" }).click();
   await expect(
-    page.getByRole("heading", { name: "Looking for work" }),
+    page.getByRole("heading", { name: "Your early years." }),
   ).toBeVisible();
   await week(page);
   await week(page);
   await page.reload();
   const s = await saved(page);
+  expect(s.startAge).toBe(0);
+  expect(s.money).toBe(0);
   expect(s.career).toBe("unemployed");
   expect(s.aspiration).toBe("racing");
+  expect(s.sports.racing.stage).toBe("none");
+  expect(s.education.completed).toEqual([]);
   expect(s.city).toBe("Copenhagen");
   expect(s.week).toBe(2);
   expect(s.version).toBe(g.VERSION);
@@ -229,7 +232,7 @@ test("a real owner introduction, premium bid, acceptance, and closing acquire a 
 }) => {
   let candidate;
   for (let seed = 1; seed < 40; seed++) {
-    const s = g.createGame({ seed: 1 });
+    const s = g.createGame({ seed: 1, age: 18, career: "office" });
     s.seed = seed;
     s.money = 1000000;
     s.skills.charisma = 100;
@@ -273,7 +276,7 @@ test("a real owner introduction, premium bid, acceptance, and closing acquire a 
 test("football club sale windows transfer ownership and expose per-business management", async ({
   page,
 }) => {
-  const s = g.createGame({ seed: 1 });
+  const s = g.createGame({ seed: 1, age: 18, career: "office" });
   s.money = 2000000;
   s.opportunities = [
     {
@@ -304,7 +307,7 @@ test("football club sale windows transfer ownership and expose per-business mana
 test("collectible auctions can leave high-reserve lots unsold", async ({
   page,
 }) => {
-  const s = g.createGame({ seed: 1 });
+  const s = g.createGame({ seed: 1, age: 18, career: "office" });
   s.collectibles.listings = [
     { id: "card:0", collectibleId: "rookie-card", price: 850, expiresWeek: 8 },
   ];
@@ -369,7 +372,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   await page.getByRole("button", { name: "Save & settings" }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v6.json");
+  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v7.json");
 });
 test("export/import and unreadable-save recovery remain usable", async ({
   page,
@@ -408,7 +411,7 @@ test("export/import and unreadable-save recovery remain usable", async ({
 test("all screens fit on a phone, including large balances and controlled companies", async ({
   page,
 }) => {
-  const s = g.createGame({ seed: 1 });
+  const s = g.createGame({ seed: 1, age: 18, career: "office" });
   s.money = 3000000000;
   s.holdings.tech = 60000000;
   await page.setViewportSize({ width: 390, height: 844 });

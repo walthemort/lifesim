@@ -53,7 +53,7 @@ export function initializeSports(s, { legacy = false } = {}) {
         s.employment &&
         jobDefinition(s.employment.jobId)?.track === d.id &&
         jobDefinition(s.employment.jobId).level >= 1;
-      const participating = s.aspiration === d.id || player;
+      const participating = (s.aspiration === d.id && age(s) >= 6) || player;
       return [
         d.id,
         {
@@ -87,13 +87,16 @@ export function initializeSports(s, { legacy = false } = {}) {
 }
 export const sportCosts = (s) =>
   SPORTS.reduce(
-    (sum, d) => sum + (s.sports[d.id].stage === "local" ? d.entryFee : 0),
+    (sum, d) =>
+      sum + (s.sports[d.id].stage === "local" && age(s) >= 12 ? d.entryFee : 0),
     0,
   );
 export function joinSport(state, id) {
   writable(state);
   const d = SPORTS.find((d) => d.id === id);
   if (!d) throw new Error("Sport unavailable.");
+  if (age(state) < 6)
+    throw new Error("Organised sport and karting start at age six.");
   if (!state.actions) throw new Error("No free-time actions left.");
   if (!["none", "retired"].includes(state.sports[id].stage))
     throw new Error("You already participate in this sport.");
@@ -301,8 +304,10 @@ export function advanceSports(s) {
       );
     }
     if (p.injuryWeeks) p.injuryWeeks--;
-    else if (availableCash(s) >= (p.stage === "local" ? d.entryFee : 0)) {
-      s.money -= p.stage === "local" ? d.entryFee : 0;
+    else if (
+      availableCash(s) >= (p.stage === "local" && age(s) >= 12 ? d.entryFee : 0)
+    ) {
+      s.money -= p.stage === "local" && age(s) >= 12 ? d.entryFee : 0;
       markSportTraining(s, d.id);
       if (allocationRatio(s, d.id) >= 0.5) p.experience++;
       const rest = p.training === "rest",
@@ -357,6 +362,7 @@ export function advanceSports(s) {
       if (
         p.stage === "local" &&
         s.progress[d.id].level === 0 &&
+        age(s) >= 10 &&
         age(s) <= 19 &&
         p.experience >= 26 &&
         p.ability >= 30 &&

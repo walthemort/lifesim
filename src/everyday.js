@@ -10,6 +10,8 @@ const log = (s, text, kind = "info") => {
   s.log = s.log.slice(0, 40);
 };
 function action(state, cost = 0, energy = 0) {
+  if (age(state) < 6)
+    throw new Error("Use supervised childhood activities at this age.");
   if (state.ended) throw new Error("This life is complete.");
   if (!state.actions) throw new Error("You need a free-time action.");
   if (availableCash(state) < cost)
@@ -510,6 +512,7 @@ export function homeBedrooms(s) {
   return bedrooms || (age(s) < 18 ? 0 : 1);
 }
 export function personalLivingCosts(s, legacyHome) {
+  if (age(s) < 12) return 0;
   if (age(s) < 18) return 15;
   const rent = s.housing.residence
     ? 0

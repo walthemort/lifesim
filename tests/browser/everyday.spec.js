@@ -51,7 +51,7 @@ function couple() {
 test("debug is discoverable, keeps an original backup, persists edits and restores the pre-debug life", async ({
   page,
 }) => {
-  const initial = g.createGame({ seed: 8 });
+  const initial = g.createGame({ seed: 8, age: 18, career: "office" });
   await load(page, initial);
   await debug(page);
   await expect(
@@ -115,7 +115,7 @@ test("debug exact stats, hobby skills, followers, and qualifications can be edit
   expect(g.restoreGame(s)).toEqual(s);
 });
 test("debug time skips process real finances and choices", async ({ page }) => {
-  const initial = g.createGame({ seed: 8 });
+  const initial = g.createGame({ seed: 8, age: 18, career: "office" });
   await load(page, initial);
   await debug(page);
   await navigate(page, "Simulate 13 weeks");
@@ -299,10 +299,10 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   await navigate(page, "Save & settings");
   const download = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await download).suggestedFilename()).toBe("lifesim-before-v6.json");
+  expect((await download).suggestedFilename()).toBe("lifesim-before-v7.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v6`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v7`)),
       KEY,
     ),
   ).toEqual(old);

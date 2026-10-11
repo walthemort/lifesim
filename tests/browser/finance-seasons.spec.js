@@ -235,7 +235,7 @@ test("life choice commissions become visible obligations and delivery has a real
     r.stories.effects[0].status,
   );
 });
-test("authentic v5 saves upgrade with an unchanged pre-v6 download and preserved household", async ({
+test("authentic v5 saves upgrade with an unchanged pre-v7 download and preserved household", async ({
   page,
 }) => {
   const raw = JSON.parse(
@@ -243,17 +243,17 @@ test("authentic v5 saves upgrade with an unchanged pre-v6 download and preserved
   );
   await load(page, raw);
   let r = await saved(page);
-  expect(r.version).toBe(6);
+  expect(r.version).toBe(7);
   expect(r.family).toEqual(raw.family);
   expect(r.workLife).toEqual(raw.workLife);
   expect(r.banking.tax.paid).toBe(0);
   await nav(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v6.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v7.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v6`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v7`)),
       KEY,
     ),
   ).toEqual(raw);

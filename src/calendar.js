@@ -1,3 +1,5 @@
+import { recommendedSleep } from "./childhood.js";
+import { careerSupportHours } from "./career-support.js";
 import { storyWeeklyHours } from "./stories.js";
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
@@ -14,7 +16,7 @@ export const TIME_BLOCKS = [
 export function initializeCalendar(s) {
   s.calendar = {
     mode: "automatic",
-    sleep: age(s) < 18 ? 9 : 8,
+    sleep: recommendedSleep(s),
     hours: Object.fromEntries(
       TIME_BLOCKS.map((k) => [
         k,
@@ -29,7 +31,7 @@ export function initializeCalendar(s) {
     history: [],
   };
 }
-export function requiredHours(s) {
+export function requiredHours(s, week = s.week) {
   const working = s.employment
     ? s.employment.weeklyHours ||
       (["football", "racing", "basketball", "tennis"].includes(s.career)
@@ -60,10 +62,11 @@ export function requiredHours(s) {
       );
     }, 0) +
     s.family.pets.length * 3 +
-    storyWeeklyHours(s);
+    storyWeeklyHours(s) +
+    careerSupportHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
-    everyday: 28,
+    everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,
     work: working + extra,
     school,
     commute: working || school ? 5 : 0,
@@ -71,9 +74,9 @@ export function requiredHours(s) {
   };
 }
 export function calendarForecast(s, { comingWeek = false } = {}) {
-  const required = requiredHours(s),
-    mandatory = Object.values(required).reduce((a, b) => a + b, 0);
   const week = s.week + (comingWeek ? 1 : 0);
+  const required = requiredHours(s, week),
+    mandatory = Object.values(required).reduce((a, b) => a + b, 0);
   const appointments = s.calendar.entries
     .filter((e) => e.status === "scheduled" && e.week === week)
     .reduce((n, e) => n + e.hours, 0);
@@ -127,11 +130,16 @@ export function calendarForecast(s, { comingWeek = false } = {}) {
     deficit,
     free: Math.max(0, room - Math.min(room, requested)),
     total: mandatory + spent + appointments + Math.min(room, requested),
-    stress: Math.min(100, deficit * 2 + Math.max(0, 8 - s.calendar.sleep) * 12),
+    stress: Math.min(
+      100,
+      deficit * 2 + Math.max(0, recommendedSleep(s) - s.calendar.sleep) * 12,
+    ),
   };
 }
 export function spendTime(s, hours = 3, label = "Free-time activity") {
   if (!s.calendar) return;
+  if (age(s) < 5)
+    throw new Error("Use supervised childhood activities before age five.");
   const committed = Object.values(requiredHours(s)).reduce((a, b) => a + b, 0);
   const booked = s.calendar.entries
     .filter((e) => e.status === "scheduled" && e.week === s.week + 1)
@@ -150,11 +158,11 @@ export function setCalendar(state, { mode, sleep, hours }) {
     !["automatic", "custom"].includes(mode) ||
     !Number.isFinite(sleep) ||
     sleep < 6 ||
-    sleep > 9 ||
+    sleep > 16 ||
     !Number.isInteger(sleep)
   )
     throw new Error(
-      "Choose an automatic or custom plan and 6–9 hours of sleep.",
+      "Choose an automatic or custom plan and 6–16 hours of sleep.",
     );
   if (
     !hours ||
@@ -184,7 +192,7 @@ export function prepareCalendar(s) {
   // Last week's actions consumed time; scheduled meetings belong to the week now being simulated.
   s.calendar.last = calendarForecast(s);
   const plan = s.calendar.last;
-  const sleepDebt = Math.max(0, 8 - s.calendar.sleep);
+  const sleepDebt = Math.max(0, recommendedSleep(s) - s.calendar.sleep);
   s.energy = clamp(
     s.energy - Math.min(18, plan.deficit * 0.35) - sleepDebt * 4,
   );
@@ -220,7 +228,7 @@ export function validateCalendar(s) {
   if (
     !c ||
     !["automatic", "custom"].includes(c.mode) ||
-    !number(c.sleep, 6, 9) ||
+    !number(c.sleep, 6, 16) ||
     !Number.isInteger(c.sleep) ||
     !number(c.spent, 0, 168) ||
     !number(c.serial) ||

@@ -1,3 +1,4 @@
+import { footballRecruitmentChance } from "./career-support.js";
 import {
   syncSeason,
   enhanceSportOffer,
@@ -67,7 +68,7 @@ export function initializeLife(
   const level = oldPlayer ? jobDefinition(s.employment.jobId).level : 0;
   initializeSports(s, { legacy });
   initializeMusic(s);
-  s.school = { enrolled: age(s) < 18, grade: 70, weeks: 0 };
+  s.school = { enrolled: age(s) >= 5 && age(s) < 18, grade: 70, weeks: 0 };
   s.football = {
     stage: oldPlayer
       ? level >= 2
@@ -75,7 +76,7 @@ export function initializeLife(
         : level === 1
           ? "reserve"
           : "community"
-      : s.aspiration === "football"
+      : s.aspiration === "football" && age(s) >= 5
         ? age(s) < 18
           ? "school"
           : "community"
@@ -111,7 +112,7 @@ export function initializeLife(
     niche:
       s.aspiration === "music"
         ? "music"
-        : s.aspiration === "football"
+        : s.aspiration === "football" && age(s) >= 5
           ? "football"
           : "lifestyle",
     privacy: "public",
@@ -153,8 +154,15 @@ export function initializeLife(
     }
 }
 export const footballCosts = (s) =>
-  s.football.stage === "school" ? 5 : s.football.stage === "community" ? 15 : 0;
+  s.football.stage === "school"
+    ? age(s) < 12
+      ? 0
+      : 5
+    : s.football.stage === "community"
+      ? 15
+      : 0;
 export function joinFootball(state) {
+  if (age(state) < 5) throw new Error("School football starts at age five.");
   action(state);
   if (!["none", "retired"].includes(state.football.stage))
     throw new Error("You already participate in football.");
@@ -434,17 +442,18 @@ function footballTick(s) {
       age(s) < 40 &&
       s.progress.football.level >= 1 &&
       f.ability >= 55 &&
-      rng(s) < 0.4
+      rng(s) < footballRecruitmentChance(s, 0.4)
     ) {
       const jobId = `football-${s.progress.football.level}`;
       footballOffer(s, "contract", jobDefinition(jobId).employer, jobId);
     } else if (
       ["school", "community"].includes(f.stage) &&
+      age(s) >= 8 &&
       age(s) <= 18 &&
       f.schoolWeeks + f.grassrootsWeeks >= 26 &&
       f.ability >= 30 &&
       f.discipline >= 50 &&
-      rng(s) < 0.35 + f.coachTrust * 0.002
+      rng(s) < footballRecruitmentChance(s, 0.35 + f.coachTrust * 0.002)
     )
       footballOffer(s, "academy-trial", "Harbor Athletic academy");
     else if (
@@ -452,7 +461,7 @@ function footballTick(s) {
       age(s) <= 25 &&
       f.grassrootsWeeks >= 52 &&
       f.ability >= 55 &&
-      rng(s) < 0.3
+      rng(s) < footballRecruitmentChance(s, 0.3)
     )
       footballOffer(s, "reserve-trial", "Riverside FC development squad");
     else if (
@@ -461,7 +470,7 @@ function footballTick(s) {
       f.academyWeeks >= 52 &&
       f.ability >= 65 &&
       f.coachTrust >= 60 &&
-      rng(s) < 0.4
+      rng(s) < footballRecruitmentChance(s, 0.4)
     )
       footballOffer(
         s,
@@ -478,7 +487,7 @@ function footballTick(s) {
         f.ability >= 75 &&
         f.matches >= 40 &&
         s.employment?.tenure >= 52 &&
-        rng(s) < 0.4
+        rng(s) < footballRecruitmentChance(s, 0.4)
       )
         footballOffer(s, "contract", "Riverside FC", "football-2");
       else if (
@@ -487,7 +496,7 @@ function footballTick(s) {
         f.ability >= 88 &&
         f.matches >= 100 &&
         f.reputation >= 60 &&
-        rng(s) < 0.25
+        rng(s) < footballRecruitmentChance(s, 0.25)
       )
         footballOffer(s, "contract", "Harbor Athletic", "football-3");
       else if (
@@ -496,7 +505,7 @@ function footballTick(s) {
         f.ability >= 96 &&
         f.matches >= 180 &&
         f.reputation >= 85 &&
-        rng(s) < 0.12
+        rng(s) < footballRecruitmentChance(s, 0.12)
       )
         footballOffer(
           s,
@@ -508,7 +517,7 @@ function footballTick(s) {
         f.contract?.expiresWeek &&
         f.contract.expiresWeek - s.week <= 26 &&
         s.employment?.performance >= 55 &&
-        rng(s) < 0.65
+        rng(s) < footballRecruitmentChance(s, 0.65)
       )
         footballOffer(s, "contract", f.club, f.contract.jobId);
     }

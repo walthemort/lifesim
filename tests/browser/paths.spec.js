@@ -2,7 +2,10 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
 const KEY = "lifesim-save-v1";
-async function load(page, state = g.createGame({ seed: 1 })) {
+async function load(
+  page,
+  state = g.createGame({ seed: 1, age: 18, career: "office" }),
+) {
   await page.addInitScript(
     ({ key, state }) => {
       if (!localStorage.getItem(key))
@@ -26,25 +29,22 @@ function next(s) {
   return g.advanceWeek(s);
 }
 function creator() {
-  let s = g.buy(g.createGame({ seed: 1 }), "phone");
+  let s = g.buy(g.createGame({ seed: 1, age: 18, career: "office" }), "phone");
   s = g.openSocialAccount(s, "lens");
   return s;
 }
 
-test("a new football life starts at school age with local participation and no professional application", async ({
+test("football starts through school after growing up from birth", async ({
   page,
 }) => {
-  await load(page);
-  await page
-    .getByRole("button", { name: "Your character", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Create a new character" }).click();
-  await page.getByLabel("Life path / interest").selectOption("football");
-  await expect(page.getByLabel("Starting age")).toHaveValue("14");
-  await page.getByRole("button", { name: "Begin my story" }).click();
-  await expect(
-    page.getByRole("heading", { name: "School student" }),
-  ).toBeVisible();
+  let s = g.createGame({ seed: 1, career: "football" });
+  expect(s.football.stage).toBe("none");
+  for (let i = 0; i < 5; i++) {
+    if (s.event) s = g.resolveEvent(s, 0);
+    s = g.ageUp(s);
+  }
+  if (s.event) s = g.resolveEvent(s, 0);
+  await load(page, s);
   await page
     .getByRole("button", { name: "Sport & development", exact: true })
     .click();
@@ -56,20 +56,8 @@ test("a new football life starts at school age with local participation and no p
   await week(page);
   const after = await saved(page);
   expect(after.football.ability).toBeGreaterThan(before.football.ability);
-  expect(after.football.matches).toBe(1);
   expect(after.employment).toBeNull();
-  expect(after.money).toBe(505);
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
-  expect(
-    await page
-      .locator('[data-action="apply-job"][data-id^="football"]')
-      .count(),
-  ).toBe(0);
-  await expect(
-    page.locator('[data-action="apply-job"]').first(),
-  ).toBeDisabled();
+  expect(after.money).toBe(0);
 });
 test("an academy trial takes two weeks, then a separate invitation must be accepted", async ({
   page,
@@ -224,7 +212,10 @@ test("creator sponsorship pays after a labelled post is delivered rather than on
 test("a rapper practises, records, and releases a track over four weeks", async ({
   page,
 }) => {
-  await load(page, g.buy(g.createGame({ seed: 1, career: "music" }), "phone"));
+  await load(
+    page,
+    g.buy(g.createGame({ seed: 1, age: 18, career: "music" }), "phone"),
+  );
   await page
     .getByRole("button", { name: "Music & creativity", exact: true })
     .click();
@@ -257,7 +248,7 @@ test("a rapper practises, records, and releases a track over four weeks", async 
 test("repeatable experiences spend cash and an action then enforce their cooldown", async ({
   page,
 }) => {
-  const initial = g.createGame({ seed: 1 });
+  const initial = g.createGame({ seed: 1, age: 18, career: "office" });
   await load(page, initial);
   await page
     .getByRole("button", { name: "Lifestyle & shopping", exact: true })
@@ -299,7 +290,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v6.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v7.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

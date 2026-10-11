@@ -1,3 +1,9 @@
+import {
+  currentMusicManager,
+  musicPromotionMultiplier,
+  musicManagerCommission,
+} from "./career-support.js";
+import { musicStudioBonus } from "./career-equipment.js";
 import { receiveIncome } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng } from "./world.js";
@@ -16,12 +22,13 @@ const log = (s, text, kind = "info") => {
   s.log = s.log.slice(0, 40);
 };
 const action = (s) => {
+  if (age(s) < 6) throw new Error("Music lessons start at age six.");
   if (s.ended) throw new Error("This life is complete.");
   if (!s.actions) throw new Error("No free-time actions left.");
 };
 export function initializeMusic(s) {
   s.music = {
-    active: s.aspiration === "music",
+    active: s.aspiration === "music" && age(s) >= 6,
     role: "singer",
     genre: "Pop",
     skills: { vocals: 15, lyrics: 15, production: 15 },
@@ -49,6 +56,7 @@ export const musicLabel = (s) =>
           ? "Local artist"
           : "Bedroom hobbyist";
 export function configureMusic(state, { role, genre }) {
+  if (age(state) < 6) throw new Error("Music lessons start at age six.");
   if (state.ended) throw new Error("This life is complete.");
   if (
     !Object.hasOwn(MUSIC_ROLES, role) ||
@@ -115,7 +123,8 @@ export function startMusicProject(state, { title }) {
   const gear =
     (s.inventory.includes("microphone") ? 8 : 0) +
     (s.inventory.includes("workstation") ? 8 : 0) +
-    (s.inventory.includes("editing") ? 4 : 0);
+    (s.inventory.includes("editing") ? 4 : 0) +
+    musicStudioBonus(s);
   const quality = Math.round(
     clamp(
       m.skills[skillKey(m.role)] * 0.65 +
@@ -181,7 +190,9 @@ export function acceptLabelOffer(state, id) {
     share: 0.5,
     expiresWeek: s.week + 52,
   };
-  receiveIncome(s, o.advance, "earned");
+  const commission = musicManagerCommission(s, o.advance);
+  receiveIncome(s, o.advance, "earned", { deduction: commission });
+  s.money = Math.round((s.money - commission) * 100) / 100;
   log(
     s,
     `Signed with ${o.name}: $${o.advance} advance. Your 50% royalty share repays the advance first; the agreement lasts 52 weeks.`,
@@ -218,7 +229,8 @@ export function advanceMusic(s) {
       const base = Math.round(
         (40 + p.quality * 6 + fans * 0.015) *
           (0.4 + rng(s) * 1.2) *
-          (m.label ? 1.2 : 1),
+          (m.label ? 1.2 : 1) *
+          musicPromotionMultiplier(s),
       );
       const viral = p.quality >= 60 && rng(s) < 0.02;
       const streams = base + (viral ? Math.floor(5000 + rng(s) * 20000) : 0);
@@ -243,11 +255,18 @@ export function advanceMusic(s) {
       );
     }
   for (const r of m.releases) {
-    if (r.releasedWeek !== s.week)
-      r.weeklyStreams = Math.max(
+    if (r.releasedWeek !== s.week) {
+      const organic = Math.max(
         0,
         Math.round(r.weeklyStreams * (0.75 + rng(s) * 0.22)),
       );
+      const promoted = s.careerSupport.music.campaignUntil > s.week;
+      r.weeklyStreams = Math.round(
+        organic *
+          (promoted ? 1.08 + (currentMusicManager(s)?.skill || 0) * 0.2 : 1),
+      );
+      if (promoted) m.fans += Math.floor((r.weeklyStreams - organic) * 0.005);
+    }
     r.totalStreams += r.weeklyStreams;
     const gross = round(r.weeklyStreams * 0.002);
     let earned = m.label ? round(gross * m.label.share) : gross;
@@ -290,7 +309,7 @@ export function advanceMusic(s) {
       m.sessions >= 12 &&
       m.skills[skillKey(m.role)] >= 30 &&
       !m.gigs.some((g) => ["offered", "booked"].includes(g.status)) &&
-      rng(s) < 0.45
+      rng(s) < 0.45 + (currentMusicManager(s)?.skill || 0)
     ) {
       m.gigs.push({
         id: `gig:${s.week}`,
@@ -325,7 +344,7 @@ export function advanceMusic(s) {
       m.skills[skillKey(m.role)] >= 60 &&
       s.fame.recognition >= 35 &&
       !m.labelOffers.some((o) => o.status === "offered") &&
-      rng(s) < 0.2
+      rng(s) < 0.2 + (currentMusicManager(s)?.skill || 0) * 0.5
     ) {
       m.labelOffers.push({
         id: `label:${s.week}`,
@@ -344,7 +363,9 @@ export function advanceMusic(s) {
   }
   m.weeklyIncome = round(m.weeklyIncome);
   m.totalIncome = round(m.totalIncome + m.weeklyIncome);
-  receiveIncome(s, m.weeklyIncome, "earned");
+  const commission = musicManagerCommission(s, m.weeklyIncome);
+  receiveIncome(s, m.weeklyIncome, "earned", { deduction: commission });
+  s.money = Math.round((s.money - commission) * 100) / 100;
 }
 export function validateMusic(s) {
   const m = s.music,

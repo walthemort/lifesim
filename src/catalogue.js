@@ -183,7 +183,7 @@ export const EXTRA_SHOP = [
     "Creator gear",
     2600,
     4,
-    "A computer capable of streaming and editing. +7 production quality.",
+    "A computer for recording, streaming and editing. +8 music recording quality; +7 content quality.",
     { production: 7 },
   ),
   item(
@@ -201,7 +201,7 @@ export const EXTRA_SHOP = [
     "Creator gear",
     160,
     0,
-    "Clearer audio for videos and streams. +4 production quality.",
+    "Clearer audio for recording, videos and streams. +8 music recording quality; +4 content quality.",
     { production: 4 },
   ),
   item(
@@ -219,7 +219,7 @@ export const EXTRA_SHOP = [
     "Creator gear",
     90,
     6,
-    "Editing tools with recurring subscription costs. +5 production quality.",
+    "Editing tools with recurring subscription costs. +4 music recording quality; +5 content quality.",
     { production: 5 },
   ),
   item(
@@ -536,5 +536,59 @@ export const EXPERIENCES = [
     bond: 2,
     minAge: 18,
     description: "Build confidence and strengthen existing connections.",
+  },
+];
+
+export const STUDIO_ITEMS = [
+  {
+    id: "audio-interface",
+    name: "Audio interface",
+    category: "Music studio",
+    color: "purple",
+    price: 350,
+    upkeep: 0,
+    minAge: 12,
+    happiness: 3,
+    icon: "spark",
+    description:
+      "Cleaner recording and monitoring. Adds 2 to music release quality.",
+  },
+  {
+    id: "studio-monitors",
+    name: "Studio monitor speakers",
+    category: "Music studio",
+    color: "purple",
+    price: 650,
+    upkeep: 0,
+    minAge: 12,
+    happiness: 3,
+    icon: "spark",
+    description: "Hear your mix accurately. Adds 3 to music release quality.",
+  },
+  {
+    id: "treated-studio",
+    name: "Treated home studio",
+    category: "Music studio",
+    color: "purple",
+    price: 2500,
+    upkeep: 10,
+    minAge: 12,
+    happiness: 3,
+    icon: "home",
+    description:
+      "Acoustic treatment and a dedicated recording room. Adds 5 to music release quality; $10 weekly upkeep.",
+  },
+  {
+    id: "professional-studio",
+    name: "Professional recording studio",
+    category: "Music studio",
+    color: "purple",
+    price: 25000,
+    upkeep: 100,
+    minAge: 18,
+    happiness: 5,
+    icon: "home",
+    description:
+      "A dedicated professional recording workspace. Adds 12 to music release quality, replacing the home-room bonus; $100 weekly upkeep. Requires equipment, 40 production skill and two released tracks.",
   },
 ];

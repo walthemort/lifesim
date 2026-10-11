@@ -505,7 +505,7 @@ test("authentic v5 migration preserves the developed household and starts new le
     ),
     s = g.restoreGame(raw);
   assert.equal(raw.version, 5);
-  assert.equal(s.version, 6);
+  assert.equal(s.version, g.VERSION);
   for (const key of [
     "money",
     "employment",

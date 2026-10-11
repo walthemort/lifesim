@@ -1,4 +1,29 @@
 import {
+  initializeCareerSupport,
+  validateCareerSupport,
+  advanceCareerSupport,
+  careerSupportCosts,
+} from "./career-support.js";
+export * from "./career-support.js";
+import { equipmentRequirements } from "./career-equipment.js";
+export {
+  buyCareerEquipment,
+  careerEquipmentGroups,
+  musicStudioBonus,
+} from "./career-equipment.js";
+import {
+  initializeChildhood,
+  prepareChildhood,
+  childhoodWeek,
+  guardianSupport,
+  childhoodAllowance,
+  childhoodEvent,
+  CHILDHOOD_EVENTS,
+  resolveChildhoodEffects,
+  validateChildhood,
+} from "./childhood.js";
+export * from "./childhood.js";
+import {
   initializeWorld,
   advanceWorld,
   validateWorld,
@@ -11,7 +36,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 6;
+export const VERSION = 7;
 import {
   initializeBanking,
   validateBanking,
@@ -84,7 +109,7 @@ import {
 } from "./everyday.js";
 export * from "./everyday.js";
 export * from "./debug.js";
-import { EXTRA_SHOP } from "./catalogue.js";
+import { EXTRA_SHOP, STUDIO_ITEMS } from "./catalogue.js";
 import {
   initializeLife,
   advanceLife,
@@ -358,6 +383,7 @@ export const MARKETS = [
 ];
 export const SHOP = [
   ...EXTRA_SHOP,
+  ...STUDIO_ITEMS,
   {
     id: "watch",
     name: "The everyday watch",
@@ -510,7 +536,7 @@ export const age = (s) => s.startAge + Math.floor(s.week / 52);
 export const careerLevel = (s) => s.progress[s.career].level;
 export const salary = (s) =>
   age(s) < 18 && !s.employment && s.career !== "business"
-    ? 25
+    ? childhoodAllowance(s)
     : s.employment
       ? employmentIncome(s)
       : s.career === "business" && s.company
@@ -544,6 +570,7 @@ export const expenses = (
   pensionDue(s) +
   sportingCosts(s) +
   storyWeeklyCosts(s) +
+  careerSupportCosts(s) +
   (banking ? bankWeeklyCosts(s) : 0) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
@@ -579,14 +606,20 @@ function changeStats(s, changes) {
 }
 export function createGame({
   name = "Alex Morgan",
-  age: startAge = 18,
+  age: startAge = 0,
   footballPosition = "Midfielder",
   city = "London",
   trait = "Ambitious",
-  career = "office",
+  career = "unemployed",
   education = "school",
   seed = Date.now() >>> 0,
 } = {}) {
+  if (
+    !Number.isInteger(Number(startAge)) ||
+    Number(startAge) < 0 ||
+    Number(startAge) > 60
+  )
+    throw new Error("Choose an age from birth to sixty.");
   if (education === "business-degree" && Number(startAge) < 21)
     throw new Error(
       "A completed degree background requires a starting age of at least 21.",
@@ -594,7 +627,7 @@ export function createGame({
   const s = {
     version: VERSION,
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
-    startAge: clamp(Math.round(Number(startAge) || 18), 12, 60),
+    startAge: Number(startAge),
     city: ["London", "Copenhagen", "New York", "Monaco"].includes(city)
       ? city
       : "London",
@@ -677,10 +710,16 @@ export function createGame({
   initializeCalendar(s);
   initializeWorkLife(s);
   initializeConnections(s);
+  initializeChildhood(s);
+  initializeCareerSupport(s);
   initializeBanking(s);
   initializeSeasons(s);
   initializeStories(s);
-  if (s.startAge < 18) s.money = 500;
+  if (s.startAge < 12) {
+    s.money = 0;
+    for (const k of Object.keys(s.skills))
+      s.skills[k] = ["athletics", "charisma", "empathy"].includes(k) ? 5 : 0;
+  } else if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
   addLog(
@@ -719,11 +758,19 @@ export function setActivity(state, id) {
   writable(state);
   if (!Object.hasOwn(ACTIVITIES, id)) throw new Error("Choose a weekly focus.");
   const s = clone(state);
+  if (age(state) < 5 && !["balanced", "rest"].includes(id))
+    throw new Error("Use supervised childhood activities at this age.");
+  if (age(state) < 12 && ["focus", "train"].includes(id))
+    throw new Error(
+      "Use childhood activities and your school or club training.",
+    );
   s.activity = id;
   return s;
 }
 export function invest(state, id, quantity) {
   writable(state);
+  if (age(state) < 18)
+    throw new Error("Independent investing requires age 18+.");
   const m = MARKETS.find((m) => m.id === id);
   if (
     !m ||
@@ -773,6 +820,9 @@ export function buy(state, id) {
       "Clubs and companies require a sale opportunity or an accepted acquisition offer.",
     );
   if (state.inventory.includes(id)) throw new Error("You already own this.");
+  const requirements = equipmentRequirements(state, id);
+  if (requirements.length)
+    throw new Error(`Requires: ${requirements.join(", ")}.`);
   if (
     age(state) <
     (item.minAge ||
@@ -808,7 +858,7 @@ export function connect(state, id, romantic = false) {
     throw new Error(
       "You have used your free-time actions. Advance a week for more.",
     );
-  if (romantic && (r.role === "Sibling" || r.role === "Best friend"))
+  if (romantic && ["Parent", "Sibling", "Best friend"].includes(r.role))
     throw new Error("This relationship is not a romantic connection.");
   if (romantic && r.bond < 60)
     throw new Error("Get to know each other first (60 connection needed).");
@@ -853,6 +903,10 @@ export function connect(state, id, romantic = false) {
 }
 export function meet(state) {
   writable(state);
+  if (age(state) < 13)
+    throw new Error(
+      "Make childhood friends through school and supervised play.",
+    );
   if (!state.actions)
     throw new Error("Advance a week to make time for new connections.");
   if (state.relationships.length >= 8)
@@ -1338,6 +1392,7 @@ export function resolveEvent(state, index) {
   changeStats(s, option);
   resolveEverydayEffects(s, option);
   resolveStoryEffects(s, event, option);
+  resolveChildhoodEffects(s, event, option);
   if (option.skill)
     s.skills[primarySkill(s)] = clamp(s.skills[primarySkill(s)] + option.skill);
   if (option.charisma)
@@ -1380,6 +1435,7 @@ export function advanceWeek(state) {
     p = s.progress[s.career];
   s.week++;
   startBankingWeek(s);
+  prepareChildhood(s);
   prepareCalendar(s);
   prepareSeasons(s);
   if (s.employment || s.career === "business") p.weeks++;
@@ -1404,32 +1460,45 @@ export function advanceWeek(state) {
     { deduction: pensionDue(s) + agentCommission(s) },
   );
   s.money -= costs;
-  const skill = focus.skill || primarySkill(s);
-  const tired = s.energy < 25;
-  s.skills[skill] = clamp(
-    s.skills[skill] + focus.gain * 0.25 * (tired ? 0.5 : 1),
-  );
-  if (s.activity === "train") s.skills.driving = clamp(s.skills.driving + 0.5);
-  if (s.activity === "study")
-    s.skills.business = clamp(s.skills.business + 0.5);
-  if (s.activity === "train" && s.inventory.includes("bike"))
-    s.health = clamp(s.health + 1);
-  if (s.activity === "train" && s.inventory.includes("sim-rig"))
-    s.skills.driving = clamp(s.skills.driving + 0.25);
-  if (s.activity === "study" && s.inventory.includes("laptop"))
-    s.skills.business = clamp(s.skills.business + 0.25);
-  if (s.activity === "rest" && s.inventory.includes("piano"))
-    s.happiness = clamp(s.happiness + 2);
-  changeStats(s, focus);
-  if (s.inventory.includes("gym")) s.health = clamp(s.health + 2);
-  if (s.trait === "Athletic" && s.activity === "train")
-    s.skills.athletics = clamp(s.skills.athletics + 0.25);
-  if (s.energy < 20) {
-    s.health = clamp(s.health - 4);
-    s.happiness = clamp(s.happiness - 3);
+  if (age(s) < 12) childhoodWeek(s);
+  else {
+    const skill = focus.skill || primarySkill(s);
+    const tired = s.energy < 25;
+    s.skills[skill] = clamp(
+      s.skills[skill] + focus.gain * 0.25 * (tired ? 0.5 : 1),
+    );
+    if (s.activity === "train")
+      s.skills.driving = clamp(s.skills.driving + 0.5);
+    if (s.activity === "study")
+      s.skills.business = clamp(s.skills.business + 0.5);
+    if (s.activity === "train" && s.inventory.includes("bike"))
+      s.health = clamp(s.health + 1);
+    if (s.activity === "train" && s.inventory.includes("sim-rig"))
+      s.skills.driving = clamp(s.skills.driving + 0.25);
+    if (s.activity === "study" && s.inventory.includes("laptop"))
+      s.skills.business = clamp(s.skills.business + 0.25);
+    if (s.activity === "rest" && s.inventory.includes("piano"))
+      s.happiness = clamp(s.happiness + 2);
+    changeStats(s, focus);
+    if (s.inventory.includes("gym")) s.health = clamp(s.health + 2);
+    if (s.trait === "Athletic" && s.activity === "train")
+      s.skills.athletics = clamp(s.skills.athletics + 0.25);
+    if (s.energy < 20) {
+      s.health = clamp(s.health - 4);
+      s.happiness = clamp(s.happiness - 3);
+    }
+    for (const r of s.relationships)
+      r.bond = clamp(
+        r.bond +
+          (r.role === "Parent"
+            ? s.activity === "social"
+              ? 0.15
+              : -0.01
+            : s.activity === "social"
+              ? 3
+              : -1),
+      );
   }
-  for (const r of s.relationships)
-    r.bond = clamp(r.bond + (s.activity === "social" ? 3 : -1));
   const macro = (rng(s) * 2 - 1) * 0.005;
   for (const m of MARKETS) {
     const issuer = BUSINESSES.find((b) => b.stock === m.id);
@@ -1495,7 +1564,14 @@ export function advanceWeek(state) {
     `Week ${s.week}: $${income.toLocaleString("en-US")} gross earned · $${(income - payReceived).toFixed(2)} pay tax · $${costs.toLocaleString("en-US")} running costs${paidTuition ? ` · $${paidTuition} tuition` : ""}.`,
     income >= costs ? "positive" : "warning",
   );
-  if (s.week % 2 === 0) {
+  if (age(s) < 12) {
+    if (s.week % 52 === 0) s.event = childhoodEvent(s);
+  } else if (s.childhood.startedAtBirth && age(s) === 12 && s.week % 52 === 0)
+    s.event = childhoodEvent(s);
+  else if (
+    s.week % (s.childhood.startedAtBirth && age(s) < 18 ? 13 : 2) ===
+    0
+  ) {
     const choices =
       age(s) < 18
         ? [...YOUTH_EVENTS, ...eligibleStoryEvents(s)]
@@ -1505,7 +1581,9 @@ export function advanceWeek(state) {
   advanceEveryday(s);
   advanceWorkLife(s);
   advanceConnections(s);
+  guardianSupport(s);
   advanceStories(s);
+  advanceCareerSupport(s);
   advanceBanking(s, employmentPay);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
@@ -1528,10 +1606,11 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
-    !number(s.startAge, 12, 60) ||
+    !number(s.startAge, 0, 60) ||
+    !Number.isInteger(s.startAge) ||
     !number(s.week, 0) ||
     !Number.isInteger(s.week) ||
     !number(s.money) ||
@@ -1545,6 +1624,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsChildhood = s.version < 7;
   const needsSeasons = s.version < 6;
   const needsChapters = s.version < 5;
   const needsEveryday = s.version < 4;
@@ -1705,6 +1785,13 @@ export function restoreGame(raw) {
     initializeStories(s);
     s.version = VERSION;
   }
+  if (needsChildhood) {
+    initializeChildhood(s, { legacy: true });
+    initializeCareerSupport(s);
+    s.version = VERSION;
+  }
+  validateChildhood(s);
+  validateCareerSupport(s);
   validateBanking(s);
   validateSeasons(s);
   validateStories(s);
@@ -1718,6 +1805,7 @@ export function restoreGame(raw) {
     const match = [
       ...EVENTS,
       ...YOUTH_EVENTS,
+      ...CHILDHOOD_EVENTS,
       ...EVERYDAY_EVENTS,
       ...STORY_EVENTS,
     ].find((e) => e.title === s.event?.title);
@@ -1743,5 +1831,15 @@ export function debugAdvance(state, weeks) {
   s.debug.edits.unshift({ week: s.week, text });
   s.debug.edits = s.debug.edits.slice(0, 20);
   addLog(s, `Debug: ${text}`, "warning");
+  return s;
+}
+
+export function ageUp(state) {
+  writable(state);
+  if (state.event)
+    throw new Error("Make your pending life choice before ageing up.");
+  let s = clone(state);
+  const birthday = state.week + 52 - (state.week % 52);
+  while (s.week < birthday && !s.event && !s.ended) s = advanceWeek(s);
   return s;
 }

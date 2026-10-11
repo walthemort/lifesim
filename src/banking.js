@@ -413,6 +413,7 @@ export function advanceBanking(s, employmentIncome) {
   b.incomeHistory = b.incomeHistory.slice(-26);
   if (s.money < 0) b.credit = Math.max(300, b.credit - 1);
   else if (
+    age(s) >= 18 &&
     s.week % 13 === 0 &&
     !b.loans.some((l) => l.missed || l.status === "defaulted")
   )
