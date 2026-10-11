@@ -54,6 +54,7 @@ export const PROGRAMS = [
     skill: "driving",
     gain: 6,
     minimumSkill: 25,
+    minAge: 16,
   },
   {
     id: "international-license",
@@ -64,6 +65,7 @@ export const PROGRAMS = [
     skill: "driving",
     gain: 8,
     minimumSkill: 55,
+    minAge: 16,
   },
   {
     id: "super-license",
@@ -74,6 +76,7 @@ export const PROGRAMS = [
     skill: "driving",
     gain: 10,
     minimumSkill: 85,
+    minAge: 18,
     experience: 208,
     track: "racing",
   },
@@ -101,6 +104,94 @@ const job = (
   experience,
 });
 export const JOBS = [
+  job(
+    "basketball-1",
+    "Development squad player",
+    "Harbor Hoops",
+    "basketball",
+    1,
+    300,
+    null,
+    45,
+    52,
+  ),
+  job(
+    "basketball-2",
+    "Professional basketball player",
+    "Harbor Hoops",
+    "basketball",
+    2,
+    2400,
+    null,
+    65,
+    104,
+  ),
+  job(
+    "basketball-3",
+    "National league player",
+    "Metro Basketball",
+    "basketball",
+    3,
+    14000,
+    null,
+    85,
+    208,
+  ),
+  job(
+    "basketball-4",
+    "International basketball star",
+    "Metro Basketball",
+    "basketball",
+    4,
+    50000,
+    null,
+    95,
+    312,
+  ),
+  job(
+    "tennis-1",
+    "Junior tour sponsorship",
+    "Northline Tennis",
+    "tennis",
+    1,
+    100,
+    null,
+    45,
+    52,
+  ),
+  job(
+    "tennis-2",
+    "Professional tour sponsorship",
+    "Northline Tennis",
+    "tennis",
+    2,
+    450,
+    null,
+    65,
+    104,
+  ),
+  job(
+    "tennis-3",
+    "International tour sponsorship",
+    "Motion Sports",
+    "tennis",
+    3,
+    3000,
+    null,
+    85,
+    208,
+  ),
+  job(
+    "tennis-4",
+    "Elite tour sponsorship",
+    "Motion Sports",
+    "tennis",
+    4,
+    15000,
+    null,
+    95,
+    312,
+  ),
   job(
     "office-0",
     "Office assistant",
@@ -317,6 +408,10 @@ export const JOBS = [
   ),
 ];
 export const TRACK_SKILLS = {
+  basketball: "athletics",
+  tennis: "athletics",
+  music: "charisma",
+  creator: "charisma",
   office: "business",
   football: "athletics",
   racing: "driving",
@@ -539,15 +634,19 @@ export const collectibleValue = (s) =>
     0,
   );
 export const positionName = (s) =>
-  s.employment
-    ? jobDefinition(s.employment.jobId).title
-    : s.company && s.career === "business"
-      ? "Independent business owner"
-      : "Looking for work";
+  s.startAge + Math.floor(s.week / 52) < 18 && !s.employment
+    ? "School student"
+    : s.employment
+      ? jobDefinition(s.employment.jobId).title
+      : s.company && s.career === "business"
+        ? "Independent business owner"
+        : "Looking for work";
 
 function vacancies(s) {
   const regular = JOBS.filter(
-    (j) => !["breakthrough", "office-0", "support-0"].includes(j.id),
+    (j) =>
+      !["breakthrough", "office-0", "support-0"].includes(j.id) &&
+      !isSportingJob(j),
   );
   const selected = ["office-0", "support-0"];
   const pool = [...regular];
@@ -659,10 +758,30 @@ export function initializeWorld(
       "milestone",
     );
 }
+export const isSportingJob = (j) =>
+  ["football", "basketball", "tennis"].includes(j.track) ||
+  (j.track === "racing" && j.level >= 1);
+function clearPlayingContracts(s) {
+  if (s.football?.contract) {
+    s.football.contract = null;
+    s.football.stage = "community";
+    s.football.club = "Local amateur club";
+  }
+  for (const p of Object.values(s.sports || {}))
+    if (p.contract) {
+      p.contract = null;
+      p.stage = "local";
+      p.club = "Local club";
+    }
+}
 export function jobEligibility(s, vacancy) {
   const j = jobDefinition(vacancy.jobId),
     missing = [];
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
+  if (isSportingJob(j))
+    missing.push("Sporting contracts come through development and scouting");
+  if (s.startAge + Math.floor(s.week / 52) < 18)
+    missing.push("Employment requires age 18+");
   if (vacancy.expiresWeek <= s.week) missing.push("Application window closed");
   if (j.qualification && !hasQualification(s, j.qualification))
     missing.push(qualificationName(j.qualification));
@@ -714,6 +833,11 @@ export function acceptJobOffer(state, id) {
   const s = clone(state),
     application = s.applications.find((a) => a.id === id),
     j = jobDefinition(a.jobId);
+  if (isSportingJob(j))
+    throw new Error(
+      "Sporting contracts must come through development and scouting.",
+    );
+  clearPlayingContracts(s);
   s.employment = {
     jobId: j.id,
     weeklyPay: a.offeredPay,
@@ -746,6 +870,7 @@ export function resignJob(state) {
     `Resigned from ${jobDefinition(s.employment.jobId).employer}. Your pay stops immediately.`,
     "warning",
   );
+  clearPlayingContracts(s);
   s.employment = null;
   s.career = s.company ? "business" : "unemployed";
   return s;
@@ -754,6 +879,10 @@ export function requestRaise(state) {
   writable(state);
   if (!state.employment)
     throw new Error("You need an employment contract to request a raise.");
+  if (isSportingJob(jobDefinition(state.employment.jobId)))
+    throw new Error(
+      "Sporting pay is agreed through club or sponsor contract offers.",
+    );
   if (state.week < state.employment.nextRaiseWeek)
     throw new Error(
       `Your next salary discussion is available in ${state.employment.nextRaiseWeek - state.week} weeks.`,
@@ -800,6 +929,8 @@ export function enrolEducation(state, id) {
     throw new Error("You already hold this qualification.");
   if (p.requires && !state.education.completed.includes(p.requires))
     throw new Error(`You need ${qualificationName(p.requires)} first.`);
+  if (p.minAge && state.startAge + Math.floor(state.week / 52) < p.minAge)
+    throw new Error(`This licence requires age ${p.minAge}+. `);
   if (p.minimumSkill && state.skills[p.skill] < p.minimumSkill)
     throw new Error(
       `This programme requires ${p.minimumSkill} ${p.skill} skill.`,
@@ -1089,7 +1220,7 @@ function employmentTick(s) {
     );
     p.performance = Math.round(p.performance * 0.8 + score * 0.2);
     p.tenure++;
-    if (p.tenure % 52 === 0 && p.performance >= 78) {
+    if (!isSportingJob(j) && p.tenure % 52 === 0 && p.performance >= 78) {
       const old = p.weeklyPay;
       p.weeklyPay = Math.min(
         Math.max(j.maxPay, p.startingPay * 1.35),

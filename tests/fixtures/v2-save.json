@@ -1,0 +1,289 @@
+{
+  "version": 2,
+  "name": "Alex Morgan",
+  "startAge": 24,
+  "city": "London",
+  "trait": "Ambitious",
+  "career": "football",
+  "week": 0,
+  "money": 100000,
+  "health": 85,
+  "energy": 80,
+  "happiness": 74,
+  "skills": {
+    "athletics": 15,
+    "driving": 12,
+    "business": 28,
+    "finance": 12,
+    "charisma": 20
+  },
+  "progress": {
+    "unemployed": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "office": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "football": {
+      "level": 2,
+      "weeks": 200,
+      "unlocked": true
+    },
+    "racing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "business": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "investor": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    }
+  },
+  "market": {
+    "index": 120,
+    "tech": 85,
+    "energy": 42,
+    "crypto": 250,
+    "bonds": 100,
+    "property": 60
+  },
+  "marketHistory": {
+    "index": [120],
+    "tech": [85],
+    "energy": [42],
+    "crypto": [250],
+    "bonds": [100],
+    "property": [60]
+  },
+  "holdings": {
+    "index": 0,
+    "tech": 100,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "inventory": [],
+  "relationships": [
+    {
+      "id": "sam",
+      "name": "Sam Taylor",
+      "role": "Best friend",
+      "bond": 72,
+      "icon": "ST",
+      "color": "purple"
+    },
+    {
+      "id": "jordan",
+      "name": "Jordan Morgan",
+      "role": "Sibling",
+      "bond": 85,
+      "icon": "JM",
+      "color": "orange"
+    }
+  ],
+  "activity": "balanced",
+  "actions": 3,
+  "seed": 1814098701,
+  "event": null,
+  "log": [
+    {
+      "week": 0,
+      "text": "A new chapter begins. Your future is yours to shape.",
+      "kind": "milestone"
+    }
+  ],
+  "history": [
+    {
+      "week": 0,
+      "value": 12500
+    }
+  ],
+  "teamStrategy": "balanced",
+  "teams": {},
+  "company": null,
+  "ended": false,
+  "aspiration": "football",
+  "education": {
+    "completed": ["school"],
+    "active": null
+  },
+  "employment": {
+    "jobId": "football-2",
+    "weeklyPay": 3700,
+    "startingPay": 3700,
+    "tenure": 52,
+    "performance": 75,
+    "nextRaiseWeek": 13,
+    "legacy": false
+  },
+  "applications": [],
+  "vacancies": [
+    {
+      "id": "office-0:0",
+      "jobId": "office-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "support-0:0",
+      "jobId": "support-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "football-0:0",
+      "jobId": "football-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "football-2:0",
+      "jobId": "football-2",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "racing-0:0",
+      "jobId": "racing-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "racing-3:0",
+      "jobId": "racing-3",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "office-1:0",
+      "jobId": "office-1",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "football-3:0",
+      "jobId": "football-3",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    }
+  ],
+  "opportunities": [],
+  "negotiations": [],
+  "ownership": {},
+  "assetValues": {
+    "football-team": 750000,
+    "harbor-fc": 18000000,
+    "gt-team": 2000000,
+    "f1-team": 250000000,
+    "cafe": 180000,
+    "studio": 950000,
+    "logistics": 12000000
+  },
+  "businessResults": {
+    "football-team": {
+      "profit": 0,
+      "cash": 22500,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "harbor-fc": {
+      "profit": 0,
+      "cash": 540000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "gt-team": {
+      "profit": 0,
+      "cash": 60000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "f1-team": {
+      "profit": 0,
+      "cash": 7500000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "cafe": {
+      "profit": 0,
+      "cash": 5400,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "studio": {
+      "profit": 0,
+      "cash": 28500,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "logistics": {
+      "profit": 0,
+      "cash": 360000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "horizon": {
+      "profit": 0,
+      "cash": 255000000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "solstice": {
+      "profit": 0,
+      "cash": 63000000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    }
+  },
+  "collectibles": {
+    "prices": {
+      "vintage-watch": 4500,
+      "rookie-card": 850,
+      "print": 2400,
+      "classic-car": 65000
+    },
+    "owned": {},
+    "listings": [
+      {
+        "id": "rookie-card:0",
+        "collectibleId": "rookie-card",
+        "price": 884,
+        "expiresWeek": 8
+      },
+      {
+        "id": "print:0",
+        "collectibleId": "print",
+        "price": 2529,
+        "expiresWeek": 8
+      }
+    ],
+    "auctions": []
+  },
+  "tradeVolumes": {
+    "index": 0,
+    "tech": 0,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  }
+}

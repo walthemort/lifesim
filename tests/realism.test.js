@@ -26,6 +26,7 @@ function vacancy(s, jobId, exceptional = false) {
     expiresWeek: s.week + 4,
     exceptional,
   };
+  s.vacancies = s.vacancies.filter((o) => o.id !== v.id);
   s.vacancies.push(v);
   return v;
 }
@@ -77,7 +78,7 @@ test("a career interest does not give a new character a contract or free qualifi
   );
   const original = structuredClone(s),
     result = next(s);
-  assert.equal(result.money, 12220);
+  assert.equal(result.money, 12210);
   assert.equal(result.progress.racing.weeks, 0);
   assert.deepEqual(s, original);
 });
@@ -592,7 +593,7 @@ test("v1 migration preserves contracts, money, shares, companies, and club owner
       ),
     ),
     s = g.restoreGame(old);
-  assert.equal(s.version, 2);
+  assert.equal(s.version, 3);
   assert.equal(s.money, old.money);
   assert.equal(g.salary(s), 2100);
   assert.equal(s.employment.legacy, true);

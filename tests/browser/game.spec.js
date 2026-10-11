@@ -5,6 +5,9 @@ const KEY = "lifesim-save-v1"; // Keep the old key so existing lives upgrade in 
 const nav = [
   "Overview",
   "Work & education",
+  "Sport & development",
+  "Music & creativity",
+  "Social media & fame",
   "Relationships",
   "Investments",
   "Lifestyle & shopping",
@@ -68,7 +71,8 @@ test("character interest is an aspiration, and invalid completed-degree backgrou
   await page.getByRole("button", { name: "Create a new character" }).click();
   await page.getByLabel("Your name").fill("Riley Andersen");
   await page.getByLabel("Home city").selectOption("Copenhagen");
-  await page.getByLabel("Career interest").selectOption("racing");
+  await page.getByLabel("Life path / interest").selectOption("racing");
+  await page.getByLabel("Starting age").fill("18");
   await page.getByLabel("Starting education").selectOption("business-degree");
   await page.getByRole("button", { name: "Begin my story" }).click();
   await expect(page.locator("#toast")).toContainText("age of at least 21");
@@ -86,7 +90,7 @@ test("character interest is an aspiration, and invalid completed-degree backgrou
   expect(s.aspiration).toBe("racing");
   expect(s.city).toBe("Copenhagen");
   expect(s.week).toBe(2);
-  expect(s.version).toBe(2);
+  expect(s.version).toBe(3);
 });
 test("application decisions, offer acceptance, and actual contract wages work in the browser", async ({
   page,
@@ -355,14 +359,14 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   );
   await load(page, old);
   const r = await saved(page);
-  expect(r.version).toBe(2);
+  expect(r.version).toBe(3);
   expect(r.money).toBe(old.money);
   expect(r.employment.weeklyPay).toBe(2100);
   expect(r.ownership["football-team"].stake).toBe(100);
   await page.getByRole("button", { name: "Save & settings" }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v2.json");
+  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v3.json");
 });
 test("export/import and unreadable-save recovery remain usable", async ({
   page,
@@ -374,21 +378,17 @@ test("export/import and unreadable-save recovery remain usable", async ({
   await page.getByRole("button", { name: "Export save", exact: true }).click();
   expect((await downloaded).suggestedFilename()).toBe("lifesim-save.json");
   const current = JSON.stringify(await saved(page));
-  await page
-    .locator("#import-save")
-    .setInputFiles({
-      name: "bad.json",
-      mimeType: "application/json",
-      buffer: Buffer.from("{}"),
-    });
+  await page.locator("#import-save").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{}"),
+  });
   await expect(page.locator("#toast")).toContainText("invalid");
-  await page
-    .locator("#import-save")
-    .setInputFiles({
-      name: "backup.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(current),
-    });
+  await page.locator("#import-save").setInputFiles({
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(current),
+  });
   await page.getByRole("button", { name: "Replace current save" }).click();
   expect((await saved(page)).week).toBe(1);
   await page.evaluate(

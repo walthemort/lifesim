@@ -2,6 +2,7 @@ import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./style.css";
 import {
+  VERSION,
   createGame,
   restoreGame,
   CAREERS,
@@ -49,10 +50,54 @@ import {
   injectCapital,
   buyCollectible,
   consignCollectible,
+  joinFootball,
+  configureFootball,
+  leaveFootball,
+  acceptFootballOffer,
+  declineFootballOffer,
+  joinSport,
+  setSportTraining,
+  leaveSport,
+  acceptSportOffer,
+  declineSportOffer,
+  SPORTS,
+  openSocialAccount,
+  configureSocial,
+  createPost,
+  acceptSponsor,
+  PLATFORMS,
+  totalFollowers,
+  fameLabel,
+  configureMusic,
+  practiseMusic,
+  startMusicProject,
+  bookMusicGig,
+  acceptLabelOffer,
+  MUSIC_ROLES,
+  takeExperience,
+  EXPERIENCES,
 } from "./engine.js";
 import { workScreen, ownershipScreen, collectiblesScreen } from "./screens.js";
+import {
+  sportsScreen,
+  socialScreen,
+  musicScreen,
+  shoppingScreen,
+} from "./life-screens.js";
+let shopFilters = {
+  category: "All",
+  query: "",
+  sort: "catalogue",
+  owned: false,
+};
 
 const icons = {
+  camera:
+    '<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="4"/>',
+  video:
+    '<rect x="3" y="5" width="15" height="14" rx="2"/><path d="m9 9 5 3-5 3V9ZM18 10l3-2v8l-3-2"/>',
+  music:
+    '<path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="17" cy="16" rx="3" ry="3"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   briefcase:
     '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a24 24 0 0 0 18 0M12 11v4"/>',
@@ -136,13 +181,20 @@ let state,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
-  migrationSave = localStorage.getItem(`${STORAGE}-before-v2`) || "";
+  migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v3`) ||
+    localStorage.getItem(`${STORAGE}-before-v2`) ||
+    "";
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
-    if (saved && JSON.parse(saved).version === 1 && !migrationSave) {
+    if (
+      saved &&
+      JSON.parse(saved).version < VERSION &&
+      !localStorage.getItem(`${STORAGE}-before-v3`)
+    ) {
       migrationSave = saved;
-      localStorage.setItem(`${STORAGE}-before-v2`, saved);
+      localStorage.setItem(`${STORAGE}-before-v3`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -217,6 +269,9 @@ function sparkline(values, color = "#62dda6", filled = false) {
 const nav = [
   ["overview", "grid", "Overview"],
   ["career", "briefcase", "Work & education"],
+  ["sports", "football", "Sport & development"],
+  ["music", "music", "Music & creativity"],
+  ["social", "video", "Social media & fame"],
   ["relationships", "users", "Relationships"],
   ["investments", "chart", "Investments"],
   ["lifestyle", "bag", "Lifestyle & shopping"],
@@ -276,7 +331,7 @@ function scene() {
   return `<div class="city-scene" aria-hidden="true"><div class="sun"></div><div class="city-back"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="city-front"><i></i><i></i><i></i><i></i><i></i></div><div class="scene-ground"></div><div class="scene-caption">THE WORLD IS YOURS</div></div>`;
 }
 function overview() {
-  return `${title("THE BIG PICTURE", `A life of your own<span class="heading-dot">.</span>`, `Welcome back, ${e(state.name.split(" ")[0])}. Every small choice is part of a bigger story.`, `<button class="button secondary" data-action="character">${icon("users")} Your character</button>`)}${stats()}<div class="dashboard-grid"><div class="dashboard-main"><section class="chapter-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> CHAPTER ${Math.floor(state.week / 52) + 1} · ${age(state) < 25 ? "FINDING YOUR FEET" : age(state) < 40 ? "MAKING YOUR MARK" : age(state) < 60 ? "BUILDING YOUR LEGACY" : "LIFE ON YOUR TERMS"}</div><h2>Your next chapter<br>is unwritten.</h2><p>A career to build. People to meet.<br>A whole world of possibilities.</p><button class="button hero-button" data-view="career">Explore work & education ${icon("arrow")}</button></div>${scene()}</section>${workingOverview()}<section class="panel">${panelHeading("This week’s focus", "You decide what deserves your time.", tag("Weekly plan", "blue"))}<div class="focus-grid">${Object.entries(
+  return `${title("THE BIG PICTURE", `A life of your own<span class="heading-dot">.</span>`, `Welcome back, ${e(state.name.split(" ")[0])}. Every small choice is part of a bigger story.`, `<button class="button secondary" data-action="character">${icon("users")} Your character</button>`)}${stats()}<div class="dashboard-grid"><div class="dashboard-main"><section class="chapter-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> CHAPTER ${Math.floor(state.week / 52) + 1} · ${age(state) < 25 ? "FINDING YOUR FEET" : age(state) < 40 ? "MAKING YOUR MARK" : age(state) < 60 ? "BUILDING YOUR LEGACY" : "LIFE ON YOUR TERMS"}</div><h2>Your next chapter<br>is unwritten.</h2><p>A career to build. People to meet.<br>A whole world of possibilities.</p><button class="button hero-button" data-view="career">Explore work & education ${icon("arrow")}</button></div>${scene()}</section>${workingOverview()}${lifeOverview()}<section class="panel">${panelHeading("This week’s focus", "You decide what deserves your time.", tag("Weekly plan", "blue"))}<div class="focus-grid">${Object.entries(
     ACTIVITIES,
   )
     .map(
@@ -336,14 +391,16 @@ function investmentsView() {
   )}</div></section><div class="info-banner">${icon("chart")}<span>Global funds are steadier. Individual stocks fluctuate more. Digital assets can swing sharply. Company share prices respond to trading profits as well as market conditions. Funds and profitable issuers can distribute quarterly income; crypto has no dividend. Large trades are limited by weekly liquidity.</span></div>${collectiblesScreen(state, ui())}`;
 }
 function lifestyleView() {
-  return `${title("MAKE IT YOURS", "The things along the way.", "Build a life that feels like you, from your first watch to a place to call home.", tag(`${state.inventory.length} things owned`, "blue"))}<div class="shop-grid">${SHOP.filter(
-    (i) => i.category !== "Ownership",
-  )
-    .map(
-      (i) =>
-        `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${i.category.toUpperCase()}</span>${state.inventory.includes(i.id) ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${i.category}</span><h2>${i.name}</h2><p>${i.description}</p><div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${state.inventory.includes(i.id) ? "secondary" : "primary"} full-width" data-action="${state.inventory.includes(i.id) ? "sell-item" : "buy"}" data-id="${i.id}" ${!state.inventory.includes(i.id) && availableCash(state) < i.price ? "disabled" : ""}>${state.inventory.includes(i.id) ? `Sell for ${money(i.price * 0.8)}` : availableCash(state) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(state.inventory.includes(i.id) ? "arrow" : "bag")}</button></div></section>`,
-    )
-    .join("")}</div>`;
+  return shoppingScreen(state, ui(), shopFilters);
+}
+function lifeOverview() {
+  const pending =
+    state.football.offers.filter((o) => o.status === "offered").length +
+    Object.values(state.sports).reduce(
+      (n, p) => n + p.offers.filter((o) => o.status === "offered").length,
+      0,
+    );
+  return `<section class="panel life-overview">${panelHeading("Life beyond your job", "Your hobbies, your craft, and your public life.")}<div class="life-metrics"><div><span>Public recognition</span><strong>${e(fameLabel(state))}</strong><small>${state.fame.recognition.toFixed(1)} / 100</small></div><div><span>Social audience</span><strong>${totalFollowers(state).toLocaleString()}</strong><small>Followers across accounts</small></div><div><span>Invitations</span><strong>${pending} sporting offers</strong><small>${state.music.releases.length} music releases</small></div></div><div class="inline-actions"><button class="button secondary" data-view="sports">Develop a sport</button><button class="button secondary" data-view="music">Your music studio</button><button class="button secondary" data-view="social">Create & connect</button></div></section>`;
 }
 function teamsView() {
   return ownershipScreen(state, ui());
@@ -354,6 +411,9 @@ const pages = {
   relationships: relationshipsView,
   investments: investmentsView,
   lifestyle: lifestyleView,
+  sports: () => sportsScreen(state, ui()),
+  music: () => musicScreen(state, ui()),
+  social: () => socialScreen(state, ui()),
   teams: teamsView,
 };
 function render() {
@@ -375,14 +435,14 @@ function characterDialog() {
 }
 function newGameDialog() {
   dialog(
-    `<div class="eyebrow">A NEW CHAPTER</div><h2>Who will you become?</h2><p>Start with $12,500, a little ambition, and a whole life ahead.</p><form id="character-form"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><div class="form-row"><label class="field-label">Starting age<input name="age" type="number" min="18" max="60" step="1" value="18" required></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label></div><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Career interest<select name="career">${Object.entries(
+    `<div class="eyebrow">A NEW CHAPTER</div><h2>Who will you become?</h2><p>Start in your school years or as an adult. Teenagers have $500 savings, family housing, and a weekly allowance; adults start with $12,500.</p><form id="character-form"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><div class="form-row"><label class="field-label">Starting age<input name="age" type="number" min="12" max="60" step="1" value="18" required></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label></div><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career">${Object.entries(
       CAREERS,
     )
       .filter(([id]) => id !== "unemployed")
       .map(([id, c]) => `<option value="${id}">${c.name}</option>`)
       .join(
         "",
-      )}</select></label><label class="field-label">Starting education<select name="education"><option value="school">Secondary school completed</option><option value="none">No formal qualifications</option><option value="business-degree">Business degree completed (age 21+)</option></select></label><p class="muted">A career interest is an aspiration, not a job. All new characters start looking for work. All cities share the prototype economy. Starting a new life replaces your current save. Export it first if you want to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
+      )}</select></label><label class="field-label">Starting education<select name="education"><option value="school">Secondary school completed</option><option value="none">No formal qualifications</option><option value="business-degree">Business degree completed (age 21+)</option></select></label><p class="muted">School-age characters study while developing hobbies. Choosing a sport starts local participation; contracts come through scouting. Choosing music starts a creative hobby. Other interests guide your plans without awarding a job. Pick age 14 for a school or karting start. All cities share the prototype economy. Starting a new life replaces your current save. Export it first if you want to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
   );
 }
 function eventDialog() {
@@ -394,7 +454,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button></div><p class="muted">Lifesim v0.2 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button></div><p class="muted">Lifesim v0.3 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -422,7 +482,7 @@ function settingsDialog() {
       );
       const link = document.createElement("a");
       link.href = url;
-      link.download = "lifesim-before-v2.json";
+      link.download = "lifesim-before-v3.json";
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
@@ -503,6 +563,138 @@ document.addEventListener("click", (event) => {
       );
       break;
     }
+    case "join-football":
+      update(joinFootball, "Joined the local football pathway.");
+      break;
+    case "join-sport":
+      update((s) => joinSport(s, id), "Your sporting path has begun.");
+      break;
+    case "sport-offer": {
+      const sport = button.dataset.sport,
+        o = (
+          sport === "football" ? state.football : state.sports[sport]
+        ).offers.find((o) => o.id === id);
+      if (!o) break;
+      dialog(
+        `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A 104-week sporting contract offers ${money(o.pay)}/week base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p><button class="button primary full-width" data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
+      );
+      break;
+    }
+    case "confirm-sport-offer":
+      if (
+        update(
+          (s) =>
+            button.dataset.sport === "football"
+              ? acceptFootballOffer(s, id)
+              : acceptSportOffer(s, button.dataset.sport, id),
+          "Invitation accepted.",
+        )
+      )
+        modal.close();
+      break;
+    case "decline-sport":
+      update(
+        (s) =>
+          button.dataset.sport === "football"
+            ? declineFootballOffer(s, id)
+            : declineSportOffer(s, button.dataset.sport, id),
+        "Invitation declined.",
+      );
+      break;
+    case "leave-sport":
+      dialog(
+        `<h2>Step away from this sport?</h2><p>Your participation and any sporting contract will end. Local participation can be restarted later; professional recruitment still depends on development and age.</p><button class="button primary full-width" data-action="confirm-leave-sport" data-sport="${button.dataset.sport}">Confirm stepping away</button>`,
+      );
+      break;
+    case "confirm-leave-sport":
+      if (
+        update(
+          (s) =>
+            button.dataset.sport === "football"
+              ? leaveFootball(s)
+              : leaveSport(s, button.dataset.sport),
+          "Sport participation ended.",
+        )
+      )
+        modal.close();
+      break;
+    case "open-account":
+      update(
+        (s) => openSocialAccount(s, id),
+        "Account opened. Your audience starts at zero.",
+      );
+      break;
+    case "post": {
+      const platform = PLATFORMS.find((p) => p.id === id),
+        sponsored = button.dataset.sponsored === "true",
+        cost = id === "lens" ? 5 : id === "loop" ? 20 : id === "tube" ? 35 : 15;
+      dialog(
+        `<div class="eyebrow">${sponsored ? "LABELLED SPONSORED CONTENT" : "CONTENT PRODUCTION"}</div><h2>${e(platform.name)}</h2><form id="post-form" data-platform="${id}" data-sponsored="${sponsored}"><label class="field-label">Content approach<select name="approach"><option value="authentic">Authentic — builds trust</option><option value="polished">Polished — higher production quality</option><option value="clickbait">Clickbait — more reach, reputation −5</option></select></label><p class="muted">Production costs ${money(cost)}, one free-time action, and 5 energy. Results arrive next week. Photos and videos need a phone or camera; streams need a computer. ${sponsored ? "The labelled public post must reach at least 35 quality for sponsor payment." : ""}</p><button class="button primary full-width" type="submit">Publish content</button></form>`,
+      );
+      break;
+    }
+    case "sponsor": {
+      const o = state.social.offers.find((o) => o.id === id);
+      if (!o) break;
+      dialog(
+        `<div class="eyebrow">BRAND COLLABORATION</div><h2>${e(o.brand)}</h2><p>${money(o.fee)} for one labelled public post on ${e(PLATFORMS.find((p) => p.id === o.platform).name)} within three weeks. Payment follows delivery with at least 35 production quality. Missed delivery earns no fee and harms reputation.</p><button class="button primary full-width" data-action="confirm-sponsor" data-id="${e(id)}">Accept collaboration</button>`,
+      );
+      break;
+    }
+    case "confirm-sponsor":
+      if (
+        update(
+          (s) => acceptSponsor(s, id),
+          "Collaboration agreed. Deliver its sponsored post.",
+        )
+      )
+        modal.close();
+      break;
+    case "music-practice":
+      update(practiseMusic, "Practice session complete.");
+      break;
+    case "record-music":
+      dialog(
+        `<div class="eyebrow">MUSIC PRODUCTION</div><h2>Record your next release.</h2><form id="music-project-form"><label class="field-label">Release title<input name="title" maxlength="60" required placeholder="Your first track"></label><p class="muted">Recording and distribution cost $150. The project takes four weeks. Producers need a computer; vocalists need a phone or microphone. Craft and equipment determine quality, while audience and luck affect streams.</p><button class="button primary full-width" type="submit">Start recording</button></form>`,
+      );
+      break;
+    case "music-gig": {
+      const g = state.music.gigs.find((g) => g.id === id);
+      if (!g) break;
+      dialog(
+        `<h2>${e(g.venue)}</h2><p>A performance next week pays ${money(g.fee)} if delivered. Booking uses one action and 8 energy. Craft and wellbeing affect success.</p><button class="button primary full-width" data-action="confirm-music-gig" data-id="${e(id)}">Book performance</button>`,
+      );
+      break;
+    }
+    case "confirm-music-gig":
+      if (
+        update((s) => bookMusicGig(s, id), "Performance booked for next week.")
+      )
+        modal.close();
+      break;
+    case "label-offer": {
+      const o = state.music.labelOffers.find((o) => o.id === id);
+      if (!o) break;
+      dialog(
+        `<div class="eyebrow">RECORD LABEL TERMS</div><h2>${e(o.name)}</h2><p>A 52-week agreement pays ${money(o.advance)} upfront. The label takes 50% of royalties and markets your releases. Your remaining royalty share repays the advance before you receive further royalty cash. This is a recoupable advance, not a cash loan.</p><button class="button primary full-width" data-action="confirm-label" data-id="${e(id)}">Sign label agreement</button>`,
+      );
+      break;
+    }
+    case "confirm-label":
+      if (update((s) => acceptLabelOffer(s, id), "Label agreement signed."))
+        modal.close();
+      break;
+    case "experience": {
+      const x = EXPERIENCES.find((x) => x.id === id);
+      dialog(
+        `<h2>${e(x.name)}</h2><p>${e(x.description)} Costs ${money(x.price)} and one free-time action. Available again after ${x.cooldown} weeks.</p><button class="button primary full-width" data-action="confirm-experience" data-id="${id}">Confirm experience</button>`,
+      );
+      break;
+    }
+    case "confirm-experience":
+      if (update((s) => takeExperience(s, id), "A new memory made."))
+        modal.close();
+      break;
     case "trade":
       tradeDialog(id);
       break;
@@ -677,6 +869,33 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("submit", (event) => {
+  if (event.target.id === "post-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) =>
+          createPost(s, {
+            platform: event.target.dataset.platform,
+            approach: data.get("approach"),
+            sponsored: event.target.dataset.sponsored === "true",
+          }),
+        "Content published; results arrive next week.",
+      )
+    )
+      modal.close();
+  }
+  if (event.target.id === "music-project-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) => startMusicProject(s, { title: data.get("title") }),
+        "Recording started; release in four weeks.",
+      )
+    )
+      modal.close();
+  }
   if (event.target.id === "character-form") {
     event.preventDefault();
     const data = new FormData(event.target);
@@ -775,6 +994,14 @@ document.addEventListener("submit", (event) => {
   }
 });
 document.addEventListener("input", (event) => {
+  if (event.target.id === "shop-query") {
+    shopFilters.query = event.target.value;
+    const start = event.target.selectionStart;
+    render();
+    const search = document.querySelector("#shop-query");
+    search.focus();
+    search.setSelectionRange(start, start);
+  }
   if (event.target.closest("#trade-form")) {
     const form = event.target.closest("form"),
       q = Number(form.elements.quantity.value);
@@ -785,6 +1012,59 @@ document.addEventListener("input", (event) => {
   }
 });
 document.addEventListener("change", async (event) => {
+  if (["football-position", "football-training"].includes(event.target.id))
+    update(
+      (s) =>
+        configureFootball(s, {
+          position: document.querySelector("#football-position").value,
+          training: document.querySelector("#football-training").value,
+        }),
+      "Football plan updated.",
+    );
+  if (event.target.matches("[data-sport-training]"))
+    update(
+      (s) =>
+        setSportTraining(
+          s,
+          event.target.dataset.sportTraining,
+          event.target.value,
+        ),
+      "Training plan updated.",
+    );
+  if (["social-niche", "social-privacy"].includes(event.target.id))
+    update(
+      (s) =>
+        configureSocial(s, {
+          niche: document.querySelector("#social-niche").value,
+          privacy: document.querySelector("#social-privacy").value,
+        }),
+      "Public identity updated.",
+    );
+  if (["music-role", "music-genre"].includes(event.target.id))
+    update(
+      (s) =>
+        configureMusic(s, {
+          role: document.querySelector("#music-role").value,
+          genre: document.querySelector("#music-genre").value,
+        }),
+      "Music direction updated.",
+    );
+  if (["shop-category", "shop-sort", "shop-owned"].includes(event.target.id)) {
+    shopFilters = {
+      ...shopFilters,
+      category: document.querySelector("#shop-category").value,
+      sort: document.querySelector("#shop-sort").value,
+      owned: document.querySelector("#shop-owned").checked,
+    };
+    render();
+  }
+  if (
+    event.target.matches('#character-form select[name="career"]') &&
+    ["football", "racing", "basketball", "tennis"].includes(event.target.value)
+  ) {
+    event.target.form.elements.age.value = 14;
+    event.target.form.elements.education.value = "none";
+  }
   if (event.target.matches("[data-business-strategy]"))
     update(
       (s) =>

@@ -11,8 +11,53 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 2;
+export const VERSION = 3;
+import { EXTRA_SHOP } from "./catalogue.js";
+import {
+  initializeLife,
+  advanceLife,
+  validateLife,
+  footballCosts,
+  sportCosts,
+} from "./life.js";
+export * from "./life.js";
 export const CAREERS = {
+  basketball: {
+    name: "Basketball",
+    skill: "athletics",
+    icon: "trophy",
+    color: "orange",
+    pay: [0],
+    roles: ["School & local basketball"],
+    entry: 0,
+  },
+  tennis: {
+    name: "Tennis",
+    skill: "athletics",
+    icon: "trophy",
+    color: "yellow",
+    pay: [0],
+    roles: ["Local tennis"],
+    entry: 0,
+  },
+  music: {
+    name: "Music: singer, rapper or producer",
+    skill: "charisma",
+    icon: "music",
+    color: "purple",
+    pay: [0],
+    roles: ["Musician"],
+    entry: 0,
+  },
+  creator: {
+    name: "Creator: influencer, YouTuber or streamer",
+    skill: "charisma",
+    icon: "video",
+    color: "blue",
+    pay: [0],
+    roles: ["Content creator"],
+    entry: 0,
+  },
   unemployed: {
     name: "Looking for work",
     subtitle: "Find your next opportunity.",
@@ -239,6 +284,7 @@ export const MARKETS = [
   },
 ];
 export const SHOP = [
+  ...EXTRA_SHOP,
   {
     id: "watch",
     name: "The everyday watch",
@@ -390,30 +436,37 @@ const clone = (s) => structuredClone(s);
 export const age = (s) => s.startAge + Math.floor(s.week / 52);
 export const careerLevel = (s) => s.progress[s.career].level;
 export const salary = (s) =>
-  s.employment
-    ? s.employment.weeklyPay
-    : s.career === "business" && s.company
-      ? Math.round(
-          Math.min(
-            Math.max(0, s.company.cash),
-            Math.max(0, s.company.profit) *
-              (s.company.strategy === "reinvest"
-                ? 0
-                : s.company.strategy === "dividends"
-                  ? 0.5
-                  : 0.25),
-          ) * 100,
-        ) / 100
-      : 0;
-export const expenses = (s, { education = true } = {}) =>
-  (s.inventory.includes("apartment") || s.inventory.includes("villa")
-    ? 110
-    : 280) +
+  age(s) < 18 && !s.employment && s.career !== "business"
+    ? 25
+    : s.employment
+      ? s.employment.weeklyPay
+      : s.career === "business" && s.company
+        ? Math.round(
+            Math.min(
+              Math.max(0, s.company.cash),
+              Math.max(0, s.company.profit) *
+                (s.company.strategy === "reinvest"
+                  ? 0
+                  : s.company.strategy === "dividends"
+                    ? 0.5
+                    : 0.25),
+            ) * 100,
+          ) / 100
+        : 0;
+export const expenses = (s, { education = true, sports = true } = {}) =>
+  (age(s) < 18
+    ? 15
+    : s.inventory.includes("apartment") ||
+        s.inventory.includes("villa") ||
+        SHOP.some((i) => i.effects?.residence && s.inventory.includes(i.id))
+      ? 110
+      : 280) +
   SHOP.filter(
     (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
   ).reduce((n, i) => n + i.upkeep, 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
-  (education ? tuitionDue(s) : 0);
+  (education ? tuitionDue(s) : 0) +
+  (sports ? footballCosts(s) + sportCosts(s) : 0);
 export const primarySkill = (s) =>
   CAREERS[s.career === "unemployed" ? s.aspiration : s.career].skill;
 export const portfolioValue = (s) =>
@@ -442,6 +495,7 @@ function changeStats(s, changes) {
 export function createGame({
   name = "Alex Morgan",
   age: startAge = 18,
+  footballPosition = "Midfielder",
   city = "London",
   trait = "Ambitious",
   career = "office",
@@ -455,7 +509,7 @@ export function createGame({
   const s = {
     version: VERSION,
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
-    startAge: clamp(Math.round(Number(startAge) || 18), 18, 60),
+    startAge: clamp(Math.round(Number(startAge) || 18), 12, 60),
     city: ["London", "Copenhagen", "New York", "Monaco"].includes(city)
       ? city
       : "London",
@@ -530,6 +584,8 @@ export function createGame({
       ? education
       : "school";
   initializeWorld(s, { background });
+  initializeLife(s, { footballPosition });
+  if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
   addLog(
@@ -621,6 +677,12 @@ export function buy(state, id) {
       "Clubs and companies require a sale opportunity or an accepted acquisition offer.",
     );
   if (state.inventory.includes(id)) throw new Error("You already own this.");
+  if (
+    age(state) <
+    (item.minAge ||
+      (["Garage", "Property", "Travel"].includes(item.category) ? 18 : 12))
+  )
+    throw new Error("This purchase requires an older character.");
   if (availableCash(state) < item.price)
     throw new Error("Not enough available cash.");
   const s = clone(state);
@@ -726,6 +788,136 @@ export function setTeamStrategy(state, strategy) {
   s.teamStrategy = strategy;
   return s;
 }
+const YOUTH_EVENTS = [
+  {
+    title: "Training or tomorrow’s exam?",
+    tag: "School & sport",
+    text: "An extra practice session clashes with revising for a school assessment.",
+    options: [
+      {
+        label: "Go to practice",
+        detail: "Athletics +1 · school grade −1 · energy −3",
+        skill: 1,
+        grade: -1,
+        energy: -3,
+      },
+      {
+        label: "Revise for the assessment",
+        detail: "School grade +2 · energy −2",
+        grade: 2,
+        energy: -2,
+      },
+      {
+        label: "Split the evening",
+        detail: "School grade +1 · energy −1",
+        grade: 1,
+        energy: -1,
+      },
+    ],
+  },
+  {
+    title: "A first local tournament",
+    tag: "Youth competition",
+    text: "Friends are heading to a local sports event. There is a modest participation fee.",
+    options: [
+      {
+        label: "Take part",
+        detail: "$25 · athletics +1 · confidence +1",
+        cost: 25,
+        skill: 1,
+        charisma: 1,
+        energy: -3,
+      },
+      {
+        label: "Go as a spectator",
+        detail: "$5 · happiness +4",
+        cost: 5,
+        happiness: 4,
+      },
+      { label: "Stay home", detail: "Energy +4 · no cost", energy: 4 },
+    ],
+  },
+  {
+    title: "Your first creative audience",
+    tag: "School & creativity",
+    text: "The school showcase is looking for songs, performances, and short films.",
+    options: [
+      {
+        label: "Share something you made",
+        detail: "Charisma +2 · energy −2",
+        charisma: 2,
+        energy: -2,
+      },
+      {
+        label: "Help behind the scenes",
+        detail: "Charisma +1 · happiness +3",
+        charisma: 1,
+        happiness: 3,
+      },
+      { label: "Keep practising privately", detail: "Energy +3", energy: 3 },
+    ],
+  },
+  {
+    title: "A coach’s honest feedback",
+    tag: "Development",
+    text: "Your coach says consistency matters more than a single good performance.",
+    options: [
+      {
+        label: "Listen and make a plan",
+        detail: "Sport discipline +2 · energy −2",
+        discipline: 2,
+        energy: -2,
+      },
+      { label: "Take a recovery evening", detail: "Energy +6", energy: 6 },
+      {
+        label: "Ask a teammate for advice",
+        detail: "Connection +3 · charisma +1",
+        bond: 3,
+        charisma: 1,
+      },
+    ],
+  },
+  {
+    title: "A borrowed set of boots",
+    tag: "School football",
+    text: "A relative has outgrown a pair of matchday boots and offers them to you.",
+    options: [
+      {
+        label: "Accept the boots",
+        detail: "Football boots if you do not already own them",
+        item: "boots",
+      },
+      {
+        label: "Let another player have them",
+        detail: "Connection +4 · happiness +3",
+        bond: 4,
+        happiness: 3,
+      },
+      { label: "Keep your current kit", detail: "Energy +2", energy: 2 },
+    ],
+  },
+  {
+    title: "An evening with classmates",
+    tag: "School friendships",
+    text: "Your classmates suggest a low-cost evening together after a demanding school week.",
+    options: [
+      {
+        label: "Join them",
+        detail: "$15 · connection +5 · happiness +5",
+        cost: 15,
+        bond: 5,
+        happiness: 5,
+      },
+      {
+        label: "Practise your hobby",
+        detail: "Charisma +1 · energy −2",
+        charisma: 1,
+        energy: -2,
+      },
+      { label: "Get an early night", detail: "Energy +8", energy: 8 },
+    ],
+  },
+];
 const EVENTS = [
   {
     title: "An evening worth saying yes to",
@@ -1040,6 +1232,17 @@ export function resolveEvent(state, index) {
     s.skills.charisma = clamp(s.skills.charisma + option.charisma);
   if (option.bond)
     s.relationships[0].bond = clamp(s.relationships[0].bond + option.bond);
+  if (option.grade && s.school.enrolled)
+    s.school.grade = clamp(s.school.grade + option.grade);
+  if (option.discipline) {
+    if (!["none", "retired"].includes(s.football.stage))
+      s.football.discipline = clamp(s.football.discipline + option.discipline);
+    for (const p of Object.values(s.sports))
+      if (!["none", "retired"].includes(p.stage))
+        p.discipline = clamp(p.discipline + option.discipline);
+  }
+  if (option.item && !s.inventory.includes(option.item))
+    s.inventory.push(option.item);
   if (option.gamble) {
     const won = random(s) > 0.5;
     s.money += won ? 600 : -200;
@@ -1066,7 +1269,7 @@ export function advanceWeek(state) {
   if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
   const income = salary(s),
-    costs = expenses(s, { education: false });
+    costs = expenses(s, { education: false, sports: false });
   if (s.career === "business" && s.company) s.company.cash -= income;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.money += income - costs;
@@ -1125,7 +1328,26 @@ export function advanceWeek(state) {
         );
     }
   }
+  for (const i of SHOP.filter((i) => s.inventory.includes(i.id))) {
+    const fx = i.effects || {};
+    if (s.activity === "study") {
+      s.skills.business = clamp(s.skills.business + (fx.studyBusiness || 0));
+      s.skills.finance = clamp(s.skills.finance + (fx.studyFinance || 0));
+    }
+    if (s.activity === "train") {
+      s.skills.athletics = clamp(s.skills.athletics + (fx.trainAthletics || 0));
+      s.skills.driving = clamp(s.skills.driving + (fx.trainDriving || 0));
+      s.health = clamp(s.health + (fx.trainHealth || 0));
+    }
+    if (s.activity === "rest") {
+      s.energy = clamp(s.energy + (fx.restEnergy || 0));
+      s.happiness = clamp(s.happiness + (fx.restHappiness || 0));
+    }
+    if (s.activity === "social")
+      s.skills.charisma = clamp(s.skills.charisma + (fx.socialCharisma || 0));
+  }
   const paidTuition = advanceWorld(s);
+  advanceLife(s);
   for (const m of MARKETS) {
     s.marketHistory[m.id].push(s.market[m.id]);
     s.marketHistory[m.id] = s.marketHistory[m.id].slice(-24);
@@ -1141,8 +1363,10 @@ export function advanceWeek(state) {
     `Week ${s.week}: $${income.toLocaleString("en-US")} earned · $${costs.toLocaleString("en-US")} living costs${paidTuition ? ` · $${paidTuition} tuition` : ""}.`,
     income >= costs ? "positive" : "warning",
   );
-  if (s.week % 2 === 0)
-    s.event = clone(EVENTS[Math.floor(random(s) * EVENTS.length)]);
+  if (s.week % 2 === 0) {
+    const choices = age(s) < 18 ? YOUTH_EVENTS : EVENTS;
+    s.event = clone(choices[Math.floor(random(s) * choices.length)]);
+  }
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
   s.history = s.history.slice(-52);
   if (age(s) >= 90 || s.health <= 0) {
@@ -1162,10 +1386,10 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, VERSION].includes(s.version) ||
+    ![1, 2, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
-    !number(s.startAge, 18, 60) ||
+    !number(s.startAge, 12, 60) ||
     !number(s.week, 0) ||
     !Number.isInteger(s.week) ||
     !number(s.money) ||
@@ -1179,6 +1403,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsLife = s.version < 3;
   const legacy = s.version === 1;
   if (legacy) {
     const oldLevel = s.progress?.[s.career]?.level;
@@ -1209,6 +1434,13 @@ export function restoreGame(raw) {
     if (!number(s[k], 0, 100)) throw new Error("Invalid character stats.");
   for (const k of ["athletics", "driving", "business", "finance", "charisma"])
     if (!number(s.skills?.[k], 0, 100)) throw new Error("Invalid skills.");
+  if (needsLife) {
+    for (const k of Object.keys(CAREERS))
+      if (!s.progress[k])
+        s.progress[k] = { level: 0, weeks: 0, unlocked: false };
+    initializeLife(s, { legacy: true });
+    s.version = VERSION;
+  }
   for (const k of Object.keys(CAREERS))
     if (
       !number(s.progress?.[k]?.level, 0, 4) ||
@@ -1298,8 +1530,11 @@ export function restoreGame(raw) {
   )
     throw new Error("Invalid legacy ownership in current save.");
   validateWorld(s);
+  validateLife(s);
   if (s.event !== null) {
-    const match = EVENTS.find((e) => e.title === s.event?.title);
+    const match = [...EVENTS, ...YOUTH_EVENTS].find(
+      (e) => e.title === s.event?.title,
+    );
     if (!match) throw new Error("Invalid life choice.");
     s.event = clone(match);
   }

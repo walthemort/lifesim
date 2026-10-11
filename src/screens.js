@@ -11,6 +11,8 @@ import {
   stakePercent,
   meetingFee,
   positionName,
+  isSportingJob,
+  age,
 } from "./engine.js";
 
 export function workScreen(s, u) {
@@ -19,7 +21,8 @@ export function workScreen(s, u) {
     j = p ? jobDefinition(p.jobId) : null,
     course = s.education.active,
     study = course ? PROGRAMS.find((c) => c.id === course.programId) : null;
-  const contract = `<section class="panel wide-panel">${panelHeading("Your working life", "Contracts, performance, and opportunities.", tag(p ? "Employed" : s.company ? "Self-employed" : "Seeking work", p ? "green" : "blue"))}<div class="current-career"><span class="feature-icon blue">${icon("briefcase")}</span><div><h3>${e(positionName(s))}</h3><p>${j ? e(j.employer) : s.company ? e(s.company.name) : "Applications are open. Qualifications and experience count."}</p></div></div>${p ? `<div class="company-numbers"><div><span>Contracted pay</span><strong>${money(p.weeklyPay)}/wk</strong></div><div><span>Sustained performance</span><strong>${p.performance} / 100</strong></div><div><span>Time in this job</span><strong>${p.tenure} weeks</strong></div></div><div class="inline-actions"><button class="button primary" data-action="raise" ${s.week < p.nextRaiseWeek || !s.actions ? "disabled" : ""}>Discuss a raise ${icon("arrow")}</button><button class="button secondary" data-action="resign">Hand in resignation</button><span class="muted">${s.week < p.nextRaiseWeek ? `Next salary discussion in ${p.nextRaiseWeek - s.week} weeks.` : "A discussion uses one free-time action; approval depends on performance and pay band."}</span></div><p class="muted">Good work can earn a 3% annual merit increase. A requested raise can be refused; the next discussion is 26 weeks later. There are no automatic promotions into another role.</p>` : `<div class="info-banner">${icon("coin")}<span>${s.company ? "Founder drawings depend on actual profit and cash." : "You have no employment income."} A new job starts only when you accept an offer. You can apply while employed.</span></div>`}</section>`;
+  const sporting = p && isSportingJob(j);
+  const contract = `<section class="panel wide-panel">${panelHeading("Your working life", "Contracts, performance, and opportunities.", tag(p ? "Employed" : s.company ? "Self-employed" : "Seeking work", p ? "green" : "blue"))}<div class="current-career"><span class="feature-icon blue">${icon("briefcase")}</span><div><h3>${e(positionName(s))}</h3><p>${j ? e(j.employer) : s.company ? e(s.company.name) : "Applications are open. Qualifications and experience count."}</p></div></div>${p ? `<div class="company-numbers"><div><span>Contracted pay</span><strong>${money(p.weeklyPay)}/wk</strong></div><div><span>Sustained performance</span><strong>${p.performance} / 100</strong></div><div><span>Time in this job</span><strong>${p.tenure} weeks</strong></div></div><div class="inline-actions"><button class="button primary" data-action="raise" ${sporting || s.week < p.nextRaiseWeek || !s.actions ? "disabled" : ""}>Discuss a raise ${icon("arrow")}</button><button class="button secondary" data-action="resign">Hand in resignation</button><span class="muted">${sporting ? "Sporting pay changes through club or sponsor contract offers." : s.week < p.nextRaiseWeek ? `Next salary discussion in ${p.nextRaiseWeek - s.week} weeks.` : "A discussion uses one free-time action; approval depends on performance and pay band."}</span></div><p class="muted">${sporting ? "Develop your sporting career and review club offers in Sport & development." : "Good work can earn a 3% annual merit increase. A requested raise can be refused; the next discussion is 26 weeks later. New roles require successful recruitment."}</p>` : `<div class="info-banner">${icon("coin")}<span>${s.company ? "Founder drawings depend on actual profit and cash." : "You have no employment income."} A new job starts only when you accept an offer. You can apply while employed.</span></div>`}</section>`;
   const applications = `<section class="panel wide-panel">${panelHeading("Your applications", "Employers respond after two weeks; offers expire after four.")}<div class="application-list">${
     s.applications.length
       ? s.applications
@@ -37,6 +40,7 @@ export function workScreen(s, u) {
     (c) => {
       const held = s.education.completed.includes(c.id),
         requirements = [
+          c.minAge && age(s) < c.minAge ? `Age ${c.minAge}+` : "",
           c.requires && !s.education.completed.includes(c.requires)
             ? qualificationName(c.requires)
             : "",
