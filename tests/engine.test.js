@@ -7,7 +7,6 @@ import {
   resolveEvent,
   setActivity,
   chooseCareer,
-  salary,
   expenses,
   portfolioValue,
   netWorth,
@@ -16,10 +15,7 @@ import {
   invest,
   connect,
   meet,
-  setTeamStrategy,
-  configureCompany,
   age,
-  CAREERS,
 } from "../src/engine.js";
 
 const fresh = (options) => createGame({ seed: 42, ...options });
@@ -28,106 +24,6 @@ function next(s) {
   return advanceWeek(s);
 }
 
-test("character creation applies personality, career cost, and selected city", () => {
-  const s = fresh({
-    name: "  Jamie  ",
-    age: 24,
-    city: "Copenhagen",
-    trait: "Athletic",
-    career: "racing",
-  });
-  assert.equal(s.name, "Jamie");
-  assert.equal(age(s), 24);
-  assert.equal(s.city, "Copenhagen");
-  assert.equal(s.skills.athletics, 25);
-  assert.equal(s.money, 11000);
-  assert.equal(s.career, "racing");
-});
-test("a week earns salary, pays expenses, progresses skills, and never mutates the original", () => {
-  const s = fresh(),
-    original = structuredClone(s),
-    result = advanceWeek(s);
-  assert.equal(result.money, 12500 + 650 - 280);
-  assert.equal(result.week, 1);
-  assert.equal(result.skills.business, s.skills.business + 2);
-  assert.equal(result.progress.office.weeks, 1);
-  assert.equal(result.actions, 3);
-  assert.deepEqual(s, original);
-});
-test("career promotion requires both skill and enough weeks", () => {
-  let s = setActivity(fresh(), "focus");
-  for (let i = 0; i < 11; i++) s = next(s);
-  assert.equal(s.progress.office.level, 0);
-  s = next(s);
-  assert.equal(s.progress.office.level, 1);
-  assert.equal(salary(s), 1050);
-  s = fresh();
-  s.progress.office.weeks = 20;
-  s.skills.business = 5;
-  s = advanceWeek(s);
-  assert.equal(s.progress.office.level, 0);
-});
-test("each career can advance through all five tiers", () => {
-  for (const career of Object.keys(CAREERS)) {
-    let s = fresh({ career });
-    s.skills[CAREERS[career].skill] = 100;
-    s.energy = 100;
-    s = setActivity(s, "rest");
-    for (let i = 0; i < 48; i++) s = next(s);
-    assert.equal(s.progress[career].level, 4, career);
-    assert.equal(salary(s), CAREERS[career].pay[4]);
-  }
-});
-test("career switching keeps existing experience and refuses unaffordable entry", () => {
-  let s = next(fresh());
-  s = chooseCareer(s, "football");
-  assert.equal(s.progress.office.weeks, 1);
-  s = chooseCareer(s, "office");
-  assert.equal(s.progress.office.weeks, 1);
-  s.money = 0;
-  assert.throws(() => chooseCareer(s, "racing"), /more savings/);
-});
-test("a paid career remains unlocked even before its first week", () => {
-  let s = chooseCareer(fresh(), "racing");
-  const balance = s.money;
-  s = chooseCareer(s, "office");
-  s = chooseCareer(s, "racing");
-  assert.equal(s.money, balance);
-});
-test("company setup, strategy, valuation, and career switching work together", () => {
-  let s = fresh({ career: "business" });
-  assert.equal(s.company.value, 2500);
-  assert.equal(netWorth(s), 12500);
-  s = configureCompany(s, {
-    name: "Northstar Labs",
-    sector: "Clean energy",
-    strategy: "reinvest",
-  });
-  assert.equal(salary(s), 98);
-  const grown = next(s);
-  assert.notEqual(grown.company.value, s.company.value);
-  assert.equal(grown.company.name, "Northstar Labs");
-  const paused = next(chooseCareer(grown, "office"));
-  assert.equal(paused.company.value, grown.company.value);
-  assert.deepEqual(restoreGame(paused), paused);
-  assert.throws(
-    () =>
-      configureCompany(s, {
-        name: "",
-        sector: "Clean energy",
-        strategy: "reinvest",
-      }),
-    /name/,
-  );
-});
-test("reinvestment grows a company faster than taking income on the same seed", () => {
-  const s = fresh({ career: "business" }),
-    options = { name: "Future Co", sector: "Technology" };
-  const a = next(configureCompany(s, { ...options, strategy: "reinvest" })),
-    b = next(configureCompany(s, { ...options, strategy: "dividends" }));
-  assert.ok(a.company.value > b.company.value);
-  assert.ok(a.money < b.money);
-});
 test("events block time until resolved and costs are enforced", () => {
   let s = next(next(fresh()));
   assert.ok(s.event);
@@ -223,28 +119,6 @@ test("new relationships can become partners and spouses but require connection",
   assert.throws(() => connect(s, other.id, true), /already in a relationship/);
   assert.throws(() => connect(s, "jordan", true), /not a romantic/);
 });
-test("club ownership creates a working weekly management simulation and can be sold", () => {
-  let s = fresh();
-  s.money = 1000000;
-  s = buy(s, "football-team");
-  s = setTeamStrategy(s, "development");
-  const result = next(s);
-  assert.equal(result.teams["football-team"].rating, 23);
-  assert.equal(result.teams["football-team"].races, 1);
-  assert.ok(Number.isFinite(result.teams["football-team"].profit));
-  s = sellItem(result, "football-team");
-  assert.equal(s.teams["football-team"], undefined);
-  assert.equal(expenses(s), 280);
-});
-test("commercial team strategy increases revenue compared with balanced on same seed", () => {
-  let s = fresh();
-  s.money = 300000000;
-  s = buy(s, "f1-team");
-  const a = next(s),
-    b = next(setTeamStrategy(s, "commercial"));
-  assert.ok(b.teams["f1-team"].profit > a.teams["f1-team"].profit);
-  assert.equal(b.teams["f1-team"].races, 1);
-});
 test("rest recovers energy and low energy harms health during demanding work", () => {
   let s = fresh();
   s.energy = 10;
@@ -254,14 +128,6 @@ test("rest recovers energy and low energy harms health during demanding work", (
   assert.ok(resting.health > working.health);
   assert.equal(resting.energy, 28);
   assert.equal(working.energy, 2);
-});
-test("negative balances incur debt interest and remain recoverable through income", () => {
-  const s = fresh();
-  s.money = -1000;
-  assert.equal(expenses(s), 285);
-  const result = next(s);
-  assert.equal(result.money, -635);
-  assert.ok(result.log.some((l) => l.kind === "warning"));
 });
 test("saves round trip including investments, choices, inventory, and relationships", () => {
   let s = invest(fresh(), "index", 4);

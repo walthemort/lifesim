@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "name": "Legacy Player",
+  "startAge": 18,
+  "city": "London",
+  "trait": "Ambitious",
+  "career": "office",
+  "week": 0,
+  "money": 1241150,
+  "health": 85,
+  "energy": 80,
+  "happiness": 85,
+  "skills": {
+    "athletics": 15,
+    "driving": 12,
+    "business": 28,
+    "finance": 12,
+    "charisma": 20
+  },
+  "progress": {
+    "office": {
+      "level": 2,
+      "weeks": 200,
+      "unlocked": true
+    },
+    "football": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "racing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "business": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "investor": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    }
+  },
+  "market": {
+    "index": 120,
+    "tech": 85,
+    "energy": 42,
+    "crypto": 250
+  },
+  "marketHistory": {
+    "index": [120],
+    "tech": [85],
+    "energy": [42],
+    "crypto": [250]
+  },
+  "holdings": {
+    "index": 0,
+    "tech": 100,
+    "energy": 0,
+    "crypto": 0
+  },
+  "inventory": ["football-team", "watch"],
+  "relationships": [
+    {
+      "id": "sam",
+      "name": "Sam Taylor",
+      "role": "Best friend",
+      "bond": 72,
+      "icon": "ST",
+      "color": "purple"
+    },
+    {
+      "id": "jordan",
+      "name": "Jordan Morgan",
+      "role": "Sibling",
+      "bond": 85,
+      "icon": "JM",
+      "color": "orange"
+    }
+  ],
+  "activity": "balanced",
+  "actions": 3,
+  "seed": 42,
+  "event": null,
+  "log": [
+    {
+      "week": 0,
+      "text": "Bought 100 units of HRZN.",
+      "kind": "info"
+    },
+    {
+      "week": 0,
+      "text": "Purchased the everyday watch.",
+      "kind": "milestone"
+    },
+    {
+      "week": 0,
+      "text": "Purchased local football club.",
+      "kind": "milestone"
+    },
+    {
+      "week": 0,
+      "text": "Started a new chapter in the 9–5.",
+      "kind": "milestone"
+    },
+    {
+      "week": 0,
+      "text": "Started a new chapter in entrepreneur.",
+      "kind": "milestone"
+    },
+    {
+      "week": 0,
+      "text": "A new chapter begins. Your future is yours to shape.",
+      "kind": "milestone"
+    }
+  ],
+  "history": [
+    {
+      "week": 0,
+      "value": 12500
+    }
+  ],
+  "teamStrategy": "balanced",
+  "teams": {
+    "football-team": {
+      "rating": 20,
+      "wins": 0,
+      "races": 0,
+      "profit": 0
+    }
+  },
+  "company": {
+    "name": "Legacy Ventures",
+    "sector": "Technology",
+    "strategy": "balanced",
+    "value": 2500,
+    "employees": 1
+  },
+  "ended": false
+}

@@ -13,8 +13,6 @@ import {
   expenses,
   portfolioValue,
   netWorth,
-  careerLevel,
-  chooseCareer,
   setActivity,
   advanceWeek,
   resolveEvent,
@@ -23,9 +21,36 @@ import {
   sellItem,
   connect,
   meet,
-  setTeamStrategy,
   configureCompany,
+  positionName,
+  PROGRAMS,
+  BUSINESSES,
+  COLLECTIBLES,
+  jobDefinition,
+  qualificationName,
+  availableCash,
+  reservedCash,
+  assetValue,
+  stakePercent,
+  meetingFee,
+  applyForJob,
+  acceptJobOffer,
+  requestRaise,
+  resignJob,
+  enrolEducation,
+  withdrawEducation,
+  foundCompany,
+  requestBoardMeeting,
+  submitAcquisitionOffer,
+  completeAcquisition,
+  cancelOffer,
+  acquireOpportunity,
+  setBusinessStrategy,
+  injectCapital,
+  buyCollectible,
+  consignCollectible,
 } from "./engine.js";
+import { workScreen, ownershipScreen, collectiblesScreen } from "./screens.js";
 
 const icons = {
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -83,6 +108,17 @@ const money = (value, decimals = 0) =>
     currency: "USD",
     maximumFractionDigits: decimals,
   }).format(value);
+const compactMoney = (value) =>
+  Math.abs(value) >= 1e6
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+        maximumFractionDigits: 2,
+      }).format(value)
+    : money(value);
+const percent = (value) =>
+  value === 0 ? "0%" : `${value.toFixed(value < 0.01 ? 6 : 3)}%`;
 const initials = (name) =>
   name
     .split(" ")
@@ -96,12 +132,18 @@ let state,
   view = "overview",
   storageWarning = "",
   recoverySave = "",
+  migrationSave = "",
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
+  migrationSave = localStorage.getItem(`${STORAGE}-before-v2`) || "";
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
+    if (saved && JSON.parse(saved).version === 1 && !migrationSave) {
+      migrationSave = saved;
+      localStorage.setItem(`${STORAGE}-before-v2`, saved);
+    }
   } catch {
     recoverySave = saved;
     localStorage.setItem(`${STORAGE}-recovery`, saved);
@@ -174,11 +216,11 @@ function sparkline(values, color = "#62dda6", filled = false) {
 }
 const nav = [
   ["overview", "grid", "Overview"],
-  ["career", "briefcase", "Career paths"],
+  ["career", "briefcase", "Work & education"],
   ["relationships", "users", "Relationships"],
   ["investments", "chart", "Investments"],
   ["lifestyle", "bag", "Lifestyle & shopping"],
-  ["teams", "trophy", "Team ownership"],
+  ["teams", "trophy", "Businesses & clubs"],
 ];
 function sidebar() {
   return `<aside class="sidebar"><a class="brand" href="#overview" aria-label="Lifesim overview"><span class="brand-mark">l<span>.</span></span><span>lifesim<span class="brand-dot">.</span></span></a><div class="save-label"><span class="live-dot"></span> YOUR LIFE, IN PLAY</div><div class="nav-label">YOUR WORLD</div><nav aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="nav-item ${view === id ? "active" : ""}" data-view="${id}" aria-label="${e(label)}" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span>${id === "overview" ? '<span class="nav-active-dot"></span>' : ""}</button>`).join("")}</nav><div class="sidebar-bottom"><div class="chapter-box">${icon("spark")}<strong>One life. Endless possibilities.</strong><p>There’s no right way to live.<br>Find yours.</p></div><button class="nav-item" data-action="settings" aria-label="Save & settings">${icon("settings")}<span>Save & settings</span></button><button class="profile" data-action="character" aria-label="View your character"><span class="avatar">${e(initials(state.name))}</span><span><strong>${e(state.name)}</strong><small>${age(state)} years · ${e(state.city)}</small></span>${icon("chevronDown")}</button></div></aside>`;
@@ -192,14 +234,14 @@ function stats() {
     [
       "coin",
       "Available cash",
-      money(state.money),
-      `${salary(state) - expenses(state) >= 0 ? "+" : ""}${money(salary(state) - expenses(state))} / week before investments`,
+      compactMoney(availableCash(state)),
+      `${salary(state) - expenses(state) >= 0 ? "+" : ""}${money(salary(state) - expenses(state))} / week before investment income`,
       "green",
     ],
     [
       "chart",
       "Net worth",
-      money(netWorth(state)),
+      compactMoney(netWorth(state)),
       `${money(portfolioValue(state))} invested`,
       "blue",
     ],
@@ -234,10 +276,7 @@ function scene() {
   return `<div class="city-scene" aria-hidden="true"><div class="sun"></div><div class="city-back"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="city-front"><i></i><i></i><i></i><i></i><i></i></div><div class="scene-ground"></div><div class="scene-caption">THE WORLD IS YOURS</div></div>`;
 }
 function overview() {
-  const c = CAREERS[state.career],
-    level = careerLevel(state),
-    next = c.roles[level + 1];
-  return `${title("THE BIG PICTURE", `A life of your own<span class="heading-dot">.</span>`, `Welcome back, ${e(state.name.split(" ")[0])}. Every small choice is part of a bigger story.`, `<button class="button secondary" data-action="character">${icon("users")} Your character</button>`)}${stats()}<div class="dashboard-grid"><div class="dashboard-main"><section class="chapter-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> CHAPTER ${Math.floor(state.week / 52) + 1} · THE BEGINNING</div><h2>Your next chapter<br>is unwritten.</h2><p>A career to build. People to meet.<br>A whole world of possibilities.</p><button class="button hero-button" data-view="career">Explore your paths ${icon("arrow")}</button></div>${scene()}</section><section class="panel career-panel">${panelHeading("Your career", "Where ambition meets the everyday.", `<button class="text-button" data-view="career">View career ${icon("arrow")}</button>`)}<div class="current-career"><span class="feature-icon ${c.color}">${icon(c.icon)}</span><div><span class="eyebrow">${e(c.name)} · LEVEL ${level + 1}</span><h3>${e(c.roles[level])}</h3><p>${money(salary(state))} / week <span>·</span> ${state.progress[state.career].weeks} weeks of experience</p></div>${tag("Active path", c.color)}</div><div class="career-progress"><div><span>${next ? `Next: ${e(next)}` : "At the top of your field"}</span><strong>${Math.round(state.skills[c.skill])}<small> / ${[0, 25, 45, 65, 85][Math.min(4, level + 1)]} skill</small></strong></div>${meter(next ? (state.skills[c.skill] / [0, 25, 45, 65, 85][level + 1]) * 100 : 100, c.color)}<small>${next ? `Reach the skill target and ${(level + 1) * 12} total weeks on this path to progress.` : "You made it. What will you do with the possibilities?"}</small></div></section><section class="panel">${panelHeading("This week’s focus", "You decide what deserves your time.", tag("Weekly plan", "blue"))}<div class="focus-grid">${Object.entries(
+  return `${title("THE BIG PICTURE", `A life of your own<span class="heading-dot">.</span>`, `Welcome back, ${e(state.name.split(" ")[0])}. Every small choice is part of a bigger story.`, `<button class="button secondary" data-action="character">${icon("users")} Your character</button>`)}${stats()}<div class="dashboard-grid"><div class="dashboard-main"><section class="chapter-hero"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> CHAPTER ${Math.floor(state.week / 52) + 1} · ${age(state) < 25 ? "FINDING YOUR FEET" : age(state) < 40 ? "MAKING YOUR MARK" : age(state) < 60 ? "BUILDING YOUR LEGACY" : "LIFE ON YOUR TERMS"}</div><h2>Your next chapter<br>is unwritten.</h2><p>A career to build. People to meet.<br>A whole world of possibilities.</p><button class="button hero-button" data-view="career">Explore work & education ${icon("arrow")}</button></div>${scene()}</section>${workingOverview()}<section class="panel">${panelHeading("This week’s focus", "You decide what deserves your time.", tag("Weekly plan", "blue"))}<div class="focus-grid">${Object.entries(
     ACTIVITIES,
   )
     .map(
@@ -259,7 +298,7 @@ function overview() {
     .map((r) => personRow(r))
     .join(
       "",
-    )}<div class="panel-footnote">${icon("users")} ${state.actions} free-time actions left this week</div></section><section class="panel wealth-panel">${panelHeading("Building your future", "Net worth over time", icon("chart"))}<strong class="wealth-value">${money(netWorth(state))}</strong>${sparkline(
+    )}<div class="panel-footnote">${icon("users")} ${state.actions} free-time actions left this week</div></section><section class="panel wealth-panel">${panelHeading("Building your future", "Net worth over time", icon("chart"))}<strong class="wealth-value">${compactMoney(netWorth(state))}</strong>${sparkline(
     state.history.map((h) => h.value),
     "#62dda6",
     true,
@@ -268,38 +307,33 @@ function overview() {
 function personRow(r) {
   return `<div class="person-row"><span class="avatar small ${e(r.color)}">${e(r.icon)}</span><div><strong>${e(r.name)}</strong><small>${e(r.role)}</small></div><div class="bond"><span>${Math.round(r.bond)}<small>%</small></span>${meter(r.bond, r.color)}</div></div>`;
 }
-function companyPanel() {
-  const c = state.company;
-  if (!c) return "";
-  return `<section class="panel company-panel">${panelHeading("Your company", "A business you can make your own.", tag(state.career === "business" ? "Operating" : "Paused", "purple"))}<div class="company-top"><span class="feature-icon purple">${icon("rocket")}</span><div><span class="eyebrow">${e(c.sector)}</span><h3>${e(c.name)}</h3></div><button class="button secondary" data-action="company">Manage company ${icon("arrow")}</button></div><div class="company-numbers"><div><span>Company valuation</span><strong>${money(c.value)}</strong></div><div><span>Employees</span><strong>${c.employees.toLocaleString("en-US")}</strong></div><div><span>Strategy</span><strong>${c.strategy === "reinvest" ? "Reinvest" : c.strategy === "dividends" ? "Take income" : "Balanced"}</strong></div></div><p class="muted">Reinvesting trades 35% of your weekly founder income for faster growth. Taking income pays 20% more and slows growth. Company value counts toward your net worth, but is not spendable cash. Growth pauses while you work another career.</p></section>`;
+function ui() {
+  return { title, panelHeading, tag, icon, meter, money, e, percent };
+}
+function workingOverview() {
+  const p = state.employment,
+    c = CAREERS[state.career];
+  const offers = state.applications.filter((a) => a.status === "offer").length;
+  return `<section class="panel career-panel">${panelHeading("Your working life", "Qualifications, opportunities, and the work you put in.", `<button class="text-button" data-view="career">Find work ${icon("arrow")}</button>`)}<div class="current-career"><span class="feature-icon ${c.color}">${icon(c.icon)}</span><div><span class="eyebrow">${p ? e(jobDefinition(p.jobId).employer) : state.company ? "SELF-EMPLOYED" : "OPEN TO OPPORTUNITIES"}</span><h3>${e(positionName(state))}</h3><p>${money(salary(state))} / week${p ? ` · ${p.tenure} weeks in this role` : ""}</p></div></div><div class="career-progress"><div><span>${p ? "Sustained job performance" : state.education.active ? "Your current studies" : "Applications do not change your job until you accept an offer"}</span>${p ? `<strong>${p.performance} / 100</strong>` : ""}</div>${p ? meter(p.performance, c.color) : ""}<small>${offers ? `${offers} job offer(s) waiting on the work screen.` : state.education.active ? e(qualificationName(state.education.active.programId)) : "Study, train, or build relevant experience to meet vacancy requirements."}</small></div>${state.vacancies.some((v) => v.exceptional) ? `<div class="opportunity-note">${icon("spark")} A contact has opened an unusual job opportunity. Check the job board before it closes.</div>` : ""}</section>`;
 }
 function careerView() {
-  const c = CAREERS[state.career],
-    p = state.progress[state.career];
-  return `${title("CHOOSE YOUR DIRECTION", "There’s more than one way up.", "Build a career, change direction, or start over. Your experience stays with you.")}<section class="panel wide-panel">${panelHeading("Your active career", "", tag(`Level ${p.level + 1}`, c.color))}<div class="current-career"><span class="feature-icon ${c.color}">${icon(c.icon)}</span><div><h3>${e(c.roles[p.level])}</h3><p>${money(salary(state))} / week · ${p.weeks} weeks on this path</p></div></div><div class="career-ladder">${c.roles.map((r, i) => `<div class="ladder-step ${i <= p.level ? "reached" : ""}"><span>${i < p.level ? icon("check") : i + 1}</span><strong>${e(r)}</strong><small>${money(c.pay[i])}/week</small><small>${[0, 25, 45, 65, 85][i]} skill · ${i * 12} weeks</small></div>`).join("")}</div><p class="muted">Progress requires both skill and experience. Choose your weekly focus on the overview to develop ${e(c.skill)}.</p></section>${companyPanel()}<div class="section-title"><h2>A world of possibilities</h2><span>5 career paths · one shared life</span></div><div class="career-grid">${Object.entries(
-    CAREERS,
-  )
-    .map(
-      ([id, path]) =>
-        `<section class="panel path-card ${state.career === id ? "path-active" : ""}"><span class="feature-icon ${path.color}">${icon(path.icon)}</span>${state.career === id ? tag("Your current path", path.color) : ""}<h2>${path.name}</h2><p>${path.subtitle}</p><div class="path-meta"><span>Starting income <strong>${money(path.pay[state.progress[id].level])}/wk</strong></span><span>Entry cost <strong>${state.progress[id].unlocked ? "Already unlocked" : path.entry ? money(path.entry) : "Free"}</strong></span><span>Develops <strong>${path.skill}</strong></span></div><button class="button ${state.career === id ? "secondary" : "primary"} full-width" data-action="career" data-id="${id}" ${state.career === id ? "disabled" : ""}>${state.career === id ? "Currently active" : "Explore this path"} ${icon("arrow")}</button></section>`,
-    )
-    .join("")}</div>`;
+  return workScreen(state, ui());
 }
 function relationshipsView() {
   return `${title("THE PEOPLE THAT MATTER", "A life is better shared.", "Friendships, family, and a connection that might become something more.", `<button class="button primary" data-action="meet">${icon("users")} Meet someone</button>`)}<div class="info-banner">${icon("calendar")}<span>You have <strong>${state.actions} free-time actions</strong> this week. Connections fade a little without attention; a social focus helps the whole circle.</span></div><div class="relationship-grid">${state.relationships.map((r) => `<section class="panel relationship-card"><span class="avatar large ${e(r.color)}">${e(r.icon)}</span><h2>${e(r.name)}</h2>${tag(r.role, r.color)}<div class="relationship-meter"><span>Connection</span><strong>${Math.round(r.bond)} / 100</strong></div>${meter(r.bond, r.color)}<p>${r.bond >= 75 ? "A strong connection, built on the time you share." : r.bond >= 40 ? "Getting closer, one conversation at a time." : "Every meaningful relationship starts somewhere."}</p><button class="button secondary full-width" data-action="connect" data-id="${e(r.id)}" ${!state.actions ? "disabled" : ""}>Spend time together <span>$25</span></button>${!["Sibling", "Best friend", "Spouse"].includes(r.role) ? `<button class="text-button date-button" data-action="date" data-id="${e(r.id)}" ${r.bond < 60 || !state.actions ? "disabled" : ""}>${icon("heart")} ${r.role === "Partner" && r.bond >= 90 ? "Propose" : r.role === "Partner" ? "Plan a date" : "Ask on a date"} · $90</button>` : ""}</section>`).join("")}</div>`;
 }
 function investmentsView() {
   const holdings = portfolioValue(state);
-  return `${title("PLAY THE LONG GAME", "Make your future grow.", "Simulated markets move every week. Returns are uncertain; only invest what you can spare.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">AVAILABLE CASH</span><h2>${money(state.money)}</h2><p>${money(salary(state))} income − ${money(expenses(state))} costs / week</p></section><section class="panel"><span class="eyebrow">INVESTED CAPITAL</span><h2>${money(holdings)}</h2><p>${MARKETS.reduce((n, m) => n + state.holdings[m.id], 0)} units across your portfolio</p></section><section class="panel"><span class="eyebrow">TOTAL NET WORTH</span><h2>${money(netWorth(state))}</h2><p>Cash + investments + company + resale value of possessions</p></section></div><section class="panel">${panelHeading("The market", "Fictional assets · prices update when you advance a week", tag("Live in your world", "green"))}<div class="market-table"><div class="market-row market-head"><span>ASSET</span><span>PRICE</span><span>24-WEEK TREND</span><span>YOU OWN</span><span>TRADE</span></div>${MARKETS.map(
+  return `${title("PLAY THE LONG GAME", "Make your future grow.", "Simulated markets move every week. Returns are uncertain; only invest what you can spare.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">AVAILABLE CASH</span><h2>${money(availableCash(state))}</h2><p>${money(salary(state))} income − ${money(expenses(state))} costs / week</p></section><section class="panel"><span class="eyebrow">INVESTED CAPITAL</span><h2>${money(holdings)}</h2><p>${MARKETS.reduce((n, m) => n + state.holdings[m.id], 0)} units across your portfolio</p></section><section class="panel"><span class="eyebrow">TOTAL NET WORTH</span><h2>${money(netWorth(state))}</h2><p>Cash, shares, business equity, possessions & collectibles</p></section></div><section class="panel">${panelHeading("The market", "Fictional assets · prices update when you advance a week", tag("Live in your world", "green"))}<div class="market-table"><div class="market-row market-head"><span>ASSET</span><span>PRICE</span><span>24-WEEK TREND</span><span>YOU OWN</span><span>TRADE</span></div>${MARKETS.map(
     (m) => {
       const h = state.marketHistory[m.id],
         prev = h.at(-2) || m.price,
         change = (state.market[m.id] / prev - 1) * 100;
-      return `<div class="market-row"><div class="asset-name"><span class="asset-symbol ${m.color}">${m.symbol.slice(0, 2)}</span><div><strong>${m.name}</strong><small>${m.symbol} <span>· ${m.risk} risk</span></small></div></div><div><strong>${money(state.market[m.id], 2)}</strong><small class="${change >= 0 ? "positive" : "negative"}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</small></div><div class="mini-chart">${sparkline(h, change >= 0 ? "#62dda6" : "#ee927d")}</div><div><strong>${state.holdings[m.id]} units</strong><small>${money(state.holdings[m.id] * state.market[m.id])}</small></div><button class="button secondary" data-action="trade" data-id="${m.id}">Trade ${icon("arrow")}</button></div>`;
+      return `<div class="market-row"><div class="asset-name"><span class="asset-symbol ${m.color}">${m.symbol.slice(0, 2)}</span><div><strong>${m.name}</strong><small>${m.symbol} <span>· ${m.type} · ${m.risk} risk</span></small></div></div><div><strong>${money(state.market[m.id], 2)}</strong><small class="${change >= 0 ? "positive" : "negative"}">${change >= 0 ? "+" : ""}${change.toFixed(2)}%</small></div><div class="mini-chart">${sparkline(h, change >= 0 ? "#62dda6" : "#ee927d")}</div><div><strong>${state.holdings[m.id].toLocaleString("en-US", { maximumFractionDigits: 6 })} ${m.type === "Listed company" ? "shares" : "units"}</strong><small>${money(state.holdings[m.id] * state.market[m.id])}${BUSINESSES.some((b) => b.stock === m.id) ? ` · ${percent(stakePercent(state, BUSINESSES.find((b) => b.stock === m.id).id))} owned` : ""}</small></div><button class="button secondary" data-action="trade" data-id="${m.id}">Trade ${icon("arrow")}</button></div>`;
     },
   ).join(
     "",
-  )}</div></section><div class="info-banner">${icon("chart")}<span>Global funds are steadier. Individual stocks fluctuate more. Digital assets can swing sharply. This is a game economy, with no connection to real markets.</span></div>`;
+  )}</div></section><div class="info-banner">${icon("chart")}<span>Global funds are steadier. Individual stocks fluctuate more. Digital assets can swing sharply. Company share prices respond to trading profits as well as market conditions. Funds and profitable issuers can distribute quarterly income; crypto has no dividend. Large trades are limited by weekly liquidity.</span></div>${collectiblesScreen(state, ui())}`;
 }
 function lifestyleView() {
   return `${title("MAKE IT YOURS", "The things along the way.", "Build a life that feels like you, from your first watch to a place to call home.", tag(`${state.inventory.length} things owned`, "blue"))}<div class="shop-grid">${SHOP.filter(
@@ -307,21 +341,12 @@ function lifestyleView() {
   )
     .map(
       (i) =>
-        `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${i.category.toUpperCase()}</span>${state.inventory.includes(i.id) ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${i.category}</span><h2>${i.name}</h2><p>${i.description}</p><div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${state.inventory.includes(i.id) ? "secondary" : "primary"} full-width" data-action="${state.inventory.includes(i.id) ? "sell-item" : "buy"}" data-id="${i.id}" ${!state.inventory.includes(i.id) && state.money < i.price ? "disabled" : ""}>${state.inventory.includes(i.id) ? `Sell for ${money(i.price * 0.8)}` : state.money < i.price ? "Keep building your savings" : "Make it yours"} ${icon(state.inventory.includes(i.id) ? "arrow" : "bag")}</button></div></section>`,
+        `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${i.category.toUpperCase()}</span>${state.inventory.includes(i.id) ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${i.category}</span><h2>${i.name}</h2><p>${i.description}</p><div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${state.inventory.includes(i.id) ? "secondary" : "primary"} full-width" data-action="${state.inventory.includes(i.id) ? "sell-item" : "buy"}" data-id="${i.id}" ${!state.inventory.includes(i.id) && availableCash(state) < i.price ? "disabled" : ""}>${state.inventory.includes(i.id) ? `Sell for ${money(i.price * 0.8)}` : availableCash(state) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(state.inventory.includes(i.id) ? "arrow" : "bag")}</button></div></section>`,
     )
     .join("")}</div>`;
 }
 function teamsView() {
-  return `${title("FROM PLAYER TO OWNER", "Build a legacy beyond yourself.", "Your life can lead to the boardroom. Own a team and choose the direction it takes.")}<div class="career-grid two-columns">${SHOP.filter(
-    (i) => i.category === "Ownership",
-  )
-    .map((i) => {
-      const t = state.teams[i.id];
-      return `<section class="panel team-card"><div class="team-art ${i.color}">${icon(i.icon)}<span>${i.id === "f1-team" ? "THE NEXT ERA OF RACING" : "MORE THAN A CLUB"}</span></div><h2>${i.name}</h2><p>${i.description}</p>${t ? `<div class="team-stats"><div><strong>${Math.round(t.rating)}</strong><small>Team rating</small></div><div><strong>${t.wins} / ${t.races}</strong><small>Wins / outings</small></div><div><strong>${money(t.profit)}</strong><small>Last weekly profit</small></div></div><label class="field-label">Management strategy<select data-team-strategy><option value="balanced" ${state.teamStrategy === "balanced" ? "selected" : ""}>Balanced — results and stability</option><option value="development" ${state.teamStrategy === "development" ? "selected" : ""}>Development — faster team improvement</option><option value="commercial" ${state.teamStrategy === "commercial" ? "selected" : ""}>Commercial — higher sponsorship revenue</option></select></label><button class="text-button" data-action="sell-item" data-id="${i.id}">Sell team for ${money(i.price * 0.8)}</button>` : `<div class="path-meta"><span>Acquisition <strong>${money(i.price)}</strong></span><span>Weekly running cost <strong>${money(i.upkeep)}</strong></span></div><button class="button primary full-width" data-action="buy" data-id="${i.id}" ${state.money < i.price ? "disabled" : ""}>${state.money < i.price ? "Build your fortune to unlock" : "Buy this team"} ${icon("arrow")}</button>`}</section>`;
-    })
-    .join(
-      "",
-    )}</div><div class="info-banner">${icon("trophy")}<span>Ownership starts a simplified weekly management simulation. Development improves your team faster; commercial strategy increases revenue. Detailed squads, transfers, car development, and race tactics are future expansions.</span></div>`;
+  return ownershipScreen(state, ui());
 }
 const pages = {
   overview,
@@ -350,28 +375,26 @@ function characterDialog() {
 }
 function newGameDialog() {
   dialog(
-    `<div class="eyebrow">A NEW CHAPTER</div><h2>Who will you become?</h2><p>Start with $12,500, a little ambition, and a whole life ahead.</p><form id="character-form"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><div class="form-row"><label class="field-label">Starting age<input name="age" type="number" min="18" max="60" step="1" value="18" required></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label></div><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Your first path<select name="career">${Object.entries(
+    `<div class="eyebrow">A NEW CHAPTER</div><h2>Who will you become?</h2><p>Start with $12,500, a little ambition, and a whole life ahead.</p><form id="character-form"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><div class="form-row"><label class="field-label">Starting age<input name="age" type="number" min="18" max="60" step="1" value="18" required></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label></div><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Career interest<select name="career">${Object.entries(
       CAREERS,
     )
-      .map(
-        ([id, c]) =>
-          `<option value="${id}">${c.name}${c.entry ? ` — ${money(c.entry)} entry` : ""}</option>`,
-      )
+      .filter(([id]) => id !== "unemployed")
+      .map(([id, c]) => `<option value="${id}">${c.name}</option>`)
       .join(
         "",
-      )}</select></label><p class="muted">All cities share the prototype economy. Starting a new life replaces your current save. Export it first if you want to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
+      )}</select></label><label class="field-label">Starting education<select name="education"><option value="school">Secondary school completed</option><option value="none">No formal qualifications</option><option value="business-degree">Business degree completed (age 21+)</option></select></label><p class="muted">A career interest is an aspiration, not a job. All new characters start looking for work. All cities share the prototype economy. Starting a new life replaces your current save. Export it first if you want to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
   );
 }
 function eventDialog() {
   if (!state.event) return;
   const ev = state.event;
   dialog(
-    `<div class="eyebrow">${e(ev.tag)}</div><h2>${e(ev.title)}</h2><p>${e(ev.text)}</p><div class="event-options">${ev.options.map((o, i) => `<button class="event-option" data-action="resolve-event" data-id="${i}" ${o.cost && state.money < o.cost ? "disabled" : ""}><strong>${e(o.label)} ${icon("arrow")}</strong><span>${e(o.detail)}</span></button>`).join("")}</div>`,
+    `<div class="eyebrow">${e(ev.tag)}</div><h2>${e(ev.title)}</h2><p>${e(ev.text)}</p><div class="event-options">${ev.options.map((o, i) => `<button class="event-option" data-action="resolve-event" data-id="${i}" ${o.cost && availableCash(state) < o.cost ? "disabled" : ""}><strong>${e(o.label)} ${icon("arrow")}</strong><span>${e(o.detail)}</span></button>`).join("")}</div>`,
   );
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button></div><p class="muted">Lifesim v0.1 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button></div><p class="muted">Lifesim v0.2 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -389,12 +412,43 @@ function settingsDialog() {
     };
     modal.querySelector(".settings-actions").append(recoveryButton);
   }
+  if (migrationSave) {
+    const button = document.createElement("button");
+    button.className = "button secondary full-width";
+    button.textContent = "Export pre-update save";
+    button.onclick = () => {
+      const url = URL.createObjectURL(
+        new Blob([migrationSave], { type: "application/json" }),
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "lifesim-before-v2.json";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    modal.querySelector(".settings-actions").append(button);
+  }
+}
+function bidDialog(id) {
+  const n = state.negotiations.find((n) => n.id === id);
+  if (!n) return;
+  const b = BUSINESSES.find((b) => b.id === n.targetId),
+    remaining = 100 - stakePercent(state, b.id),
+    stakes = (b.stock ? [5, 10, 25] : [25, 51, 100, remaining]).filter(
+      (v, i, a) => v > 0 && v <= remaining && a.indexOf(v) === i,
+    );
+  const active = ["meeting", "open", "submitted", "accepted"].includes(
+    n.status,
+  );
+  dialog(
+    `<div class="eyebrow">OWNERSHIP NEGOTIATION · ${e(n.status)}</div><h2>${e(b.name)}</h2><p>Introduction fee paid: ${money(n.fee)}. Current equity value: ${money(assetValue(state, b.id))}. Your existing stake: ${stakePercent(state, b.id).toFixed(3)}%.</p>${n.status === "open" ? `<form id="acquisition-form" data-id="${e(id)}"><label class="field-label">Stake to acquire<select name="stake">${stakes.map((v) => `<option value="${v}">${v}% stake</option>`).join("")}</select></label><label class="field-label">Your cash offer<input name="amount" type="number" min="1" step="0.01" value="${Math.round(((assetValue(state, b.id) * (stakes[0] || 0)) / 100) * 1.3)}" required></label><p class="muted">The owners expect a premium; a low bid can be rejected. Their price can change with valuation. Your entire offer is reserved until acceptance, expiry, or withdrawal. You have ${money(availableCash(state))} uncommitted.</p><button type="submit" class="button primary full-width" ${!stakes.length ? "disabled" : ""}>Submit funded offer</button></form>` : n.status === "accepted" ? `<p>The owners accepted ${money(n.offer)} for ${n.stake}%. Close within ${n.expiresWeek - state.week} weeks.</p><button class="button primary full-width" data-action="complete-acquisition" data-id="${e(id)}">Complete acquisition</button>` : ["meeting", "submitted"].includes(n.status) ? `<p>A decision is due in ${Math.max(0, n.decisionWeek - state.week)} weeks.${n.offer ? ` ${money(n.offer)} is reserved.` : ""}</p>` : `<p>This approach is ${e(n.status)}. The introduction fee was non-refundable.</p>`}${active ? `<button class="text-button cancel-bid" data-action="cancel-bid" data-id="${e(id)}">Withdraw approach</button>` : ""}`,
+  );
 }
 function tradeDialog(id) {
   const m = MARKETS.find((m) => m.id === id);
   if (!m) return;
   dialog(
-    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="1" max="100000000" step="1" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Available cash: ${money(state.money, 2)}. No transaction fees in this prototype.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="${m.fractional ? 0.000001 : 1}" max="${m.volume}" step="${m.fractional ? 0.000001 : 1}" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Uncommitted cash: ${money(availableCash(state), 2)}. Remaining weekly liquidity: ${(m.volume - state.tradeVolumes[id]).toLocaleString()}. Company shares represent real ownership in this simulated world.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
   );
 }
 document.addEventListener("click", (event) => {
@@ -441,29 +495,149 @@ document.addEventListener("click", (event) => {
       )
         modal.close();
       break;
-    case "career": {
-      const c = CAREERS[id];
-      if (!c) break;
-      dialog(
-        `<span class="feature-icon ${c.color}">${icon(c.icon)}</span><h2>Your next chapter: ${c.name}</h2><p>${c.subtitle}</p><div class="path-meta"><span>Entry cost<strong>${money(state.progress[id].unlocked ? 0 : c.entry)}</strong></span><span>Your current level<strong>${state.progress[id].level + 1}</strong></span></div><p class="muted">Your old career progress stays with you. Your new weekly income begins when you advance a week.</p><button class="button primary full-width" data-action="join-career" data-id="${id}">Start this chapter ${icon("arrow")}</button>`,
-      );
-      break;
-    }
-    case "join-career":
-      if (update((s) => chooseCareer(s, id), "A new career chapter begins"))
-        modal.close();
-      break;
     case "company": {
       const c = state.company;
       if (!c) break;
       dialog(
-        `<div class="eyebrow">BUILD SOMETHING OF YOUR OWN</div><h2>Your company, your direction.</h2><form id="company-form"><label class="field-label">Company name<input name="name" maxlength="40" value="${e(c.name)}" required></label><label class="field-label">Industry<select name="sector">${["Technology", "Consumer goods", "Clean energy"].map((v) => `<option ${c.sector === v ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="field-label">Company strategy<select name="strategy"><option value="balanced" ${c.strategy === "balanced" ? "selected" : ""}>Balanced — steady growth and income</option><option value="reinvest" ${c.strategy === "reinvest" ? "selected" : ""}>Reinvest — faster growth, 35% less income</option><option value="dividends" ${c.strategy === "dividends" ? "selected" : ""}>Take income — 20% more pay, slower growth</option></select></label><p class="muted">Technology has the biggest weekly swings; consumer goods are steadier. All sectors can grow or lose value. Hiring scales automatically with company valuation.</p><button class="button primary full-width" type="submit">Set my direction ${icon("arrow")}</button></form>`,
+        `<div class="eyebrow">BUILD SOMETHING OF YOUR OWN</div><h2>Your company, your direction.</h2><form id="company-form"><label class="field-label">Company name<input name="name" maxlength="40" value="${e(c.name)}" required></label><label class="field-label">Industry<select name="sector">${["Technology", "Consumer goods", "Clean energy"].map((v) => `<option ${c.sector === v ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="field-label">Company strategy<select name="strategy"><option value="balanced" ${c.strategy === "balanced" ? "selected" : ""}>Balanced — draw 25% of positive profit</option><option value="reinvest" ${c.strategy === "reinvest" ? "selected" : ""}>Reinvest — retain all founder profit</option><option value="dividends" ${c.strategy === "dividends" ? "selected" : ""}>Take income — draw 50% of positive profit</option></select></label><p class="muted">Technology has the biggest weekly swings; consumer goods are steadier. All sectors can grow or lose value. Staffing follows company revenue. Side-business distributions use this strategy and are paid quarterly.</p><button class="button primary full-width" type="submit">Set my direction ${icon("arrow")}</button></form>`,
       );
       break;
     }
     case "trade":
       tradeDialog(id);
       break;
+    case "apply-job":
+      update(
+        (s) => applyForJob(s, id),
+        "Application submitted. Expect a decision in two weeks.",
+      );
+      break;
+    case "accept-job": {
+      const a = state.applications.find((a) => a.id === id);
+      if (!a) break;
+      const j = jobDefinition(a.jobId);
+      dialog(
+        `<div class="eyebrow">EMPLOYMENT OFFER</div><h2>${e(j.title)}</h2><p>${e(j.employer)} offers ${money(a.offeredPay)}/week. Accepting ends your previous contract. Your company, investments, skills, and qualifications remain yours.</p><button class="button primary full-width" data-action="confirm-job" data-id="${e(id)}">Accept this job</button>`,
+      );
+      break;
+    }
+    case "confirm-job":
+      if (update((s) => acceptJobOffer(s, id), "Employment contract accepted."))
+        modal.close();
+      break;
+    case "raise":
+      if (update(requestRaise)) notify(state.log[0].text);
+      break;
+    case "resign":
+      dialog(
+        `<div class="eyebrow">END YOUR CONTRACT</div><h2>Leave your current job?</h2><p>Your wages stop immediately. You keep your qualifications and experience, but a new job requires a successful application.</p><button class="button primary full-width" data-action="confirm-resign">Confirm resignation</button>`,
+      );
+      break;
+    case "confirm-resign":
+      if (update(resignJob, "Your contract has ended.")) modal.close();
+      break;
+    case "enrol": {
+      const p = PROGRAMS.find((p) => p.id === id);
+      if (!p) break;
+      dialog(
+        `<div class="eyebrow">EDUCATION</div><h2>${e(p.name)}</h2><p>Tuition is ${money(p.tuition)} per calendar week. This programme requires ${p.weeks} study weeks: one per week with Study focus, or half a week otherwise. If you cannot pay, progress pauses. The credential is awarded only on completion.</p><button class="button primary full-width" data-action="confirm-enrol" data-id="${id}">Enrol in programme</button>`,
+      );
+      break;
+    }
+    case "confirm-enrol":
+      if (
+        update(
+          (s) => enrolEducation(s, id),
+          "Enrolment confirmed. Your next tuition payment is due next week.",
+        )
+      )
+        modal.close();
+      break;
+    case "withdraw-course":
+      dialog(
+        `<h2>Withdraw from your studies?</h2><p>Paid tuition is not refunded and incomplete study progress is lost. No qualification is awarded.</p><button class="button primary full-width" data-action="confirm-withdraw-course">Confirm withdrawal</button>`,
+      );
+      break;
+    case "confirm-withdraw-course":
+      if (update(withdrawEducation, "Enrolment withdrawn.")) modal.close();
+      break;
+    case "found-company":
+      dialog(
+        `<div class="eyebrow">ENTREPRENEURSHIP</div><h2>Build your own business.</h2><form id="found-company-form"><label class="field-label">Company name<input name="name" maxlength="40" required value="${e(state.name.split(" ")[0])} Ventures"></label><label class="field-label">Industry<select name="sector"><option>Technology</option><option>Consumer goods</option><option>Clean energy</option></select></label><p class="muted">Startup capital: $5,000. Income depends on trading profit. You can retain your existing employment contract.</p><button type="submit" class="button primary full-width">Launch company</button></form>`,
+      );
+      break;
+    case "approach": {
+      const b = BUSINESSES.find((b) => b.id === id);
+      if (!b) break;
+      dialog(
+        `<div class="eyebrow">APPROACH THE OWNERS</div><h2>${e(b.name)}</h2><p>An introduction request costs ${money(meetingFee(state, id))}, paid now and not refunded. Owners respond in two weeks. They can refuse to talk; a successful meeting still requires a funded offer and normally a premium. You cannot approach again for 26 weeks.</p><button class="button primary full-width" data-action="confirm-approach" data-id="${id}">Pay for introduction request</button>`,
+      );
+      break;
+    }
+    case "confirm-approach":
+      if (
+        update(
+          (s) => requestBoardMeeting(s, id),
+          "Introduction requested. The fee is paid; a response is due in two weeks.",
+        )
+      )
+        modal.close();
+      break;
+    case "review-bid":
+      bidDialog(id);
+      break;
+    case "complete-acquisition":
+      if (update((s) => completeAcquisition(s, id), "Acquisition completed."))
+        modal.close();
+      break;
+    case "cancel-bid":
+      if (
+        update(
+          (s) => cancelOffer(s, id),
+          "Approach withdrawn; committed cash is released.",
+        )
+      )
+        modal.close();
+      break;
+    case "sale-opportunity": {
+      const o = state.opportunities.find((o) => o.id === id);
+      if (!o) break;
+      const b = BUSINESSES.find((b) => b.id === o.targetId);
+      dialog(
+        `<div class="eyebrow">OWNER-LED SALE</div><h2>${e(b.name)}</h2><p>The owners offer ${o.stake}% for ${money(o.askingPrice)}. This is a ${e(b.kind.toLowerCase())}. Its last weekly profit was ${money(state.businessResults[b.id].profit)}. Future profits and dividends are uncertain. The sale window closes in ${o.expiresWeek - state.week} weeks.</p><button class="button primary full-width" data-action="confirm-opportunity" data-id="${e(id)}">Acquire offered stake</button>`,
+      );
+      break;
+    }
+    case "confirm-opportunity":
+      if (update((s) => acquireOpportunity(s, id), "Stake acquired."))
+        modal.close();
+      break;
+    case "inject-capital":
+      dialog(
+        `<h2>Fund ${e(BUSINESSES.find((b) => b.id === id).name)}</h2><form id="capital-form" data-id="${id}"><label class="field-label">Capital injection<input name="amount" type="number" min="1" step="0.01" required value="10000"></label><p class="muted">This money moves from personal cash into company cash. It is not immediately withdrawable. Other minority shareholders benefit in proportion to their stakes.</p><button type="submit" class="button primary full-width">Confirm capital injection</button></form>`,
+      );
+      break;
+    case "collectible": {
+      const l = state.collectibles.listings.find((l) => l.id === id);
+      if (!l) break;
+      const c = COLLECTIBLES.find((c) => c.id === l.collectibleId);
+      dialog(
+        `<div class="eyebrow">AUTHENTICATED DEALER LISTING</div><h2>${e(c.name)}</h2><p>Asking ${money(l.price)}; estimated current value ${money(state.collectibles.prices[c.id])}. Resale takes a two-week auction, may fail, and carries an 8% commission.</p><button class="button primary full-width" data-action="confirm-collectible" data-id="${e(id)}">Purchase collectible</button>`,
+      );
+      break;
+    }
+    case "confirm-collectible":
+      if (update((s) => buyCollectible(s, id), "Collectible purchased."))
+        modal.close();
+      break;
+    case "consign": {
+      const c = COLLECTIBLES.find((c) => c.id === id);
+      if (!c) break;
+      dialog(
+        `<div class="eyebrow">AUCTION CONSIGNMENT</div><h2>${e(c.name)}</h2><form id="auction-form" data-id="${id}"><label class="field-label">Minimum acceptable bid<input name="reserve" type="number" min="1" step="0.01" required value="${Math.round(state.collectibles.prices[id] * 0.9)}"></label><p class="muted">The auction takes two weeks. A reserve price is not a guaranteed buyer. If sold, 8% is deducted from the winning bid.</p><button class="button primary full-width" type="submit">Consign to auction</button></form>`,
+      );
+      break;
+    }
     case "buy":
       update((s) => buy(s, id), "A little more your own. Purchase complete.");
       break;
@@ -506,12 +680,73 @@ document.addEventListener("submit", (event) => {
   if (event.target.id === "character-form") {
     event.preventDefault();
     const data = new FormData(event.target);
-    state = createGame(Object.fromEntries(data));
+    try {
+      state = createGame(Object.fromEntries(data));
+    } catch (error) {
+      notify(error.message);
+      return;
+    }
     view = "overview";
     save();
     render();
     modal.close();
     notify("Your story begins. Make it yours.");
+  }
+  if (event.target.id === "found-company-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) => foundCompany(s, Object.fromEntries(data)),
+        "Company launched.",
+      )
+    )
+      modal.close();
+  }
+  if (event.target.id === "acquisition-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) =>
+          submitAcquisitionOffer(
+            s,
+            event.target.dataset.id,
+            Number(data.get("amount")),
+            Number(data.get("stake")),
+          ),
+        "Offer submitted. Cash is committed until the decision.",
+      )
+    )
+      modal.close();
+  }
+  if (event.target.id === "capital-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) =>
+          injectCapital(s, event.target.dataset.id, Number(data.get("amount"))),
+        "Company funded.",
+      )
+    )
+      modal.close();
+  }
+  if (event.target.id === "auction-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    if (
+      update(
+        (s) =>
+          consignCollectible(
+            s,
+            event.target.dataset.id,
+            Number(data.get("reserve")),
+          ),
+        "Auction consignment confirmed.",
+      )
+    )
+      modal.close();
   }
   if (event.target.id === "company-form") {
     event.preventDefault();
@@ -550,10 +785,15 @@ document.addEventListener("input", (event) => {
   }
 });
 document.addEventListener("change", async (event) => {
-  if (event.target.matches("[data-team-strategy]"))
+  if (event.target.matches("[data-business-strategy]"))
     update(
-      (s) => setTeamStrategy(s, event.target.value),
-      "Team strategy updated",
+      (s) =>
+        setBusinessStrategy(
+          s,
+          event.target.dataset.businessStrategy,
+          event.target.value,
+        ),
+      "Management strategy updated.",
     );
   if (event.target.id === "import-save") {
     const file = event.target.files[0];

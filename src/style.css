@@ -2107,3 +2107,292 @@ select {
     scroll-behavior: auto !important;
   }
 }
+.qualification-tags,
+.inline-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.qualification-tags {
+  margin-bottom: 20px;
+}
+.inline-actions .muted {
+  flex: 1;
+  min-width: 180px;
+  margin: 0 !important;
+}
+.application-list,
+.sale-list {
+  display: flex;
+  flex-direction: column;
+}
+.application-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.application-row:first-child {
+  border-top: 0;
+}
+.application-row > div {
+  min-width: 0;
+}
+.application-row strong {
+  font-size: 12px;
+  font-weight: 500;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.application-row small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 7px;
+  line-height: 1.7;
+}
+.application-row .button {
+  flex-shrink: 0;
+}
+.education-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+.education-card {
+  display: flex;
+  flex-direction: column;
+  background: #111823;
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: 8px;
+}
+.education-card h3 {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.education-card p {
+  font-size: 10px;
+  color: #a1b3c9;
+  margin: 9px 0;
+}
+.education-card small {
+  font-size: 9px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.education-card .button {
+  margin-top: auto;
+  font-size: 10px;
+}
+.enrolment {
+  background: #85b6f008;
+  border: 1px solid #85b6f025;
+  padding: 20px;
+  border-radius: 9px;
+}
+.enrolment h3 {
+  font-size: 16px;
+}
+.enrolment p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.enrolment .meter {
+  margin: 15px 0;
+}
+.vacancy-card {
+  display: flex;
+  flex-direction: column;
+}
+.vacancy-card h2 {
+  font-size: 18px;
+  margin: 12px 0;
+}
+.vacancy-pay {
+  font-family: "Manrope Variable", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+.vacancy-pay small {
+  font-family: "DM Sans Variable", sans-serif;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+.vacancy-card .path-meta {
+  font-size: 10px;
+  gap: 13px;
+  padding-bottom: 10px;
+}
+.vacancy-card .path-meta > span {
+  align-items: flex-start;
+  gap: 15px;
+}
+.vacancy-card .path-meta strong {
+  max-width: 65%;
+  text-align: right;
+  line-height: 1.7;
+}
+.eligibility {
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 12px 0 !important;
+}
+.vacancy-card .button {
+  margin-top: auto;
+}
+.opportunity-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #e5c88709;
+  border: 1px solid #e5c88720;
+  padding: 13px;
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--yellow);
+  margin-top: 18px;
+}
+.opportunity-note .icon {
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+}
+.founder-panel {
+  margin-top: 28px;
+}
+.company-numbers > div {
+  min-width: 0;
+}
+.company-numbers strong {
+  font-size: clamp(16px, 1.7vw, 23px);
+  overflow-wrap: anywhere;
+}
+.approach-button {
+  margin-top: 20px;
+}
+.cancel-bid {
+  margin-top: 22px;
+}
+.collectibles-panel {
+  margin-top: 28px;
+}
+.collectible-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+.collectible-card {
+  padding: 17px;
+  background: #111823;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.collectible-card .feature-icon {
+  margin-bottom: 20px;
+}
+.collectible-card .eyebrow {
+  font-size: 8px;
+}
+.collectible-card h3 {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+.collectible-card p {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #a0b1c5;
+  margin-bottom: 10px;
+}
+.collectible-card small {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.8;
+  margin-bottom: 17px;
+}
+.collectible-card .button {
+  margin-top: auto;
+  font-size: 10px;
+}
+.market-row > div {
+  min-width: 0;
+}
+.market-row small {
+  line-height: 1.7;
+}
+.company-numbers span {
+  line-height: 1.7;
+}
+.team-card > .path-meta strong {
+  max-width: 62%;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.team-card > h2 {
+  overflow-wrap: anywhere;
+}
+.team-card .field-label {
+  font-size: 11px;
+}
+@media (max-width: 1150px) {
+  .education-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .collectible-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .education-grid,
+  .collectible-grid {
+    grid-template-columns: 1fr;
+  }
+  .application-row {
+    flex-wrap: wrap;
+    gap: 13px;
+  }
+  .application-row .button {
+    width: 100%;
+  }
+  .enrolment {
+    padding: 15px;
+  }
+  .enrolment h3 {
+    font-size: 14px;
+  }
+  .company-numbers strong {
+    font-size: 18px;
+  }
+  .job-grid .path-meta strong {
+    max-width: 60%;
+  }
+  .vacancy-pay {
+    font-size: 17px;
+  }
+  .market-row .asset-name {
+    min-width: 0;
+  }
+  .asset-name > div {
+    min-width: 0;
+  }
+  .market-row strong {
+    overflow-wrap: anywhere;
+  }
+  .qualification-tags .tag {
+    white-space: normal;
+    line-height: 1.7;
+  }
+}

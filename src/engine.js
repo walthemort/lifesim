@@ -1,5 +1,28 @@
-export const VERSION = 1;
+import {
+  initializeWorld,
+  advanceWorld,
+  validateWorld,
+  tuitionDue,
+  availableCash,
+  privateOwnershipValue,
+  collectibleValue,
+  BUSINESSES,
+  rng,
+  jobDefinition,
+} from "./world.js";
+export * from "./world.js";
+export const VERSION = 2;
 export const CAREERS = {
+  unemployed: {
+    name: "Looking for work",
+    subtitle: "Find your next opportunity.",
+    icon: "briefcase",
+    skill: "business",
+    color: "blue",
+    entry: 0,
+    roles: ["Looking for work"],
+    pay: [0],
+  },
   office: {
     name: "The 9–5",
     subtitle: "Stability. Ambition. Your own balance.",
@@ -144,9 +167,12 @@ export const MARKETS = [
     symbol: "GLBX",
     risk: "Low",
     price: 120,
-    volatility: 0.025,
-    drift: 0.0015,
+    volatility: 0.015,
+    drift: 0.0011,
+    yield: 0.018,
     color: "green",
+    type: "Fund",
+    volume: 50000,
   },
   {
     id: "tech",
@@ -154,9 +180,11 @@ export const MARKETS = [
     symbol: "HRZN",
     risk: "Medium",
     price: 85,
-    volatility: 0.08,
-    drift: 0.002,
+    volatility: 0.035,
+    drift: 0,
     color: "blue",
+    type: "Listed company",
+    volume: 250000,
   },
   {
     id: "energy",
@@ -164,9 +192,11 @@ export const MARKETS = [
     symbol: "SOL",
     risk: "Medium",
     price: 42,
-    volatility: 0.07,
-    drift: 0.001,
+    volatility: 0.03,
+    drift: 0,
     color: "yellow",
+    type: "Listed company",
+    volume: 200000,
   },
   {
     id: "crypto",
@@ -174,9 +204,38 @@ export const MARKETS = [
     symbol: "NOVA",
     risk: "High",
     price: 250,
-    volatility: 0.22,
+    volatility: 0.1,
     drift: 0,
     color: "purple",
+    type: "Crypto",
+    fractional: true,
+    volume: 100000,
+  },
+  {
+    id: "bonds",
+    name: "Government bond fund",
+    symbol: "GOVT",
+    risk: "Low",
+    price: 100,
+    volatility: 0.002,
+    drift: 0.035 / 52,
+    yield: 0.035,
+    color: "blue",
+    type: "Bonds",
+    volume: 100000,
+  },
+  {
+    id: "property",
+    name: "City property trust",
+    symbol: "REIT",
+    risk: "Medium",
+    price: 60,
+    volatility: 0.025,
+    drift: 0.0012,
+    yield: 0.04,
+    color: "orange",
+    type: "Property fund",
+    volume: 50000,
   },
 ];
 export const SHOP = [
@@ -328,39 +387,46 @@ export const SHOP = [
 ];
 const clamp = (n, a = 0, b = 100) => Math.max(a, Math.min(b, n));
 const clone = (s) => structuredClone(s);
-const thresholds = [0, 25, 45, 65, 85];
 export const age = (s) => s.startAge + Math.floor(s.week / 52);
 export const careerLevel = (s) => s.progress[s.career].level;
 export const salary = (s) =>
-  Math.round(
-    CAREERS[s.career].pay[careerLevel(s)] *
-      (s.career === "business" && s.company
-        ? s.company.strategy === "reinvest"
-          ? 0.65
-          : s.company.strategy === "dividends"
-            ? 1.2
-            : 1
-        : 1),
-  );
-export const expenses = (s) =>
+  s.employment
+    ? s.employment.weeklyPay
+    : s.career === "business" && s.company
+      ? Math.round(
+          Math.min(
+            Math.max(0, s.company.cash),
+            Math.max(0, s.company.profit) *
+              (s.company.strategy === "reinvest"
+                ? 0
+                : s.company.strategy === "dividends"
+                  ? 0.5
+                  : 0.25),
+          ) * 100,
+        ) / 100
+      : 0;
+export const expenses = (s, { education = true } = {}) =>
   (s.inventory.includes("apartment") || s.inventory.includes("villa")
     ? 110
     : 280) +
-  SHOP.filter((i) => s.inventory.includes(i.id)).reduce(
-    (n, i) => n + i.upkeep,
-    0,
-  ) +
-  (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0);
+  SHOP.filter(
+    (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
+  ).reduce((n, i) => n + i.upkeep, 0) +
+  (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
+  (education ? tuitionDue(s) : 0);
+export const primarySkill = (s) =>
+  CAREERS[s.career === "unemployed" ? s.aspiration : s.career].skill;
 export const portfolioValue = (s) =>
   MARKETS.reduce((n, m) => n + s.holdings[m.id] * s.market[m.id], 0);
 export const netWorth = (s) =>
   s.money +
   portfolioValue(s) +
   (s.company?.value || 0) +
-  SHOP.filter((i) => s.inventory.includes(i.id)).reduce(
-    (n, i) => n + i.price * 0.8,
-    0,
-  );
+  privateOwnershipValue(s) +
+  collectibleValue(s) +
+  SHOP.filter(
+    (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
+  ).reduce((n, i) => n + i.price * 0.8, 0);
 function random(s) {
   s.seed = (Math.imul(s.seed, 1664525) + 1013904223) >>> 0;
   return s.seed / 4294967296;
@@ -379,8 +445,13 @@ export function createGame({
   city = "London",
   trait = "Ambitious",
   career = "office",
+  education = "school",
   seed = Date.now() >>> 0,
 } = {}) {
+  if (education === "business-degree" && Number(startAge) < 21)
+    throw new Error(
+      "A completed degree background requires a starting age of at least 21.",
+    );
   const s = {
     version: VERSION,
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
@@ -452,9 +523,14 @@ export function createGame({
   s.skills[bonus] += 10;
   if (Object.hasOwn(CAREERS, career)) {
     s.career = career;
-    s.money -= CAREERS[career].entry;
   }
-  if (s.career === "business") s.company = newCompany(s);
+  const background =
+    ["none", "school", "business-degree"].includes(education) &&
+    (education !== "business-degree" || s.startAge >= 21)
+      ? education
+      : "school";
+  initializeWorld(s, { background });
+  s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
   addLog(
     s,
@@ -467,40 +543,15 @@ function writable(s) {
   if (s.ended)
     throw new Error("This life is complete. Start a new life to keep playing.");
 }
-export function chooseCareer(state, id) {
+export function chooseCareer(state) {
   writable(state);
-  if (!Object.hasOwn(CAREERS, id))
-    throw new Error("Choose an available career.");
-  if (id === state.career)
-    throw new Error("You are already on this career path.");
-  const s = clone(state),
-    cost = s.progress[id].unlocked ? 0 : CAREERS[id].entry;
-  if (s.money < cost)
-    throw new Error("You need more savings to start this career.");
-  s.money -= cost;
-  s.career = id;
-  s.progress[id].unlocked = true;
-  if (id === "business" && !s.company) s.company = newCompany(s);
-  addLog(
-    s,
-    `Started a new chapter in ${CAREERS[id].name.toLowerCase()}.`,
-    "milestone",
+  throw new Error(
+    "Apply for an available job and accept an offer to change employment.",
   );
-  return s;
-}
-function newCompany(s) {
-  return {
-    name: `${s.name.split(" ")[0]} Ventures`,
-    sector: "Technology",
-    strategy: "balanced",
-    value: 2500,
-    employees: 1,
-  };
 }
 export function configureCompany(state, { name, sector, strategy }) {
   writable(state);
-  if (!state.company)
-    throw new Error("Start the entrepreneur path to found a company.");
+  if (!state.company) throw new Error("Found a company before configuring it.");
   if (
     !["Technology", "Consumer goods", "Clean energy"].includes(sector) ||
     !["balanced", "reinvest", "dividends"].includes(strategy)
@@ -522,23 +573,42 @@ export function setActivity(state, id) {
 }
 export function invest(state, id, quantity) {
   writable(state);
+  const m = MARKETS.find((m) => m.id === id);
   if (
-    !MARKETS.some((m) => m.id === id) ||
-    !Number.isInteger(quantity) ||
-    quantity === 0
+    !m ||
+    !Number.isFinite(quantity) ||
+    quantity === 0 ||
+    (!m.fractional && !Number.isSafeInteger(quantity)) ||
+    (m.fractional &&
+      Math.abs(quantity - Math.round(quantity * 1e6) / 1e6) > 1e-10)
   )
-    throw new Error("Enter a whole number of units.");
-  const s = clone(state),
-    cost = s.market[id] * quantity;
-  if (quantity > 0 && cost > s.money)
-    throw new Error("Not enough available cash.");
-  if (quantity < 0 && -quantity > s.holdings[id])
+    throw new Error(
+      m?.fractional
+        ? "Enter a quantity with at most six decimal places."
+        : "Enter a whole number of units.",
+    );
+  const cost = Math.round(state.market[id] * quantity * 100) / 100;
+  if (Math.abs(cost) < 1) throw new Error("The minimum trade value is $1.");
+  if (quantity > 0 && cost > availableCash(state))
+    throw new Error("Not enough uncommitted cash.");
+  if (quantity < 0 && -quantity > state.holdings[id] + 1e-9)
     throw new Error("You cannot sell more units than you own.");
+  if ((state.tradeVolumes[id] || 0) + Math.abs(quantity) > m.volume)
+    throw new Error(
+      "This order exceeds the remaining weekly market liquidity. Arrange a block acquisition for a large company stake.",
+    );
+  const issuer = BUSINESSES.find((b) => b.stock === id);
+  if (issuer && state.holdings[id] + quantity > issuer.shares)
+    throw new Error("There are not that many shares outstanding.");
+  const s = clone(state);
   s.money = Math.round((s.money - cost) * 100) / 100;
-  s.holdings[id] += quantity;
+  s.holdings[id] = Math.round((s.holdings[id] + quantity) * 1e6) / 1e6;
+  s.tradeVolumes[id] = (s.tradeVolumes[id] || 0) + Math.abs(quantity);
+  if (issuer && s.holdings[id] / issuer.shares <= 0.5)
+    s.businessResults[issuer.id].strategy = "balanced";
   addLog(
     s,
-    `${quantity > 0 ? "Bought" : "Sold"} ${Math.abs(quantity)} units of ${MARKETS.find((m) => m.id === id).symbol}.`,
+    `${quantity > 0 ? "Bought" : "Sold"} ${Math.abs(quantity)} ${m.type === "Listed company" ? "shares" : "units"} of ${m.symbol}.`,
   );
   return s;
 }
@@ -546,14 +616,17 @@ export function buy(state, id) {
   writable(state);
   const item = SHOP.find((i) => i.id === id);
   if (!item) throw new Error("This item is unavailable.");
+  if (item.category === "Ownership")
+    throw new Error(
+      "Clubs and companies require a sale opportunity or an accepted acquisition offer.",
+    );
   if (state.inventory.includes(id)) throw new Error("You already own this.");
-  if (state.money < item.price) throw new Error("Not enough available cash.");
+  if (availableCash(state) < item.price)
+    throw new Error("Not enough available cash.");
   const s = clone(state);
   s.money -= item.price;
   s.inventory.push(id);
   changeStats(s, { happiness: item.happiness });
-  if (item.category === "Ownership")
-    s.teams[id] = { rating: 20, wins: 0, races: 0, profit: 0 };
   addLog(s, `Purchased ${item.name.toLowerCase()}.`, "milestone");
   return s;
 }
@@ -565,7 +638,6 @@ export function sellItem(state, id) {
   const s = clone(state);
   s.money += item.price * 0.8;
   s.inventory = s.inventory.filter((i) => i !== id);
-  delete s.teams[id];
   addLog(s, `Sold ${item.name.toLowerCase()} for 80% of its purchase price.`);
   return s;
 }
@@ -617,7 +689,8 @@ export function meet(state) {
     throw new Error(
       "Your circle is full. Spend time with the people you know.",
     );
-  if (state.money < 35) throw new Error("You need $35 for the social event.");
+  if (availableCash(state) < 35)
+    throw new Error("You need $35 for the social event.");
   const s = clone(state),
     people = [
       ["Riley Chen", "blue"],
@@ -956,15 +1029,13 @@ export function resolveEvent(state, index) {
   const event = state.event,
     option = event?.options[index];
   if (!option) throw new Error("Choose an available option.");
-  if (option.cost && state.money < option.cost)
+  if (option.cost && availableCash(state) < option.cost)
     throw new Error("Not enough cash for this choice.");
   const s = clone(state);
   s.money -= option.cost || 0;
   changeStats(s, option);
   if (option.skill)
-    s.skills[CAREERS[s.career].skill] = clamp(
-      s.skills[CAREERS[s.career].skill] + option.skill,
-    );
+    s.skills[primarySkill(s)] = clamp(s.skills[primarySkill(s)] + option.skill);
   if (option.charisma)
     s.skills.charisma = clamp(s.skills.charisma + option.charisma);
   if (option.bond)
@@ -990,111 +1061,74 @@ export function advanceWeek(state) {
     throw new Error("Make your pending life choice before advancing.");
   const s = clone(state),
     focus = ACTIVITIES[s.activity],
-    career = CAREERS[s.career],
     p = s.progress[s.career];
   s.week++;
-  p.weeks++;
+  if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
   const income = salary(s),
-    costs = expenses(s);
+    costs = expenses(s, { education: false });
+  if (s.career === "business" && s.company) s.company.cash -= income;
+  s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.money += income - costs;
-  const skill = focus.skill || career.skill;
+  const skill = focus.skill || primarySkill(s);
   const tired = s.energy < 25;
-  s.skills[skill] = clamp(s.skills[skill] + focus.gain * (tired ? 0.5 : 1));
-  if (s.activity === "train") s.skills.driving = clamp(s.skills.driving + 2);
-  if (s.activity === "study") s.skills.business = clamp(s.skills.business + 2);
+  s.skills[skill] = clamp(
+    s.skills[skill] + focus.gain * 0.25 * (tired ? 0.5 : 1),
+  );
+  if (s.activity === "train") s.skills.driving = clamp(s.skills.driving + 0.5);
+  if (s.activity === "study")
+    s.skills.business = clamp(s.skills.business + 0.5);
   if (s.activity === "train" && s.inventory.includes("bike"))
     s.health = clamp(s.health + 1);
   if (s.activity === "train" && s.inventory.includes("sim-rig"))
-    s.skills.driving = clamp(s.skills.driving + 1);
+    s.skills.driving = clamp(s.skills.driving + 0.25);
   if (s.activity === "study" && s.inventory.includes("laptop"))
-    s.skills.business = clamp(s.skills.business + 1);
+    s.skills.business = clamp(s.skills.business + 0.25);
   if (s.activity === "rest" && s.inventory.includes("piano"))
     s.happiness = clamp(s.happiness + 2);
   changeStats(s, focus);
   if (s.inventory.includes("gym")) s.health = clamp(s.health + 2);
   if (s.trait === "Athletic" && s.activity === "train")
-    s.skills.athletics = clamp(s.skills.athletics + 1);
+    s.skills.athletics = clamp(s.skills.athletics + 0.25);
   if (s.energy < 20) {
     s.health = clamp(s.health - 4);
     s.happiness = clamp(s.happiness - 3);
   }
   for (const r of s.relationships)
     r.bond = clamp(r.bond + (s.activity === "social" ? 3 : -1));
-  if (
-    p.level < 4 &&
-    p.weeks >= (p.level + 1) * 12 &&
-    s.skills[career.skill] >= thresholds[p.level + 1]
-  ) {
-    p.level++;
-    addLog(
-      s,
-      `Career milestone: you are now ${career.roles[p.level].toLowerCase()}.`,
-      "milestone",
-    );
-    s.happiness = clamp(s.happiness + 8);
-  }
-  if (s.career === "business" && s.company) {
-    const company = s.company,
-      volatility =
-        company.sector === "Technology"
-          ? 0.065
-          : company.sector === "Clean energy"
-            ? 0.05
-            : 0.035;
-    const growth =
-      0.004 +
-      p.level * 0.004 +
-      (s.activity === "focus" ? 0.008 : s.activity === "rest" ? -0.008 : 0) +
-      (company.strategy === "reinvest"
-        ? 0.016
-        : company.strategy === "dividends"
-          ? -0.008
-          : 0.004) +
-      (random(s) * 2 - 1) * volatility;
-    company.value = Math.max(
-      500,
-      Math.min(1e12, Math.round(company.value * (1 + growth))),
-    );
-    company.employees = Math.max(
-      1,
-      Math.min(100000, Math.floor(company.value / 75000)),
-    );
-    addLog(
-      s,
-      `${company.name}: valuation ${growth >= 0 ? "grew" : "fell"} ${(Math.abs(growth) * 100).toFixed(1)}% this week.`,
-      growth >= 0 ? "positive" : "warning",
-    );
-  }
+  const macro = (rng(s) * 2 - 1) * 0.005;
   for (const m of MARKETS) {
-    const movement = (random(s) * 2 - 1) * m.volatility + m.drift;
+    const issuer = BUSINESSES.find((b) => b.stock === m.id);
+    const fundamentals = issuer
+      ? (s.businessResults[issuer.id].profit * 0.7) /
+        (s.market[m.id] * issuer.shares)
+      : 0;
+    const movement =
+      macro + (random(s) * 2 - 1) * m.volatility + m.drift + fundamentals;
     s.market[m.id] = Math.max(
       1,
       Math.round(s.market[m.id] * (1 + movement) * 100) / 100,
     );
+    if (m.yield && s.week % 13 === 0) {
+      const perUnit = (s.market[m.id] * m.yield) / 4;
+      const dividend = Math.round(s.holdings[m.id] * perUnit * 100) / 100;
+      s.money += dividend;
+      s.market[m.id] = Math.max(
+        1,
+        Math.round((s.market[m.id] - perUnit) * 100) / 100,
+      );
+      if (dividend)
+        addLog(
+          s,
+          `${m.symbol} distributed $${dividend.toFixed(2)} in quarterly income.`,
+          "positive",
+        );
+    }
+  }
+  const paidTuition = advanceWorld(s);
+  for (const m of MARKETS) {
     s.marketHistory[m.id].push(s.market[m.id]);
     s.marketHistory[m.id] = s.marketHistory[m.id].slice(-24);
-  }
-  for (const [id, team] of Object.entries(s.teams)) {
-    team.rating = clamp(
-      team.rating + (s.teamStrategy === "development" ? 3 : 1),
-      0,
-      95,
-    );
-    team.races++;
-    const win = random(s) < team.rating / 120;
-    if (win) team.wins++;
-    const base = id === "f1-team" ? 250000 : 2000;
-    const revenue = Math.round(
-      base * ((s.teamStrategy === "commercial" ? 1.4 : 1.05) + (win ? 0.6 : 0)),
-    );
-    s.money += revenue;
-    team.profit = revenue - SHOP.find((i) => i.id === id).upkeep;
-    addLog(
-      s,
-      `${id === "f1-team" ? "F1 team" : "Football club"}: ${win ? "a win" : "a tough outing"}, $${revenue.toLocaleString("en-US")} revenue.`,
-      win ? "positive" : "info",
-    );
   }
   if (s.money < 0)
     addLog(
@@ -1104,7 +1138,7 @@ export function advanceWeek(state) {
     );
   addLog(
     s,
-    `Week ${s.week}: $${income.toLocaleString("en-US")} earned · $${costs.toLocaleString("en-US")} living costs.`,
+    `Week ${s.week}: $${income.toLocaleString("en-US")} earned · $${costs.toLocaleString("en-US")} living costs${paidTuition ? ` · $${paidTuition} tuition` : ""}.`,
     income >= costs ? "positive" : "warning",
   );
   if (s.week % 2 === 0)
@@ -1128,7 +1162,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    s.version !== VERSION ||
+    ![1, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 18, 60) ||
@@ -1145,6 +1179,32 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const legacy = s.version === 1;
+  if (legacy) {
+    const oldLevel = s.progress?.[s.career]?.level;
+    if (
+      !Number.isInteger(oldLevel) ||
+      oldLevel < 0 ||
+      oldLevel > 4 ||
+      !Number.isFinite(s.progress?.[s.career]?.weeks)
+    )
+      throw new Error("Invalid legacy career.");
+    s.progress.unemployed = { level: 0, weeks: 0, unlocked: true };
+    for (const m of MARKETS)
+      if (s.market?.[m.id] === undefined) {
+        s.market[m.id] = m.price;
+        s.holdings[m.id] = 0;
+        s.marketHistory[m.id] = [m.price];
+      }
+    s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
+    if (s.career === "investor" && oldLevel === 0) s.career = "unemployed";
+    initializeWorld(s, {
+      legacy: true,
+      legacyPay: CAREERS[s.career].pay[oldLevel] || 0,
+      legacyLevel: s.career === "investor" ? Math.min(oldLevel, 2) : oldLevel,
+    });
+    s.version = VERSION;
+  }
   for (const k of ["health", "energy", "happiness"])
     if (!number(s[k], 0, 100)) throw new Error("Invalid character stats.");
   for (const k of ["athletics", "driving", "business", "finance", "charisma"])
@@ -1162,8 +1222,6 @@ export function restoreGame(raw) {
     if (typeof s.progress[k].unlocked !== "boolean")
       throw new Error("Invalid career unlock.");
   }
-  if (s.company === undefined)
-    s.company = s.progress.business.unlocked ? newCompany(s) : null;
   if (
     s.company !== null &&
     (typeof s.company.name !== "string" ||
@@ -1180,7 +1238,9 @@ export function restoreGame(raw) {
   for (const m of MARKETS)
     if (
       !number(s.market?.[m.id], 1) ||
-      !Number.isInteger(s.holdings?.[m.id]) ||
+      !(m.fractional
+        ? Number.isFinite(s.holdings?.[m.id])
+        : Number.isInteger(s.holdings?.[m.id])) ||
       s.holdings[m.id] < 0 ||
       !Array.isArray(s.marketHistory?.[m.id]) ||
       !s.marketHistory[m.id].length ||
@@ -1196,22 +1256,6 @@ export function restoreGame(raw) {
     typeof s.teams !== "object"
   )
     throw new Error("Invalid inventory.");
-  for (const [id, t] of Object.entries(s.teams))
-    if (
-      !s.inventory.includes(id) ||
-      !["f1-team", "football-team"].includes(id) ||
-      !number(t.rating, 0, 100) ||
-      !number(t.wins, 0) ||
-      !number(t.races, 0) ||
-      !number(t.profit)
-    )
-      throw new Error("Invalid team.");
-  if (
-    s.inventory.some(
-      (id) => ["f1-team", "football-team"].includes(id) && !s.teams[id],
-    )
-  )
-    throw new Error("Missing team data.");
   if (
     !["balanced", "development", "commercial"].includes(s.teamStrategy) ||
     !Array.isArray(s.relationships) ||
@@ -1237,6 +1281,23 @@ export function restoreGame(raw) {
     s.log.some((l) => typeof l.text !== "string" || !number(l.week, 0))
   )
     throw new Error("Invalid history.");
+  if (
+    !s.tradeVolumes ||
+    MARKETS.some(
+      (m) =>
+        !Number.isFinite(s.tradeVolumes[m.id]) ||
+        s.tradeVolumes[m.id] < 0 ||
+        s.tradeVolumes[m.id] > m.volume,
+    )
+  )
+    throw new Error("Invalid market liquidity data.");
+  if (
+    s.inventory.some(
+      (id) => SHOP.find((i) => i.id === id)?.category === "Ownership",
+    )
+  )
+    throw new Error("Invalid legacy ownership in current save.");
+  validateWorld(s);
   if (s.event !== null) {
     const match = EVENTS.find((e) => e.title === s.event?.title);
     if (!match) throw new Error("Invalid life choice.");
