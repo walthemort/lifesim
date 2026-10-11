@@ -1,3 +1,4 @@
+import { receiveIncome } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng } from "./world.js";
 export const MUSIC_ROLES = {
@@ -180,7 +181,7 @@ export function acceptLabelOffer(state, id) {
     share: 0.5,
     expiresWeek: s.week + 52,
   };
-  s.money += o.advance;
+  receiveIncome(s, o.advance, "earned");
   log(
     s,
     `Signed with ${o.name}: $${o.advance} advance. Your 50% royalty share repays the advance first; the agreement lasts 52 weeks.`,
@@ -343,7 +344,7 @@ export function advanceMusic(s) {
   }
   m.weeklyIncome = round(m.weeklyIncome);
   m.totalIncome = round(m.totalIncome + m.weeklyIncome);
-  s.money = round(s.money + m.weeklyIncome);
+  receiveIncome(s, m.weeklyIncome, "earned");
 }
 export function validateMusic(s) {
   const m = s.music,

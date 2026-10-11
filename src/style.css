@@ -2643,3 +2643,31 @@ select {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.season-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  margin: 24px 0;
+}
+.standings-row {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr) 35px 35px;
+  gap: 8px;
+  padding: 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.standings-row span:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+.standings-row.your-side {
+  background: rgba(101, 221, 167, 0.1);
+  color: var(--green);
+  font-weight: 700;
+}
+@media (max-width: 800px) {
+  .season-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

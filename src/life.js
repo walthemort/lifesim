@@ -1,3 +1,11 @@
+import {
+  syncSeason,
+  enhanceSportOffer,
+  checkSportSigning,
+  signedSportTerms,
+  markSportTraining,
+} from "./seasons.js";
+import { receiveIncome } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, jobDefinition } from "./world.js";
 import { EXPERIENCES } from "./catalogue.js";
@@ -162,6 +170,7 @@ export function joinFootball(state) {
     `Joined ${f.club}. Training and matches can lead to scouting; no professional contract is guaranteed.`,
     "milestone",
   );
+  syncSeason(s, "football");
   return s;
 }
 export function configureFootball(state, { position, training }) {
@@ -194,6 +203,7 @@ export function leaveFootball(state) {
     "Stepped away from football. Any playing contract and wages have ended.",
     "warning",
   );
+  syncSeason(s, "football");
   return s;
 }
 export function acceptFootballOffer(state, id) {
@@ -236,11 +246,13 @@ export function acceptFootballOffer(state, id) {
         "Professional football recruitment ends at age 40; local football remains available.",
       );
     const j = jobDefinition(o.jobId);
+    checkSportSigning(s, "football", o);
     clearOtherSportContracts(s, "football");
     if (age(s) < 16) throw new Error("A playing contract requires age 16+.");
     f.stage = j.level >= 2 ? "professional" : "reserve";
     f.club = o.club;
     f.contract = { jobId: o.jobId, expiresWeek: s.week + o.duration };
+    signedSportTerms(s, "football", o);
     s.employment = {
       jobId: o.jobId,
       weeklyPay: o.pay,
@@ -264,6 +276,7 @@ export function acceptFootballOffer(state, id) {
   for (const other of f.offers)
     if (other.id !== id && other.status === "offered")
       other.status = "declined";
+  syncSeason(s, "football");
   return s;
 }
 export function declineFootballOffer(state, id) {
@@ -286,6 +299,7 @@ function footballOffer(s, kind, club, jobId = null) {
     pay: jobId ? Math.round(jobDefinition(jobId).pay * (1 + rng(s) * 0.12)) : 0,
     duration: 104,
   };
+  enhanceSportOffer(s, "football", o);
   f.offers.push(o);
   f.offers = f.offers.slice(-12);
   log(
@@ -352,6 +366,7 @@ function footballTick(s) {
     s.energy = clamp(s.energy + 2);
   } else if (availableCash(s) >= footballCosts(s)) {
     s.money -= footballCosts(s);
+    markSportTraining(s, "football");
     const recovering = f.training === "rest",
       training =
         f.training === "technical"
@@ -379,30 +394,6 @@ function footballTick(s) {
     if (!recovering && allocationRatio(s, "football") >= 0.5) {
       s.energy = clamp(s.energy - (f.training === "fitness" ? 5 : 3));
       s.skills.athletics = clamp(s.skills.athletics + 0.15);
-      if (s.week % 52 < 40) {
-        const rating = Math.round(
-          clamp(
-            f.ability * 0.65 +
-              f.discipline * 0.15 +
-              s.energy * 0.2 +
-              (rng(s) * 2 - 1) * 15,
-          ),
-        );
-        f.matches++;
-        const goals =
-          f.position === "Goalkeeper" ? 0 : rng(s) < rating / 180 ? 1 : 0;
-        f.goals += goals;
-        f.lastMatch = { week: s.week, rating, goals };
-        f.reputation = clamp(f.reputation + (rating >= 60 ? 0.22 : 0.04));
-        if (rng(s) < (f.training === "fitness" ? 0.012 : 0.004)) {
-          f.injuryWeeks = 2 + Math.floor(rng(s) * 5);
-          log(
-            s,
-            `Football injury: unavailable for ${f.injuryWeeks} weeks. Recovery takes priority.`,
-            "warning",
-          );
-        }
-      }
     }
   } else
     log(
@@ -849,7 +840,7 @@ function socialTick(s) {
   }
   m.weeklyIncome = round(m.weeklyIncome);
   m.totalIncome = round(m.totalIncome + m.weeklyIncome);
-  s.money = round(s.money + m.weeklyIncome);
+  receiveIncome(s, m.weeklyIncome, "earned");
   const sporting = Math.max(
       s.football.stage === "professional" ? s.football.reputation : 0,
       ...Object.values(s.sports).map((p) =>

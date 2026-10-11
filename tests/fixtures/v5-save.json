@@ -1,0 +1,1480 @@
+{
+  "version": 5,
+  "name": "Legacy Player",
+  "startAge": 18,
+  "city": "London",
+  "trait": "Ambitious",
+  "career": "office",
+  "week": 353,
+  "money": 10655003.58,
+  "health": 100,
+  "energy": 98.5,
+  "happiness": 100,
+  "skills": {
+    "athletics": 15,
+    "driving": 12,
+    "business": 60,
+    "finance": 12,
+    "charisma": 100,
+    "knowledge": 15,
+    "technical": 15,
+    "empathy": 20
+  },
+  "progress": {
+    "office": {
+      "level": 2,
+      "weeks": 553,
+      "unlocked": true
+    },
+    "football": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "racing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "business": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "investor": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "unemployed": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "basketball": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "tennis": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "music": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "creator": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "medicine": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "nursing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "teaching": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "engineering": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "trades": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "hospitality": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "law": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    }
+  },
+  "market": {
+    "index": 160.58,
+    "tech": 158.54,
+    "energy": 50.63,
+    "crypto": 322.65,
+    "bonds": 99.17,
+    "property": 61.93
+  },
+  "marketHistory": {
+    "index": [
+      155.67,
+      156.86,
+      157.2,
+      156.19,
+      153.33,
+      153.38,
+      152.31,
+      152.13,
+      151.41,
+      152.41,
+      153.48,
+      152.1,
+      153.49,
+      153.86,
+      155.6,
+      155.25,
+      155.84,
+      156,
+      158.77,
+      159.65,
+      160.3,
+      158.21,
+      159.97,
+      160.58
+    ],
+    "tech": [
+      163.55,
+      158.25,
+      159.2,
+      158.1,
+      154.97,
+      158.09,
+      161.43,
+      162.21,
+      159.53,
+      164.25,
+      162.1,
+      164.69,
+      168.49,
+      170.22,
+      164.45,
+      160.27,
+      155.79,
+      152.14,
+      153.77,
+      157.23,
+      162.15,
+      160.29,
+      157.56,
+      158.54
+    ],
+    "energy": [
+      63.88,
+      62.28,
+      62.77,
+      63.13,
+      61.21,
+      62.05,
+      60.41,
+      59.44,
+      57.71,
+      56.23,
+      55.2,
+      56.69,
+      57.43,
+      57.93,
+      58.28,
+      56.81,
+      56.12,
+      55.2,
+      55.85,
+      55.2,
+      53.77,
+      52.37,
+      50.97,
+      50.63
+    ],
+    "crypto": [
+      375.33,
+      337.01,
+      319.61,
+      332.96,
+      338.37,
+      342.63,
+      313.77,
+      341.62,
+      335.13,
+      316.27,
+      326.26,
+      321.18,
+      335.56,
+      343.87,
+      331.8,
+      358.61,
+      324.93,
+      337.83,
+      308.5,
+      287.54,
+      307.43,
+      328.41,
+      336.23,
+      322.65
+    ],
+    "bonds": [
+      100.62,
+      100.52,
+      99.98,
+      99.89,
+      99.59,
+      99.69,
+      99.5,
+      100.12,
+      99.35,
+      99.72,
+      99.85,
+      99.5,
+      98.99,
+      99.55,
+      99.35,
+      99.17,
+      99.37,
+      99.07,
+      99.35,
+      99.96,
+      100.33,
+      99.21,
+      98.83,
+      99.17
+    ],
+    "property": [
+      68.4,
+      67.41,
+      67.93,
+      67.88,
+      68.7,
+      67.55,
+      68.05,
+      67.69,
+      68.65,
+      68.37,
+      68.95,
+      69.1,
+      67.59,
+      67.6,
+      66.97,
+      66.09,
+      65.42,
+      64.94,
+      65.08,
+      64.36,
+      63.11,
+      61.6,
+      62.09,
+      61.93
+    ]
+  },
+  "holdings": {
+    "index": 0,
+    "tech": 100,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "inventory": [
+    "watch"
+  ],
+  "relationships": [
+    {
+      "id": "sam",
+      "name": "Sam Taylor",
+      "role": "Best friend",
+      "bond": 98,
+      "icon": "ST",
+      "color": "purple"
+    },
+    {
+      "id": "jordan",
+      "name": "Jordan Morgan",
+      "role": "Sibling",
+      "bond": 98,
+      "icon": "JM",
+      "color": "orange"
+    },
+    {
+      "id": "person-2",
+      "name": "Riley Chen",
+      "color": "blue",
+      "role": "Partner",
+      "bond": 98,
+      "icon": "RC"
+    }
+  ],
+  "activity": "rest",
+  "actions": 3,
+  "seed": 345307175,
+  "event": null,
+  "log": [
+    {
+      "week": 353,
+      "text": "Week 353: $2,435 earned · $285.75 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 352,
+      "text": "Life choice: wish them luck this time.",
+      "kind": "info"
+    },
+    {
+      "week": 352,
+      "text": "Life milestone: A new companion.",
+      "kind": "milestone"
+    },
+    {
+      "week": 352,
+      "text": "Week 352: $2,435 earned · $285.75 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Adopted Pepper, a dog. Food, care, and vet visits become part of your household budget.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Life milestone: Someone calls you home.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Welcomed Emilia to the family.",
+      "kind": "milestone"
+    },
+    {
+      "week": 351,
+      "text": "Week 351: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Legacy Ventures paid a $819.98 side-business dividend.",
+      "kind": "positive"
+    },
+    {
+      "week": 351,
+      "text": "Horizon Technologies paid you a quarterly dividend of $44.56.",
+      "kind": "positive"
+    },
+    {
+      "week": 350,
+      "text": "Life choice: protect your time.",
+      "kind": "info"
+    },
+    {
+      "week": 350,
+      "text": "Week 350: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 349,
+      "text": "Week 349: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 348,
+      "text": "Life choice: put a bucket underneath for now.",
+      "kind": "info"
+    },
+    {
+      "week": 348,
+      "text": "Week 348: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 347,
+      "text": "Week 347: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 346,
+      "text": "Life choice: spread the word.",
+      "kind": "info"
+    },
+    {
+      "week": 346,
+      "text": "Week 346: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 345,
+      "text": "Week 345: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 344,
+      "text": "Life choice: recommend a useful book.",
+      "kind": "info"
+    },
+    {
+      "week": 344,
+      "text": "Week 344: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 343,
+      "text": "Week 343: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 342,
+      "text": "Life choice: recommend a useful book.",
+      "kind": "info"
+    },
+    {
+      "week": 342,
+      "text": "Week 342: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 341,
+      "text": "Week 341: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 340,
+      "text": "Life choice: take a walk and reflect.",
+      "kind": "info"
+    },
+    {
+      "week": 340,
+      "text": "Week 340: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 339,
+      "text": "Week 339: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Life choice: enjoy the quiet.",
+      "kind": "info"
+    },
+    {
+      "week": 338,
+      "text": "Week 338: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Legacy Ventures paid a $857.72 side-business dividend.",
+      "kind": "positive"
+    },
+    {
+      "week": 338,
+      "text": "Horizon Technologies paid you a quarterly dividend of $48.34.",
+      "kind": "positive"
+    },
+    {
+      "week": 337,
+      "text": "Week 337: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 336,
+      "text": "Life choice: maybe next time.",
+      "kind": "info"
+    },
+    {
+      "week": 336,
+      "text": "Week 336: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 335,
+      "text": "Week 335: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 334,
+      "text": "Life choice: wish them luck this time.",
+      "kind": "info"
+    },
+    {
+      "week": 334,
+      "text": "Week 334: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 333,
+      "text": "Week 333: $2,435 earned · $60 living costs.",
+      "kind": "positive"
+    },
+    {
+      "week": 332,
+      "text": "Life choice: maybe next time.",
+      "kind": "info"
+    }
+  ],
+  "history": [
+    {
+      "week": 302,
+      "value": 10819447
+    },
+    {
+      "week": 303,
+      "value": 10818875
+    },
+    {
+      "week": 304,
+      "value": 10817918
+    },
+    {
+      "week": 305,
+      "value": 10818255
+    },
+    {
+      "week": 306,
+      "value": 10817835
+    },
+    {
+      "week": 307,
+      "value": 10820370
+    },
+    {
+      "week": 308,
+      "value": 10820765
+    },
+    {
+      "week": 309,
+      "value": 10820628
+    },
+    {
+      "week": 310,
+      "value": 10820092
+    },
+    {
+      "week": 311,
+      "value": 10820666
+    },
+    {
+      "week": 312,
+      "value": 10822948
+    },
+    {
+      "week": 313,
+      "value": 10816505
+    },
+    {
+      "week": 314,
+      "value": 10817631
+    },
+    {
+      "week": 315,
+      "value": 10818745
+    },
+    {
+      "week": 316,
+      "value": 10818441
+    },
+    {
+      "week": 317,
+      "value": 10819330
+    },
+    {
+      "week": 318,
+      "value": 10820941
+    },
+    {
+      "week": 319,
+      "value": 10822015
+    },
+    {
+      "week": 320,
+      "value": 10822597
+    },
+    {
+      "week": 321,
+      "value": 10822357
+    },
+    {
+      "week": 322,
+      "value": 10822726
+    },
+    {
+      "week": 323,
+      "value": 10825275
+    },
+    {
+      "week": 324,
+      "value": 10826547
+    },
+    {
+      "week": 325,
+      "value": 10829408
+    },
+    {
+      "week": 326,
+      "value": 10829226
+    },
+    {
+      "week": 327,
+      "value": 10830831
+    },
+    {
+      "week": 328,
+      "value": 10831851
+    },
+    {
+      "week": 329,
+      "value": 10832705
+    },
+    {
+      "week": 330,
+      "value": 10833125
+    },
+    {
+      "week": 331,
+      "value": 10833661
+    },
+    {
+      "week": 332,
+      "value": 10834072
+    },
+    {
+      "week": 333,
+      "value": 10834661
+    },
+    {
+      "week": 334,
+      "value": 10835123
+    },
+    {
+      "week": 335,
+      "value": 10835063
+    },
+    {
+      "week": 336,
+      "value": 10835196
+    },
+    {
+      "week": 337,
+      "value": 10836717
+    },
+    {
+      "week": 338,
+      "value": 10839360
+    },
+    {
+      "week": 339,
+      "value": 10840524
+    },
+    {
+      "week": 340,
+      "value": 10841882
+    },
+    {
+      "week": 341,
+      "value": 10844563
+    },
+    {
+      "week": 342,
+      "value": 10844446
+    },
+    {
+      "week": 343,
+      "value": 10845703
+    },
+    {
+      "week": 344,
+      "value": 10845451
+    },
+    {
+      "week": 345,
+      "value": 10846315
+    },
+    {
+      "week": 346,
+      "value": 10847020
+    },
+    {
+      "week": 347,
+      "value": 10848329
+    },
+    {
+      "week": 348,
+      "value": 10848851
+    },
+    {
+      "week": 349,
+      "value": 10850009
+    },
+    {
+      "week": 350,
+      "value": 10852218
+    },
+    {
+      "week": 351,
+      "value": 10854281
+    },
+    {
+      "week": 352,
+      "value": 10854010
+    },
+    {
+      "week": 353,
+      "value": 10855573
+    }
+  ],
+  "teamStrategy": "balanced",
+  "teams": {
+    "football-team": {
+      "rating": 0,
+      "wins": 14,
+      "races": 279,
+      "profit": -2614
+    }
+  },
+  "company": {
+    "name": "Legacy Ventures",
+    "sector": "Technology",
+    "strategy": "balanced",
+    "value": 4145,
+    "employees": 1,
+    "cash": 38558.64,
+    "revenue": 664.47,
+    "costs": 412.67,
+    "profit": 251.8,
+    "periodProfit": 500.79
+  },
+  "ended": false,
+  "tradeVolumes": {
+    "index": 0,
+    "tech": 0,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "aspiration": "office",
+  "education": {
+    "completed": [
+      "school"
+    ],
+    "active": null
+  },
+  "employment": {
+    "jobId": "office-2",
+    "weeklyPay": 2435,
+    "startingPay": 2100,
+    "tenure": 553,
+    "performance": 77,
+    "nextRaiseWeek": 13,
+    "legacy": true
+  },
+  "applications": [],
+  "vacancies": [
+    {
+      "id": "office-0:352",
+      "jobId": "office-0",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "support-0:352",
+      "jobId": "support-0",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "office-1:352",
+      "jobId": "office-1",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "nursing-2:352",
+      "jobId": "nursing-2",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "engineering-0:352",
+      "jobId": "engineering-0",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "teaching-0:352",
+      "jobId": "teaching-0",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "office-3:352",
+      "jobId": "office-3",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    },
+    {
+      "id": "racing-0:352",
+      "jobId": "racing-0",
+      "postedWeek": 352,
+      "expiresWeek": 356,
+      "exceptional": false
+    }
+  ],
+  "opportunities": [],
+  "negotiations": [],
+  "ownership": {
+    "football-team": {
+      "stake": 100,
+      "basis": 750000,
+      "acquiredWeek": 0
+    }
+  },
+  "assetValues": {
+    "football-team": 126110,
+    "harbor-fc": 1800000,
+    "gt-team": 316930,
+    "f1-team": 78192630,
+    "cafe": 195982,
+    "studio": 949921,
+    "logistics": 11191980
+  },
+  "businessResults": {
+    "football-team": {
+      "profit": -2614,
+      "cash": -63529.9,
+      "strategy": "balanced",
+      "periodProfit": -4138
+    },
+    "harbor-fc": {
+      "profit": -75291,
+      "cash": -5479057.9,
+      "strategy": "balanced",
+      "periodProfit": -126371
+    },
+    "gt-team": {
+      "profit": -6192,
+      "cash": -176560.5,
+      "strategy": "balanced",
+      "periodProfit": -9215
+    },
+    "f1-team": {
+      "profit": -111291,
+      "cash": -4894929,
+      "strategy": "balanced",
+      "periodProfit": -246812
+    },
+    "cafe": {
+      "profit": 355,
+      "cash": 189151.99999999997,
+      "strategy": "balanced",
+      "periodProfit": 401
+    },
+    "studio": {
+      "profit": 5049,
+      "cash": 543003.2,
+      "strategy": "balanced",
+      "periodProfit": 4059
+    },
+    "logistics": {
+      "profit": -2349,
+      "cash": 6597093.799999999,
+      "strategy": "balanced",
+      "periodProfit": 25767
+    },
+    "horizon": {
+      "profit": 20798955,
+      "cash": 3186057125.9999995,
+      "strategy": "balanced",
+      "periodProfit": 25335258
+    },
+    "solstice": {
+      "profit": 5858539,
+      "cash": 937805899.7000003,
+      "strategy": "balanced",
+      "periodProfit": 10562820
+    }
+  },
+  "collectibles": {
+    "prices": {
+      "vintage-watch": 4180,
+      "rookie-card": 1837,
+      "print": 2322,
+      "classic-car": 76035
+    },
+    "owned": {},
+    "listings": [
+      {
+        "id": "print:352",
+        "collectibleId": "print",
+        "price": 2442,
+        "expiresWeek": 360
+      },
+      {
+        "id": "classic-car:352",
+        "collectibleId": "classic-car",
+        "price": 84859,
+        "expiresWeek": 360
+      }
+    ],
+    "auctions": []
+  },
+  "sports": {
+    "racing": {
+      "stage": "none",
+      "club": null,
+      "ability": 10,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "basketball": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "tennis": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    }
+  },
+  "music": {
+    "active": false,
+    "role": "singer",
+    "genre": "Pop",
+    "skills": {
+      "vocals": 15,
+      "lyrics": 15,
+      "production": 15
+    },
+    "sessions": 0,
+    "fans": 0,
+    "projects": [],
+    "releases": [],
+    "gigs": [],
+    "labelOffers": [],
+    "label": null,
+    "nextGigWeek": 8,
+    "nextLabelWeek": 13,
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "school": {
+    "enrolled": false,
+    "grade": 70,
+    "weeks": 0
+  },
+  "football": {
+    "stage": "none",
+    "club": null,
+    "position": "Midfielder",
+    "training": "balanced",
+    "ability": 11.25,
+    "discipline": 65,
+    "coachTrust": 50,
+    "reputation": 0,
+    "schoolWeeks": 0,
+    "grassrootsWeeks": 0,
+    "academyWeeks": 0,
+    "matches": 0,
+    "goals": 0,
+    "lastMatch": null,
+    "injuryWeeks": 0,
+    "nextScoutWeek": 13,
+    "offers": [],
+    "trial": null,
+    "contract": null
+  },
+  "social": {
+    "niche": "lifestyle",
+    "privacy": "public",
+    "contentSkill": 20,
+    "profiles": {
+      "lens": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "loop": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "tube": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "stream": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      }
+    },
+    "posts": [],
+    "offers": [],
+    "deals": [],
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextSponsorWeek": 364,
+    "history": [
+      {
+        "week": 328,
+        "followers": 0
+      },
+      {
+        "week": 329,
+        "followers": 0
+      },
+      {
+        "week": 330,
+        "followers": 0
+      },
+      {
+        "week": 331,
+        "followers": 0
+      },
+      {
+        "week": 332,
+        "followers": 0
+      },
+      {
+        "week": 333,
+        "followers": 0
+      },
+      {
+        "week": 334,
+        "followers": 0
+      },
+      {
+        "week": 335,
+        "followers": 0
+      },
+      {
+        "week": 336,
+        "followers": 0
+      },
+      {
+        "week": 337,
+        "followers": 0
+      },
+      {
+        "week": 338,
+        "followers": 0
+      },
+      {
+        "week": 339,
+        "followers": 0
+      },
+      {
+        "week": 340,
+        "followers": 0
+      },
+      {
+        "week": 341,
+        "followers": 0
+      },
+      {
+        "week": 342,
+        "followers": 0
+      },
+      {
+        "week": 343,
+        "followers": 0
+      },
+      {
+        "week": 344,
+        "followers": 0
+      },
+      {
+        "week": 345,
+        "followers": 0
+      },
+      {
+        "week": 346,
+        "followers": 0
+      },
+      {
+        "week": 347,
+        "followers": 0
+      },
+      {
+        "week": 348,
+        "followers": 0
+      },
+      {
+        "week": 349,
+        "followers": 0
+      },
+      {
+        "week": 350,
+        "followers": 0
+      },
+      {
+        "week": 351,
+        "followers": 0
+      },
+      {
+        "week": 352,
+        "followers": 0
+      },
+      {
+        "week": 353,
+        "followers": 0
+      }
+    ]
+  },
+  "fame": {
+    "recognition": 0,
+    "reputation": 65
+  },
+  "experienceCooldowns": {},
+  "experienceHistory": [],
+  "debug": {
+    "enabled": true,
+    "used": true,
+    "edits": [
+      {
+        "week": 0,
+        "text": "money: 10000000"
+      },
+      {
+        "week": 0,
+        "text": "Enabled sandbox controls."
+      }
+    ]
+  },
+  "housing": {
+    "rental": null,
+    "deposit": 0,
+    "residence": "property:312:0",
+    "properties": [
+      {
+        "id": "property:312:0",
+        "type": "townhouse",
+        "paid": 247227,
+        "value": 247490.05,
+        "purchasedWeek": 312,
+        "tenant": false,
+        "endLease": false,
+        "nextTenantWeek": null,
+        "saleWeek": null,
+        "loan": {
+          "balance": 193650.16,
+          "payment": 326.67,
+          "missed": 0,
+          "weeks": 999
+        }
+      }
+    ],
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "family": {
+    "partnerId": "person-2",
+    "sinceWeek": 260,
+    "engagement": null,
+    "pending": null,
+    "children": [
+      {
+        "id": "child:1",
+        "name": "Emilia",
+        "parentId": "person-2",
+        "bornWeek": 351,
+        "bond": 79.54999999999998,
+        "wellbeing": 85,
+        "education": 50,
+        "interest": "cooking",
+        "club": "none",
+        "schoolType": "state",
+        "confidence": 60,
+        "independence": 50,
+        "future": "undecided",
+        "support": false,
+        "lastSupportWeek": 351
+      }
+    ],
+    "parenting": "balanced",
+    "pets": [
+      {
+        "id": "pet:2",
+        "kind": "dog",
+        "name": "Pepper",
+        "bond": 49.2,
+        "health": 89.9,
+        "adoptedWeek": 351,
+        "nextVetWeek": 377
+      }
+    ],
+    "petMemories": [],
+    "serial": 3,
+    "livingTogether": false,
+    "issues": [],
+    "issueSerial": 0,
+    "weeklyContribution": 0
+  },
+  "pastimes": {
+    "routine": "balanced",
+    "community": 0,
+    "hobbies": {
+      "writing": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "photography": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "coding": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "cooking": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "gardening": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "art": {
+        "skill": 10,
+        "sessions": 0
+      }
+    },
+    "projects": [],
+    "offers": [],
+    "serial": 0,
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextOffer": 356
+  },
+  "milestones": [
+    {
+      "id": "first-job",
+      "week": 1
+    },
+    {
+      "id": "millionaire",
+      "week": 1
+    },
+    {
+      "id": "owner",
+      "week": 1
+    },
+    {
+      "id": "homeowner",
+      "week": 313
+    },
+    {
+      "id": "parent",
+      "week": 351
+    },
+    {
+      "id": "pet",
+      "week": 352
+    }
+  ],
+  "calendar": {
+    "mode": "automatic",
+    "sleep": 8,
+    "hours": {
+      "study": 8,
+      "football": 6,
+      "racing": 6,
+      "basketball": 6,
+      "tennis": 6,
+      "music": 6,
+      "project": 6,
+      "relationships": 4
+    },
+    "spent": 0,
+    "actions": [],
+    "entries": [],
+    "serial": 0,
+    "last": {
+      "week": 353,
+      "required": {
+        "sleep": 56,
+        "everyday": 28,
+        "work": 40,
+        "school": 0,
+        "commute": 5,
+        "care": 11
+      },
+      "mandatory": 140,
+      "appointments": 0,
+      "spent": 0,
+      "desired": {
+        "study": 0,
+        "football": 0,
+        "racing": 0,
+        "basketball": 0,
+        "tennis": 0,
+        "music": 0,
+        "project": 0,
+        "relationships": 4
+      },
+      "allocations": {
+        "study": 0,
+        "football": 0,
+        "racing": 0,
+        "basketball": 0,
+        "tennis": 0,
+        "music": 0,
+        "project": 0,
+        "relationships": 4
+      },
+      "deficit": 0,
+      "free": 24,
+      "total": 144,
+      "stress": 0
+    },
+    "history": [
+      {
+        "week": 352,
+        "stress": 0,
+        "deficit": 0
+      },
+      {
+        "week": 353,
+        "stress": 0,
+        "deficit": 0
+      }
+    ]
+  },
+  "workLife": {
+    "jobId": "office-2",
+    "arrangement": "standard",
+    "managerBond": 50,
+    "colleagueBond": 50,
+    "warnings": 0,
+    "poorWeeks": 0,
+    "probationEnds": null,
+    "probationReviewed": true,
+    "nextPromotion": 377,
+    "promotion": null,
+    "pension": 340.9,
+    "pensionRate": 5,
+    "history": []
+  },
+  "connections": {
+    "profiles": {
+      "sam": {
+        "personality": "Ambitious",
+        "interests": [
+          "travel",
+          "technology"
+        ],
+        "values": "creativity",
+        "trust": 80.30000000000001,
+        "mood": 65.19999999999999,
+        "ageOffset": 2,
+        "city": "London",
+        "job": "Nurse",
+        "weeklyPay": 1004,
+        "wealth": 6308,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 353,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      },
+      "jordan": {
+        "personality": "Practical",
+        "interests": [
+          "cooking",
+          "art"
+        ],
+        "values": "security",
+        "trust": 80.30000000000001,
+        "mood": 65.19999999999999,
+        "ageOffset": 0,
+        "city": "London",
+        "job": "Designer",
+        "weeklyPay": 837,
+        "wealth": 5974,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 353,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      },
+      "person-2": {
+        "personality": "Outgoing",
+        "interests": [
+          "music",
+          "travel"
+        ],
+        "values": "career",
+        "trust": 80.30000000000001,
+        "mood": 65.19999999999999,
+        "ageOffset": -1,
+        "city": "London",
+        "job": "Teacher",
+        "weeklyPay": 906,
+        "wealth": 6112,
+        "dates": 0,
+        "successfulDates": 0,
+        "lastContactWeek": 353,
+        "wantsChildren": true,
+        "plans": "Settled locally",
+        "lastDecisionWeek": -52
+      }
+    },
+    "discoveries": [],
+    "serial": 0,
+    "appActive": false,
+    "nextDiscoveryWeek": 0
+  }
+}

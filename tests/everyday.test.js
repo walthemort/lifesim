@@ -388,13 +388,17 @@ test("commissions arrive for established portfolios, expire, and only successful
   s = clear(s);
   s.energy = 100;
   const offer = s.pastimes.offers.find((o) => o.status === "offered"),
-    before = s.money;
+    before = s.money,
+    taxBefore = s.banking.tax.withheld;
   s = g.deliverFreelance(s, offer.id);
   const delivered = s.pastimes.offers.find((o) => o.id === offer.id);
   assert.ok(
     Math.abs(
       s.money -
-        (before - 15 + (delivered.status === "completed" ? offer.fee : 0)),
+        (before -
+          15 +
+          (delivered.status === "completed" ? offer.fee : 0) -
+          (s.banking.tax.withheld - taxBefore)),
     ) < 0.001,
   );
   assert.throws(() => g.deliverFreelance(s, offer.id));

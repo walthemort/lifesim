@@ -262,6 +262,8 @@ test("local sports remain available later in life while new professional contrac
 });
 test("a school-age karting life can reach an F1 offer through funded licensing, development, and professional experience", () => {
   let s = fresh({ age: 14, career: "racing", trait: "Athletic" });
+  // External funding pays for licensing and junior seats, without granting sporting credentials.
+  s = g.debugEdit(g.toggleDebug(s, true), { money: 500000 });
   s = g.setSportTraining(s, "racing", "technical");
   const categories = new Set();
   for (let i = 0; i < 1000 && s.employment?.jobId !== "racing-4"; i++) {
@@ -437,7 +439,7 @@ test("sponsor acceptance does not give instant cash; paid delivery requires labe
   s = next(s);
   assert.equal(s.social.deals[0].status, "completed");
   assert.equal(s.social.weeklyIncome, 500);
-  assert.equal(s.money, cash - 5 - 282 + 500);
+  assert.equal(s.money, cash - 5 - 282 + 500 - s.banking.tax.lastWeekly);
   assert.deepEqual(g.restoreGame(s), s);
 });
 test("missed sponsor deadlines and inadequate deliveries earn nothing and reduce reputation", () => {
@@ -534,7 +536,7 @@ test("label advances are recouped from royalty share before additional cash is p
   });
   const cash = s.money;
   s = g.acceptLabelOffer(s, "label:test");
-  assert.equal(s.money, cash + 1000);
+  assert.equal(s.money, cash + 1000 - s.banking.tax.lastWeekly);
   s.music.releases.push({
     id: "release:test",
     title: "First song",

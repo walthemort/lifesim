@@ -227,7 +227,14 @@ test("pension deposits move cash into savings, add only the employer match to we
     beforeCash = contributing.money;
   const zero = next(original),
     saved = next(contributing);
-  assert.equal(zero.money - saved.money, g.salary(original) * 0.05);
+  assert.ok(
+    Math.abs(
+      zero.money -
+        saved.money -
+        (g.salary(original) * 0.05 -
+          (g.estimatedPayTax(original) - g.estimatedPayTax(contributing))),
+    ) < 1e-8,
+  );
   assert.ok(
     Math.abs(saved.workLife.pension - g.salary(original) * 0.07) < 1e-8,
   );
@@ -388,7 +395,7 @@ test("authentic v4 migration preserves money, partner, contract fields and prior
       fs.readFileSync(new URL("./fixtures/v4-save.json", import.meta.url)),
     ),
     s = g.restoreGame(old);
-  assert.equal(s.version, 5);
+  assert.equal(s.version, g.VERSION);
   assert.equal(s.money, old.money);
   assert.deepEqual(s.relationships, old.relationships);
   assert.deepEqual(s.employment, old.employment);
@@ -426,7 +433,7 @@ test("a developed authentic v4 household keeps its child, pet, mortgage and sand
     ),
   );
   let s = g.restoreGame(old);
-  assert.equal(s.version, 5);
+  assert.equal(s.version, g.VERSION);
   assert.equal(s.money, old.money);
   assert.deepEqual(s.housing, old.housing);
   assert.deepEqual(s.employment, old.employment);

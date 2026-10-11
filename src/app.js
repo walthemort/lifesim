@@ -1,4 +1,10 @@
 import {
+  bankingScreen,
+  seasonScreen,
+  storyScreen,
+  fixtureCalendar,
+} from "./finance-season-screens.js";
+import {
   calendarScreen,
   connectionsScreen,
   familyDepthScreen,
@@ -7,6 +13,16 @@ import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./style.css";
 import {
+  loanQuote,
+  takeLoan,
+  transferSavings,
+  repayLoan,
+  negotiateSportOffer,
+  hireAgent,
+  dismissAgent,
+  acceptSportSponsor,
+  deliverSportAppearance,
+  deliverStoryCommission,
   VERSION,
   TIME_BLOCKS,
   DATE_PLANS,
@@ -229,33 +245,36 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 5,
+  migrationVersion = 6,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v6`) ||
     localStorage.getItem(`${STORAGE}-before-v5`) ||
     localStorage.getItem(`${STORAGE}-before-v4`) ||
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v5`)
-    ? 5
-    : localStorage.getItem(`${STORAGE}-before-v4`)
-      ? 4
-      : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v6`)
+    ? 6
+    : localStorage.getItem(`${STORAGE}-before-v5`)
+      ? 5
+      : localStorage.getItem(`${STORAGE}-before-v4`)
+        ? 4
+        : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v5`)
+      !localStorage.getItem(`${STORAGE}-before-v6`)
     ) {
       migrationSave = saved;
-      migrationVersion = 5;
-      localStorage.setItem(`${STORAGE}-before-v5`, saved);
+      migrationVersion = 6;
+      localStorage.setItem(`${STORAGE}-before-v6`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -339,6 +358,7 @@ const nav = [
   ["housing", "home", "Homes & property"],
   ["hobbies", "spark", "Hobbies & journal"],
   ["investments", "chart", "Investments"],
+  ["banking", "coin", "Banking & tax"],
   ["lifestyle", "bag", "Lifestyle & shopping"],
   ["teams", "trophy", "Businesses & clubs"],
 ];
@@ -483,17 +503,21 @@ function teamsView() {
 const pages = {
   overview,
   career: careerView,
-  calendar: () => calendarScreen(state, ui()),
+  calendar: () =>
+    calendarScreen(state, ui()) +
+    fixtureCalendar(state, ui()) +
+    storyScreen(state, ui()),
   relationships: relationshipsView,
   investments: investmentsView,
+  banking: () => bankingScreen(state, ui()),
   lifestyle: lifestyleView,
-  sports: () => sportsScreen(state, ui()),
+  sports: () => sportsScreen(state, ui()) + seasonScreen(state, ui()),
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
   family: () => familyScreen(state, ui()) + familyDepthScreen(state, ui()),
   housing: () => housingScreen(state, ui()),
-  hobbies: () => hobbiesScreen(state, ui()),
+  hobbies: () => hobbiesScreen(state, ui()) + storyScreen(state, ui()),
   debug: () => debugScreen(state, ui()),
 };
 function render() {
@@ -534,7 +558,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.5 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.6 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -588,7 +612,7 @@ function tradeDialog(id) {
   const m = MARKETS.find((m) => m.id === id);
   if (!m) return;
   dialog(
-    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="${m.fractional ? 0.000001 : 1}" max="${m.volume}" step="${m.fractional ? 0.000001 : 1}" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Uncommitted cash: ${money(availableCash(state), 2)}. Remaining weekly liquidity: ${(m.volume - state.tradeVolumes[id]).toLocaleString()}. Company shares represent real ownership in this simulated world.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="${m.fractional ? 0.000001 : 1}" max="${m.volume}" step="${m.fractional ? 0.000001 : 1}" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Uncommitted cash: ${money(availableCash(state), 2)}. Remaining weekly liquidity: ${(m.volume - state.tradeVolumes[id]).toLocaleString()}. Company shares represent real ownership in this simulated world. Realised gains are subject to 15% investment tax; losses offset gains at the annual tax settlement.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
   );
 }
 document.addEventListener("click", (event) => {
@@ -817,6 +841,71 @@ document.addEventListener("click", (event) => {
     case "join-sport":
       update((s) => joinSport(s, id), "Your sporting path has begun.");
       break;
+    case "confirm-loan":
+      if (
+        update(
+          (s) =>
+            takeLoan(
+              s,
+              Number(button.dataset.amount),
+              Number(button.dataset.term),
+            ),
+          "Loan funded. Repayments start next week.",
+        )
+      )
+        modal.close();
+      break;
+    case "repay-loan": {
+      const loan = state.banking.loans.find((l) => l.id === id);
+      if (!loan) break;
+      dialog(
+        `<h2>Make an extra repayment</h2><form id="repay-loan-form" data-id="${e(id)}"><label class="field-label">Repayment amount<input name="amount" type="number" min="0.01" max="${loan.balance}" step="0.01" value="${loan.balance}" required></label><p class="muted">Balance ${money(loan.balance)}. No early repayment penalty. Uses uncommitted cash.</p><button type="submit" class="button primary full-width">Repay debt</button></form>`,
+      );
+      break;
+    }
+    case "hire-agent":
+      update(
+        (s) => hireAgent(s, button.dataset.sport, id),
+        "Representation agreed. Commission applies to sporting income.",
+      );
+      break;
+    case "dismiss-agent":
+      update(
+        (s) => dismissAgent(s, button.dataset.sport),
+        "Representation ended.",
+      );
+      break;
+    case "sport-sponsor": {
+      const offer = state.seasons[button.dataset.sport].sponsorOffers.find(
+        (o) => o.id === id,
+      );
+      if (!offer) break;
+      dialog(
+        `<h2>${e(offer.brand)}</h2><p>${money(offer.annual)}/year toward racing costs for 52 weeks. Support pays competition costs directly. An appearance is due every thirteen weeks; missing it can end the agreement.</p><p class="muted">Signing uses one action and two hours; each appearance uses one action and three hours.</p><button class="button primary full-width" data-action="confirm-sport-sponsor" data-id="${e(id)}" data-sport="${button.dataset.sport}">Accept sponsorship</button>`,
+      );
+      break;
+    }
+    case "confirm-sport-sponsor":
+      if (
+        update(
+          (s) => acceptSportSponsor(s, button.dataset.sport, id),
+          "Competition funding agreed.",
+        )
+      )
+        modal.close();
+      break;
+    case "sport-appearance":
+      update(
+        (s) => deliverSportAppearance(s, button.dataset.sport),
+        "Sponsor appearance delivered.",
+      );
+      break;
+    case "story-delivery":
+      update(
+        (s) => deliverStoryCommission(s, id),
+        "Commission delivered. Check the outcome in your journal.",
+      );
+      break;
     case "sport-offer": {
       const sport = button.dataset.sport,
         o = (
@@ -824,7 +913,7 @@ document.addEventListener("click", (event) => {
         ).offers.find((o) => o.id === id);
       if (!o) break;
       dialog(
-        `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A 104-week sporting contract offers ${money(o.pay)}/week base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p><button class="button primary full-width" data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
+        `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A ${o.terms?.weeks || o.duration || 104}-week sporting contract offers ${money(o.pay)}/week gross base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p>${o.kind === "contract" && o.terms ? `<p>Role: ${e(o.terms.role)}. Appearance bonus ${money(o.terms.appearanceBonus)}; win bonus ${money(o.terms.winBonus)}. Annual driver funding: ${money(o.terms.annualFunding)}.</p><p class="muted">Income tax and any agent commission reduce spendable pay. Racing needs thirteen weeks of uncovered funding in cash reserves before signing.</p>${o.terms?.negotiation ? `<p>${o.terms?.negotiation.status === "pending" ? `Your counteroffer is being considered until week ${o.terms?.negotiation.decisionWeek}.` : `Negotiation: ${e(o.terms?.negotiation.status)}.`}</p>` : `<form id="sport-negotiation-form" data-sport="${sport}" data-id="${e(id)}"><label class="field-label">Contract approach<select name="approach"><option value="security">Security: 156 weeks, 5% less pay</option><option value="balanced">Balanced: 104 weeks, 8% more pay</option><option value="ambitious">Ambitious: 52 weeks, 20% more pay, starter role</option></select></label><p class="muted">One action and three hours. The club may refuse, and an ambitious counter can cost you the invitation. You can negotiate once.</p><button class="button secondary full-width" type="submit">Send counteroffer</button></form>`}` : ""}<button class="button primary full-width" ${o.terms?.negotiation?.status === "pending" ? "disabled" : ""} data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
       );
       break;
     }
@@ -1164,7 +1253,35 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("submit", (event) => {
+  if (event.target.id === "loan-quote-form") {
+    event.preventDefault();
+    const data = new FormData(event.target),
+      q = loanQuote(
+        state,
+        Number(data.get("amount")),
+        Number(data.get("term")),
+      );
+    dialog(
+      `<h2>Your personal loan quote</h2><p>${money(q.amount)} for ${q.term} weeks at ${(q.apr * 100).toFixed(2)}% fixed APR. Repayment: ${money(q.payment)}/week. Origination fee: ${money(q.fee)}; cash received: ${money(q.amount - q.fee)}. Estimated total including fee: ${money(q.total)}.</p>${q.eligible ? "<p>The bank can fund this loan. One action and two hours are required; the principal remains a debt until repaid.</p>" : `<p class="muted">Not eligible: ${q.reasons.map(e).join(". ")}.</p>`}<button class="button primary full-width" data-action="confirm-loan" data-amount="${q.amount}" data-term="${q.term}" ${!q.eligible || !state.actions ? "disabled" : ""}>Accept loan terms</button>`,
+    );
+    return;
+  }
   const forms = {
+    "savings-form": (s, data) =>
+      transferSavings(
+        s,
+        Number(data.get("amount")) *
+          (data.get("direction") === "withdraw" ? -1 : 1),
+      ),
+    "repay-loan-form": (s, data, form) =>
+      repayLoan(s, form.dataset.id, Number(data.get("amount"))),
+    "sport-negotiation-form": (s, data, form) =>
+      negotiateSportOffer(
+        s,
+        form.dataset.sport,
+        form.dataset.id,
+        data.get("approach"),
+      ),
     "calendar-form": (s, data) =>
       setCalendar(s, {
         mode: data.get("mode"),

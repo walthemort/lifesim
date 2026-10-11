@@ -1,3 +1,4 @@
+import { storyWeeklyHours } from "./stories.js";
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
 export const TIME_BLOCKS = [
@@ -58,7 +59,8 @@ export function requiredHours(s) {
         (c.club && c.club !== "none" && years < 16 ? 2 : 0)
       );
     }, 0) +
-    s.family.pets.length * 3;
+    s.family.pets.length * 3 +
+    storyWeeklyHours(s);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: 28,

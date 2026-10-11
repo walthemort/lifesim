@@ -174,21 +174,21 @@ test("parents can discuss activities, respond to school concerns and share a fam
   await next(page);
   expect((await saved(page)).calendar.entries.at(-1).status).toBe("completed");
 });
-test("authentic v4 lives upgrade with a downloadable unmodified pre-v5 snapshot", async ({
+test("authentic v4 lives upgrade with a downloadable unmodified pre-v6 snapshot", async ({
   page,
 }) => {
   const old = JSON.parse(
     fs.readFileSync(new URL("../fixtures/v4-save.json", import.meta.url)),
   );
   await load(page, old);
-  expect((await saved(page)).version).toBe(5);
+  expect((await saved(page)).version).toBe(6);
   expect((await saved(page)).money).toBe(old.money);
   await navigate(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v5.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v6.json");
   const backup = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(`${key}-before-v5`)),
+    (key) => JSON.parse(localStorage.getItem(`${key}-before-v6`)),
     KEY,
   );
   expect(backup).toEqual(old);

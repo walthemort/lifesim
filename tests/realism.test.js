@@ -150,7 +150,7 @@ test("contract wages and relevant experience persist without automatic role prom
     pay = g.salary(s),
     cash = s.money;
   s = next(s);
-  assert.equal(s.money, cash + pay - 280);
+  assert.equal(s.money, cash + pay - 280 - s.banking.tax.lastWeekly);
   assert.equal(s.progress.office.weeks, 1);
   s.skills.business = 100;
   s.progress.office.weeks = 1000;
@@ -315,7 +315,10 @@ test("quarterly side-business distributions follow the selected strategy and lea
       businessCash = s.company.cash;
     const r = next(s);
     const payout = Math.round((1000 + r.company.profit) * share * 100) / 100;
-    assert.equal(r.money, cash + g.salary(s) - 280 + payout);
+    assert.equal(
+      r.money,
+      cash + g.salary(s) - 280 + payout - r.banking.tax.lastWeekly,
+    );
     assert.ok(
       Math.abs(r.company.cash - (businessCash + r.company.profit - payout)) <
         0.000001,
@@ -630,7 +633,12 @@ test("debt can be recovered through real wages and long runs do not grant a prom
   assert.ok(r.money > -1000);
   s = g.setActivity(s, "rest");
   s = steps(s, 300);
-  assert.equal(s.employment.jobId, "office-0");
+  if (s.employment) assert.equal(s.employment.jobId, "office-0");
+  else
+    assert.ok(
+      s.stories.history.some((h) => h.text.includes("department closed")),
+    );
+  assert.equal(s.progress.office.level, 0);
   assert.equal(s.history.length, 52);
   assert.equal(s.marketHistory.index.length, 24);
   assert.deepEqual(g.restoreGame(s), s);

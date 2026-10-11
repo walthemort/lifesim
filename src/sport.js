@@ -1,3 +1,10 @@
+import {
+  syncSeason,
+  enhanceSportOffer,
+  checkSportSigning,
+  signedSportTerms,
+  markSportTraining,
+} from "./seasons.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { rng, availableCash, jobDefinition } from "./world.js";
 export const SPORTS = [
@@ -101,6 +108,7 @@ export function joinSport(state, id) {
     `Joined ${d.start}. Development and competition come before a professional offer.`,
     "milestone",
   );
+  syncSeason(s, id);
   return s;
 }
 export function setSportTraining(state, id, training) {
@@ -133,6 +141,7 @@ export function leaveSport(state, id) {
     `Stepped away from ${SPORTS.find((d) => d.id === id).name}. Any playing or driving contract ends.`,
     "warning",
   );
+  syncSeason(s, id);
   return s;
 }
 export function clearOtherSportContracts(s, keep = null) {
@@ -184,6 +193,7 @@ export function acceptSportOffer(state, sportId, id) {
         "Professional sport recruitment ends at age 42; local participation remains available.",
       );
     const j = jobDefinition(o.jobId);
+    checkSportSigning(s, sportId, o);
     if (
       age(s) < 16 ||
       (j.qualification && !s.education.completed.includes(j.qualification))
@@ -195,6 +205,7 @@ export function acceptSportOffer(state, sportId, id) {
     q.stage = j.level >= 2 ? "professional" : "junior";
     q.club = o.club;
     q.contract = { jobId: j.id, expiresWeek: s.week + 104 };
+    signedSportTerms(s, sportId, o);
     s.employment = {
       jobId: j.id,
       weeklyPay: o.pay,
@@ -211,13 +222,14 @@ export function acceptSportOffer(state, sportId, id) {
       if (a.status === "offer") a.status = "declined";
     log(
       s,
-      `Signed ${o.club}'s 104-week ${sportId === "tennis" ? "tour sponsorship" : "sporting"} contract: $${o.pay}/week base income.`,
+      `Signed ${o.club}'s ${o.terms?.weeks || o.duration || 104}-week ${sportId === "tennis" ? "tour sponsorship" : "sporting"} contract: $${o.pay}/week gross base income.`,
       "milestone",
     );
   }
   for (const other of q.offers)
     if (other.id !== id && other.status === "offered")
       other.status = "declined";
+  syncSeason(s, sportId);
   return s;
 }
 export function declineSportOffer(state, sportId, id) {
@@ -230,7 +242,7 @@ export function declineSportOffer(state, sportId, id) {
 }
 function offer(s, d, kind, jobId = null) {
   const p = s.sports[d.id];
-  p.offers.push({
+  const invitation = {
     id: `${d.id}:${kind}:${s.week}`,
     kind,
     club: kind === "contract" ? jobDefinition(jobId).employer : d.academy,
@@ -238,7 +250,9 @@ function offer(s, d, kind, jobId = null) {
     pay: jobId ? Math.round(jobDefinition(jobId).pay * (1 + rng(s) * 0.08)) : 0,
     status: "offered",
     expiresWeek: s.week + 4,
-  });
+  };
+  enhanceSportOffer(s, d.id, invitation);
+  p.offers.push(invitation);
   p.offers = p.offers.slice(-12);
   log(
     s,
@@ -289,6 +303,7 @@ export function advanceSports(s) {
     if (p.injuryWeeks) p.injuryWeeks--;
     else if (availableCash(s) >= (p.stage === "local" ? d.entryFee : 0)) {
       s.money -= p.stage === "local" ? d.entryFee : 0;
+      markSportTraining(s, d.id);
       if (allocationRatio(s, d.id) >= 0.5) p.experience++;
       const rest = p.training === "rest",
         gain =
@@ -310,40 +325,6 @@ export function advanceSports(s) {
       );
       if (!rest && allocationRatio(s, d.id) >= 0.5) {
         s.energy = clamp(s.energy - 3);
-        if (s.week % 52 < 40 && s.week % (d.id === "racing" ? 4 : 2) === 0) {
-          const score = Math.round(
-            clamp(
-              p.ability * 0.75 +
-                p.discipline * 0.15 +
-                s.energy * 0.1 +
-                (rng(s) * 2 - 1) * 15,
-            ),
-          );
-          const won = rng(s) < score / 150;
-          p.events++;
-          if (won) p.wins++;
-          p.reputation = clamp(p.reputation + (won ? 0.8 : 0.2));
-          p.lastResult = { week: s.week, score, won };
-          if (d.id === "tennis" && p.stage === "professional" && won) {
-            const prize = Math.round(
-              jobDefinition(p.contract.jobId).level * 300 * (0.5 + rng(s)),
-            );
-            s.money += prize;
-            log(
-              s,
-              `Tennis tournament prize: $${prize}. Prize money varies with results.`,
-              "positive",
-            );
-          }
-          if (rng(s) < 0.004) {
-            p.injuryWeeks = 2 + Math.floor(rng(s) * 4);
-            log(
-              s,
-              `${d.name} injury: ${p.injuryWeeks} weeks of recovery.`,
-              "warning",
-            );
-          }
-        }
       }
     } else
       log(

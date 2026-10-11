@@ -126,6 +126,7 @@ test("karting development produces an offered Formula 4 seat only after licensin
   let initial;
   for (let seed = 1; seed < 80; seed++) {
     const s = g.createGame({ seed, age: 16, career: "racing" });
+    s.money = 10000; // Fund the junior seat as well as the competition licence.
     s.sports.racing.stage = "academy";
     s.sports.racing.club = "Apex driver development";
     s.sports.racing.experience = 104;
@@ -298,7 +299,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v5.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v6.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

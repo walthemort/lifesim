@@ -122,7 +122,7 @@ test("application decisions, offer acceptance, and actual contract wages work in
     pay = s.employment.weeklyPay;
   await week(page);
   s = await saved(page);
-  expect(s.money).toBe(cash + pay - 280);
+  expect(s.money).toBe(cash + pay - 280 - s.banking.tax.lastWeekly);
   expect(s.progress.office.weeks).toBe(1);
 });
 test("finishing education unlocks a vacancy, while an incomplete credential blocks application", async ({
@@ -369,7 +369,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   await page.getByRole("button", { name: "Save & settings" }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v5.json");
+  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v6.json");
 });
 test("export/import and unreadable-save recovery remain usable", async ({
   page,

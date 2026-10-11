@@ -1,3 +1,5 @@
+import { receiveIncome, recordCapitalGain, recordTrade } from "./banking.js";
+import { storyTuitionSupport } from "./stories.js";
 import { EXTRA_PROGRAMS, EXTRA_JOBS, EXTRA_CAREERS } from "./career-data.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { beginEmployment } from "./careers.js";
@@ -615,7 +617,10 @@ function hasQualification(s, id) {
   );
 }
 export const tuitionDue = (s) =>
-  s.education?.active ? program(s.education.active.programId).tuition : 0;
+  s.education?.active
+    ? program(s.education.active.programId).tuition *
+      (1 - storyTuitionSupport(s, s.education.active.programId))
+    : 0;
 export const reservedCash = (s) =>
   s.negotiations
     .filter((n) => ["submitted", "accepted"].includes(n.status))
@@ -1084,8 +1089,11 @@ export function submitAcquisitionOffer(state, id, amount, stake) {
 function transferStake(s, id, stake, price) {
   const b = asset(id);
   s.money -= price;
-  if (b.stock) s.holdings[b.stock] += Math.round((b.shares * stake) / 100);
-  else {
+  if (b.stock) {
+    const units = Math.round((b.shares * stake) / 100);
+    recordTrade(s, b.stock, units, price, s.holdings[b.stock]);
+    s.holdings[b.stock] += units;
+  } else {
     const old = s.ownership[id];
     s.ownership[id] = {
       stake: (old?.stake || 0) + stake,
@@ -1321,7 +1329,8 @@ function educationTick(s) {
   const e = s.education.active;
   if (!e) return 0;
   const p = program(e.programId);
-  if (availableCash(s) < p.tuition) {
+  const due = p.tuition * (1 - storyTuitionSupport(s, p.id));
+  if (availableCash(s) < due) {
     e.paused = true;
     log(
       s,
@@ -1330,8 +1339,8 @@ function educationTick(s) {
     );
     return 0;
   }
-  s.money -= p.tuition;
-  e.spent += p.tuition;
+  s.money -= due;
+  e.spent += due;
   e.paused = false;
   e.progress += allocationRatio(s, "study", 16);
   s.energy = clamp(s.energy - 3);
@@ -1345,7 +1354,7 @@ function educationTick(s) {
       "milestone",
     );
   }
-  return p.tuition;
+  return due;
 }
 function acquisitionTick(s) {
   s.opportunities = s.opportunities.filter(
@@ -1480,7 +1489,7 @@ function businessesTick(s) {
       );
       const dividend = round((distribution * stakePercent(s, b.id)) / 100);
       r.cash -= distribution;
-      s.money += dividend;
+      receiveIncome(s, dividend, "investment");
       r.periodProfit = 0;
       if (dividend > 0)
         log(
@@ -1537,7 +1546,7 @@ function businessesTick(s) {
             Math.min(Math.max(0, c.periodProfit * share), Math.max(0, c.cash)),
           );
       c.cash -= payout;
-      s.money += round(payout);
+      receiveIncome(s, round(payout), "investment");
       c.periodProfit = 0;
       if (payout)
         log(
@@ -1573,6 +1582,10 @@ function collectiblesTick(s) {
         a.status = "sold";
         a.proceeds = round(bid * 0.92);
         s.money += a.proceeds;
+        recordCapitalGain(
+          s,
+          a.proceeds - s.collectibles.owned[a.collectibleId].basis,
+        );
         delete s.collectibles.owned[a.collectibleId];
         log(
           s,

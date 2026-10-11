@@ -1,3 +1,4 @@
+import { receiveIncome, recordCapitalGain } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, BUSINESSES, stakePercent } from "./world.js";
 
@@ -758,7 +759,7 @@ export function deliverFreelance(state, id) {
   const success = quality >= 35 && rng(s) < Math.min(0.97, 0.6 + quality / 250);
   offer.status = success ? "completed" : "failed";
   if (success) {
-    s.money += o.fee;
+    receiveIncome(s, o.fee, "earned");
     s.pastimes.totalIncome += o.fee;
     s.pastimes.weeklyIncome += o.fee;
   }
@@ -964,7 +965,7 @@ export function advanceEveryday(s) {
     if (home.tenant) {
       const rent = round(d.rent * 0.9);
       h.weeklyIncome += rent;
-      s.money += rent;
+      receiveIncome(s, rent, "investment");
       if (home.nextTenantWeek <= s.week) {
         if (home.endLease || rng(s) < 0.3) {
           home.tenant = false;
@@ -1017,6 +1018,7 @@ export function advanceEveryday(s) {
       }
       if (home.loan?.missed >= 13) {
         s.money += home.value * 0.85 - home.loan.balance;
+        recordCapitalGain(s, home.value * 0.85 - home.paid * 1.02);
         h.properties = h.properties.filter((p) => p.id !== home.id);
         if (h.residence === home.id) h.residence = null;
         log(
@@ -1031,6 +1033,7 @@ export function advanceEveryday(s) {
       if (rng(s) < 0.65) {
         const proceeds = round(home.value * 0.95 - (home.loan?.balance || 0));
         s.money += proceeds;
+        recordCapitalGain(s, home.value * 0.95 - home.paid * 1.02);
         h.properties = h.properties.filter((p) => p.id !== home.id);
         if (h.residence === home.id) h.residence = null;
         log(
@@ -1181,7 +1184,7 @@ export function advanceEveryday(s) {
       project.income = round(project.income + income);
       p.weeklyIncome += income;
       p.totalIncome += income;
-      s.money += income;
+      receiveIncome(s, income, "earned");
     }
   }
   for (const o of p.offers)

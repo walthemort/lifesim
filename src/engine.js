@@ -11,7 +11,38 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 5;
+export const VERSION = 6;
+import {
+  initializeBanking,
+  validateBanking,
+  startBankingWeek,
+  advanceBanking,
+  receiveIncome,
+  bankNetWorth,
+  bankWeeklyCosts,
+  recordTrade,
+  recordCapitalGain,
+} from "./banking.js";
+import {
+  initializeSeasons,
+  prepareSeasons,
+  advanceSeasons,
+  validateSeasons,
+  sportingCosts,
+  agentCommission,
+} from "./seasons.js";
+import {
+  initializeStories,
+  advanceStories,
+  validateStories,
+  eligibleStoryEvents,
+  STORY_EVENTS,
+  storyWeeklyCosts,
+  resolveStoryEffects,
+} from "./stories.js";
+export * from "./banking.js";
+export * from "./seasons.js";
+export * from "./stories.js";
 import { EXTRA_CAREERS } from "./career-data.js";
 import {
   initializeCalendar,
@@ -497,7 +528,7 @@ export const salary = (s) =>
         : 0;
 export const expenses = (
   s,
-  { education = true, sports = true, properties = true } = {},
+  { education = true, sports = true, properties = true, banking = true } = {},
 ) =>
   personalLivingCosts(
     s,
@@ -511,6 +542,9 @@ export const expenses = (
   householdCosts(s) +
   childExtraCosts(s) +
   pensionDue(s) +
+  sportingCosts(s) +
+  storyWeeklyCosts(s) +
+  (banking ? bankWeeklyCosts(s) : 0) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
   (education ? tuitionDue(s) : 0) +
@@ -522,6 +556,7 @@ export const portfolioValue = (s) =>
 export const netWorth = (s) =>
   s.money +
   housingEquity(s) +
+  bankNetWorth(s) +
   (s.workLife?.pension || 0) +
   portfolioValue(s) +
   (s.company?.value || 0) +
@@ -642,6 +677,9 @@ export function createGame({
   initializeCalendar(s);
   initializeWorkLife(s);
   initializeConnections(s);
+  initializeBanking(s);
+  initializeSeasons(s);
+  initializeStories(s);
   if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
@@ -715,6 +753,7 @@ export function invest(state, id, quantity) {
     throw new Error("There are not that many shares outstanding.");
   const s = clone(state);
   s.money = Math.round((s.money - cost) * 100) / 100;
+  recordTrade(s, id, quantity, Math.abs(cost), s.holdings[id]);
   s.holdings[id] = Math.round((s.holdings[id] + quantity) * 1e6) / 1e6;
   s.tradeVolumes[id] = (s.tradeVolumes[id] || 0) + Math.abs(quantity);
   if (issuer && s.holdings[id] / issuer.shares <= 0.5)
@@ -1298,6 +1337,7 @@ export function resolveEvent(state, index) {
   s.money -= option.cost || 0;
   changeStats(s, option);
   resolveEverydayEffects(s, option);
+  resolveStoryEffects(s, event, option);
   if (option.skill)
     s.skills[primarySkill(s)] = clamp(s.skills[primarySkill(s)] + option.skill);
   if (option.charisma)
@@ -1317,7 +1357,8 @@ export function resolveEvent(state, index) {
     s.inventory.push(option.item);
   if (option.gamble) {
     const won = random(s) > 0.5;
-    s.money += won ? 600 : -200;
+    if (won) receiveIncome(s, 600, "earned");
+    else s.money -= 200;
     addLog(
       s,
       won
@@ -1338,15 +1379,31 @@ export function advanceWeek(state) {
     focus = ACTIVITIES[s.activity],
     p = s.progress[s.career];
   s.week++;
+  startBankingWeek(s);
   prepareCalendar(s);
+  prepareSeasons(s);
   if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
   const income = salary(s),
-    costs = expenses(s, { education: false, sports: false, properties: false });
+    employmentPay = s.employment ? income : 0,
+    costs = expenses(s, {
+      education: false,
+      sports: false,
+      properties: false,
+      banking: false,
+    });
   pensionContribution(s, income);
   if (s.career === "business" && s.company) s.company.cash -= income;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
-  s.money += income - costs;
+  const payReceived = receiveIncome(
+    s,
+    income,
+    age(s) < 18 && !s.employment && s.career !== "business"
+      ? "exempt"
+      : "earned",
+    { deduction: pensionDue(s) + agentCommission(s) },
+  );
+  s.money -= costs;
   const skill = focus.skill || primarySkill(s);
   const tired = s.energy < 25;
   s.skills[skill] = clamp(
@@ -1389,7 +1446,7 @@ export function advanceWeek(state) {
     if (m.yield && s.week % 13 === 0) {
       const perUnit = (s.market[m.id] * m.yield) / 4;
       const dividend = Math.round(s.holdings[m.id] * perUnit * 100) / 100;
-      s.money += dividend;
+      receiveIncome(s, dividend, "investment");
       s.market[m.id] = Math.max(
         1,
         Math.round((s.market[m.id] - perUnit) * 100) / 100,
@@ -1422,6 +1479,7 @@ export function advanceWeek(state) {
   }
   const paidTuition = advanceWorld(s);
   advanceLife(s);
+  advanceSeasons(s);
   for (const m of MARKETS) {
     s.marketHistory[m.id].push(s.market[m.id]);
     s.marketHistory[m.id] = s.marketHistory[m.id].slice(-24);
@@ -1434,17 +1492,21 @@ export function advanceWeek(state) {
     );
   addLog(
     s,
-    `Week ${s.week}: $${income.toLocaleString("en-US")} earned · $${costs.toLocaleString("en-US")} living costs${paidTuition ? ` · $${paidTuition} tuition` : ""}.`,
+    `Week ${s.week}: $${income.toLocaleString("en-US")} gross earned · $${(income - payReceived).toFixed(2)} pay tax · $${costs.toLocaleString("en-US")} running costs${paidTuition ? ` · $${paidTuition} tuition` : ""}.`,
     income >= costs ? "positive" : "warning",
   );
   if (s.week % 2 === 0) {
     const choices =
-      age(s) < 18 ? YOUTH_EVENTS : [...EVENTS, ...everydayEvents(s)];
+      age(s) < 18
+        ? [...YOUTH_EVENTS, ...eligibleStoryEvents(s)]
+        : [...EVENTS, ...everydayEvents(s), ...eligibleStoryEvents(s)];
     s.event = clone(choices[Math.floor(random(s) * choices.length)]);
   }
   advanceEveryday(s);
   advanceWorkLife(s);
   advanceConnections(s);
+  advanceStories(s);
+  advanceBanking(s, employmentPay);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1466,7 +1528,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 12, 60) ||
@@ -1483,6 +1545,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsSeasons = s.version < 6;
   const needsChapters = s.version < 5;
   const needsEveryday = s.version < 4;
   if (needsChapters) {
@@ -1636,6 +1699,15 @@ export function restoreGame(raw) {
     initializeConnections(s);
     s.version = VERSION;
   }
+  if (needsSeasons) {
+    initializeBanking(s);
+    initializeSeasons(s);
+    initializeStories(s);
+    s.version = VERSION;
+  }
+  validateBanking(s);
+  validateSeasons(s);
+  validateStories(s);
   validateCalendar(s);
   validateWorkLife(s);
   validateConnections(s);
@@ -1643,9 +1715,12 @@ export function restoreGame(raw) {
   validateLife(s);
   validateEveryday(s);
   if (s.event !== null) {
-    const match = [...EVENTS, ...YOUTH_EVENTS, ...EVERYDAY_EVENTS].find(
-      (e) => e.title === s.event?.title,
-    );
+    const match = [
+      ...EVENTS,
+      ...YOUTH_EVENTS,
+      ...EVERYDAY_EVENTS,
+      ...STORY_EVENTS,
+    ].find((e) => e.title === s.event?.title);
     if (!match) throw new Error("Invalid life choice.");
     s.event = clone(match);
   }
