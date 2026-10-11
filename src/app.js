@@ -1,8 +1,33 @@
+import {
+  calendarScreen,
+  connectionsScreen,
+  familyDepthScreen,
+} from "./calendar-screens.js";
 import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./style.css";
 import {
   VERSION,
+  TIME_BLOCKS,
+  DATE_PLANS,
+  CHILD_CLUBS,
+  setCalendar,
+  attendInterview,
+  setWorkArrangement,
+  workplaceAction,
+  requestPromotion,
+  acceptPromotion,
+  setPension,
+  withdrawPension,
+  openDatingApp,
+  messageMatch,
+  inviteDate,
+  askExclusive,
+  moveInTogether,
+  cancelAppointment,
+  bookFamilyDay,
+  setChildPlan,
+  respondFamilyIssue,
   toggleDebug,
   debugEdit,
   debugAdvance,
@@ -204,28 +229,33 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 4,
+  migrationVersion = 5,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v5`) ||
     localStorage.getItem(`${STORAGE}-before-v4`) ||
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v4`) ? 4 : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v5`)
+    ? 5
+    : localStorage.getItem(`${STORAGE}-before-v4`)
+      ? 4
+      : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v4`)
+      !localStorage.getItem(`${STORAGE}-before-v5`)
     ) {
       migrationSave = saved;
-      migrationVersion = 4;
-      localStorage.setItem(`${STORAGE}-before-v4`, saved);
+      migrationVersion = 5;
+      localStorage.setItem(`${STORAGE}-before-v5`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -299,6 +329,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 }
 const nav = [
   ["overview", "grid", "Overview"],
+  ["calendar", "calendar", "Weekly calendar"],
   ["career", "briefcase", "Work & education"],
   ["sports", "football", "Sport & development"],
   ["music", "music", "Music & creativity"],
@@ -419,7 +450,7 @@ function careerView() {
   return workScreen(state, ui());
 }
 function relationshipsView() {
-  return `${title("THE PEOPLE THAT MATTER", "A life is better shared.", "Friendships, family, and a connection that might become something more.", `<button class="button primary" data-action="meet">${icon("users")} Meet someone</button>`)}<div class="info-banner">${icon("calendar")}<span>You have <strong>${state.actions} free-time actions</strong> this week. Connections fade a little without attention; a social focus helps the whole circle.</span></div><div class="relationship-grid">${state.relationships.map((r) => `<section class="panel relationship-card"><span class="avatar large ${e(r.color)}">${e(r.icon)}</span><h2>${e(r.name)}</h2>${tag(r.role, r.color)}<div class="relationship-meter"><span>Connection</span><strong>${Math.round(r.bond)} / 100</strong></div>${meter(r.bond, r.color)}<p>${r.bond >= 75 ? "A strong connection, built on the time you share." : r.bond >= 40 ? "Getting closer, one conversation at a time." : "Every meaningful relationship starts somewhere."}</p><button class="button secondary full-width" data-action="connect" data-id="${e(r.id)}" ${!state.actions ? "disabled" : ""}>Spend time together <span>$25</span></button>${!["Sibling", "Best friend", "Spouse"].includes(r.role) ? `<button class="text-button date-button" data-action="date" data-id="${e(r.id)}" ${r.bond < 60 || !state.actions ? "disabled" : ""}>${icon("heart")} ${r.role === "Partner" ? "Plan a date" : "Ask on a date"} · $90</button>` : ""}</section>`).join("")}</div>`;
+  return connectionsScreen(state, ui());
 }
 function investmentsView() {
   const holdings = portfolioValue(state);
@@ -452,6 +483,7 @@ function teamsView() {
 const pages = {
   overview,
   career: careerView,
+  calendar: () => calendarScreen(state, ui()),
   relationships: relationshipsView,
   investments: investmentsView,
   lifestyle: lifestyleView,
@@ -459,7 +491,7 @@ const pages = {
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
-  family: () => familyScreen(state, ui()),
+  family: () => familyScreen(state, ui()) + familyDepthScreen(state, ui()),
   housing: () => housingScreen(state, ui()),
   hobbies: () => hobbiesScreen(state, ui()),
   debug: () => debugScreen(state, ui()),
@@ -502,7 +534,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.4 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.5 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -917,7 +949,7 @@ document.addEventListener("click", (event) => {
     case "apply-job":
       update(
         (s) => applyForJob(s, id),
-        "Application submitted. Expect a decision in two weeks.",
+        "Application submitted. Check back for the employer’s response.",
       );
       break;
     case "accept-job": {
@@ -1064,8 +1096,55 @@ document.addEventListener("click", (event) => {
       update((s) => connect(s, id), "Time well spent. Your connection grew.");
       break;
     case "date":
-      update((s) => connect(s, id, true), "A moment to remember.");
+      dialog(
+        `<h2>Plan a date</h2><form id="date-form" data-id="${e(id)}"><label class="field-label">Date plan<select name="plan">${DATE_PLANS.map((p) => `<option value="${p.id}">${e(p.name)} · ${money(p.cost)} · ${p.hours} h</option>`).join("")}</select></label><label class="field-label">Conversation approach<select name="approach"><option value="attentive">Listen and ask questions</option><option value="shared">Explore shared interests</option><option value="ambitions">Talk about ambitions</option></select></label><p class="muted">Invite them for next week. They can decline; an accepted invitation reserves time and charges the date cost. See the plan in Weekly calendar.</p><button class="button primary full-width" type="submit">Send date invitation</button></form>`,
+      );
       break;
+    case "dating-app":
+      update(openDatingApp);
+      break;
+    case "message-match":
+      update((s) => messageMatch(s, id));
+      break;
+    case "exclusive":
+      update((s) => askExclusive(s, id));
+      break;
+    case "move-in":
+      update(moveInTogether);
+      break;
+    case "family-day":
+      update(bookFamilyDay, "A family day is planned for next week.");
+      break;
+    case "cancel-appointment":
+      update((s) => cancelAppointment(s, id));
+      break;
+    case "workplace":
+      update((s) => workplaceAction(s, id));
+      break;
+    case "promotion":
+      update(requestPromotion);
+      break;
+    case "accept-promotion":
+      update(acceptPromotion);
+      break;
+    case "withdraw-pension":
+      update(withdrawPension);
+      break;
+    case "family-issue":
+      update((s) => respondFamilyIssue(s, id, button.dataset.mode));
+      break;
+    case "interview":
+      dialog(
+        `<h2>Prepare for your interview</h2><form id="interview-form" data-id="${e(id)}"><label class="field-label">Interview approach<select name="approach"><option value="prepared">Research the employer and prepare</option><option value="experience">Discuss practical experience</option><option value="honest">Discuss your strengths honestly</option></select></label><p class="muted">Uses one action and three hours. Qualifications still matter; the employer decides next week.</p><button class="button primary full-width" type="submit">Attend interview</button></form>`,
+      );
+      break;
+    case "child-plan": {
+      const c = state.family.children.find((c) => c.id === id);
+      dialog(
+        `<h2>${e(c.name)}’s school and interests</h2><form id="child-plan-form" data-id="${e(id)}"><label class="field-label">Activity club<select name="club">${CHILD_CLUBS.map((x) => `<option value="${x.id}" ${c.club === x.id ? "selected" : ""}>${e(x.name)} · ${money(x.cost)}/week</option>`).join("")}</select></label><label class="field-label">School choice<select name="school"><option value="state" ${c.schoolType === "state" ? "selected" : ""}>State school</option><option value="private" ${c.schoolType === "private" ? "selected" : ""}>Private school · $90/week</option></select></label><label class="field-label">Future university support<select name="support"><option value="false" ${!c.support ? "selected" : ""}>No financial commitment</option><option value="true" ${c.support ? "selected" : ""}>Offer $60/week from 18 to 21 if they choose university</option></select></label><p class="muted">They enjoy ${e(c.interest)}. Discuss their preferences; their eventual career is their choice. Organised activities add two weekly care hours before age sixteen.</p><button class="button primary full-width" type="submit">Agree on a plan</button></form>`,
+      );
+      break;
+    }
     case "meet":
       update(meet, "You met someone new.");
       break;
@@ -1086,6 +1165,29 @@ document.addEventListener("click", (event) => {
 });
 document.addEventListener("submit", (event) => {
   const forms = {
+    "calendar-form": (s, data) =>
+      setCalendar(s, {
+        mode: data.get("mode"),
+        sleep: Number(data.get("sleep")),
+        hours: Object.fromEntries(
+          TIME_BLOCKS.map((k) => [k, Number(data.get(k))]),
+        ),
+      }),
+    "date-form": (s, data, form) =>
+      inviteDate(s, form.dataset.id, data.get("plan"), data.get("approach")),
+    "interview-form": (s, data, form) =>
+      attendInterview(s, form.dataset.id, data.get("approach")),
+    "child-plan-form": (s, data, form) =>
+      setChildPlan(
+        s,
+        form.dataset.id,
+        data.get("club"),
+        data.get("school"),
+        data.get("support") === "true",
+      ),
+    "work-arrangement-form": (s, data) =>
+      setWorkArrangement(s, data.get("mode")),
+    "pension-form": (s, data) => setPension(s, Number(data.get("rate"))),
     "home-purchase-form": (s, data, form) =>
       purchaseHome(s, form.dataset.id, data.get("financing")),
     "hobby-project-form": (s, data, form) =>

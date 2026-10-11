@@ -1,0 +1,538 @@
+{
+  "version": 4,
+  "name": "Alex Morgan",
+  "startAge": 23,
+  "city": "London",
+  "trait": "Ambitious",
+  "career": "unemployed",
+  "week": 0,
+  "money": 99875,
+  "health": 85,
+  "energy": 80,
+  "happiness": 81,
+  "skills": {
+    "athletics": 15,
+    "driving": 12,
+    "business": 28,
+    "finance": 12,
+    "charisma": 21
+  },
+  "progress": {
+    "basketball": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "tennis": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "music": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "creator": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "unemployed": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "office": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": true
+    },
+    "football": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "racing": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "business": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    },
+    "investor": {
+      "level": 0,
+      "weeks": 0,
+      "unlocked": false
+    }
+  },
+  "market": {
+    "index": 120,
+    "tech": 85,
+    "energy": 42,
+    "crypto": 250,
+    "bonds": 100,
+    "property": 60
+  },
+  "marketHistory": {
+    "index": [
+      120
+    ],
+    "tech": [
+      85
+    ],
+    "energy": [
+      42
+    ],
+    "crypto": [
+      250
+    ],
+    "bonds": [
+      100
+    ],
+    "property": [
+      60
+    ]
+  },
+  "holdings": {
+    "index": 0,
+    "tech": 0,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  },
+  "inventory": [],
+  "relationships": [
+    {
+      "id": "sam",
+      "name": "Sam Taylor",
+      "role": "Best friend",
+      "bond": 72,
+      "icon": "ST",
+      "color": "purple"
+    },
+    {
+      "id": "jordan",
+      "name": "Jordan Morgan",
+      "role": "Sibling",
+      "bond": 85,
+      "icon": "JM",
+      "color": "orange"
+    },
+    {
+      "id": "person-2",
+      "name": "Riley Chen",
+      "color": "blue",
+      "role": "Partner",
+      "bond": 100,
+      "icon": "RC"
+    }
+  ],
+  "activity": "balanced",
+  "actions": 1,
+  "seed": 927983332,
+  "event": null,
+  "log": [
+    {
+      "week": 0,
+      "text": "A new chapter with Riley Chen.",
+      "kind": "info"
+    },
+    {
+      "week": 0,
+      "text": "Met Riley Chen at a local gathering.",
+      "kind": "info"
+    },
+    {
+      "week": 0,
+      "text": "A new chapter begins. Your future is yours to shape.",
+      "kind": "milestone"
+    }
+  ],
+  "history": [
+    {
+      "week": 0,
+      "value": 12500
+    }
+  ],
+  "teamStrategy": "balanced",
+  "teams": {},
+  "company": null,
+  "ended": false,
+  "aspiration": "office",
+  "education": {
+    "completed": [
+      "school"
+    ],
+    "active": null
+  },
+  "employment": null,
+  "applications": [],
+  "vacancies": [
+    {
+      "id": "office-0:0",
+      "jobId": "office-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "support-0:0",
+      "jobId": "support-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "office-2:0",
+      "jobId": "office-2",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "office-1:0",
+      "jobId": "office-1",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "office-4:0",
+      "jobId": "office-4",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "investor-2:0",
+      "jobId": "investor-2",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "investor-0:0",
+      "jobId": "investor-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    },
+    {
+      "id": "racing-0:0",
+      "jobId": "racing-0",
+      "postedWeek": 0,
+      "expiresWeek": 4,
+      "exceptional": false
+    }
+  ],
+  "opportunities": [],
+  "negotiations": [],
+  "ownership": {},
+  "assetValues": {
+    "football-team": 750000,
+    "harbor-fc": 18000000,
+    "gt-team": 2000000,
+    "f1-team": 250000000,
+    "cafe": 180000,
+    "studio": 950000,
+    "logistics": 12000000
+  },
+  "businessResults": {
+    "football-team": {
+      "profit": 0,
+      "cash": 22500,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "harbor-fc": {
+      "profit": 0,
+      "cash": 540000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "gt-team": {
+      "profit": 0,
+      "cash": 60000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "f1-team": {
+      "profit": 0,
+      "cash": 7500000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "cafe": {
+      "profit": 0,
+      "cash": 5400,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "studio": {
+      "profit": 0,
+      "cash": 28500,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "logistics": {
+      "profit": 0,
+      "cash": 360000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "horizon": {
+      "profit": 0,
+      "cash": 255000000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    },
+    "solstice": {
+      "profit": 0,
+      "cash": 63000000,
+      "strategy": "balanced",
+      "periodProfit": 0
+    }
+  },
+  "collectibles": {
+    "prices": {
+      "vintage-watch": 4500,
+      "rookie-card": 850,
+      "print": 2400,
+      "classic-car": 65000
+    },
+    "owned": {},
+    "listings": [
+      {
+        "id": "print:0",
+        "collectibleId": "print",
+        "price": 2530,
+        "expiresWeek": 8
+      },
+      {
+        "id": "classic-car:0",
+        "collectibleId": "classic-car",
+        "price": 67424,
+        "expiresWeek": 8
+      }
+    ],
+    "auctions": []
+  },
+  "sports": {
+    "racing": {
+      "stage": "none",
+      "club": null,
+      "ability": 10,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "basketball": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    },
+    "tennis": {
+      "stage": "none",
+      "club": null,
+      "ability": 11.25,
+      "discipline": 65,
+      "reputation": 0,
+      "experience": 0,
+      "events": 0,
+      "wins": 0,
+      "injuryWeeks": 0,
+      "training": "balanced",
+      "nextScoutWeek": 13,
+      "lastResult": null,
+      "offers": [],
+      "trial": null,
+      "contract": null
+    }
+  },
+  "music": {
+    "active": false,
+    "role": "singer",
+    "genre": "Pop",
+    "skills": {
+      "vocals": 15,
+      "lyrics": 15,
+      "production": 15
+    },
+    "sessions": 0,
+    "fans": 0,
+    "projects": [],
+    "releases": [],
+    "gigs": [],
+    "labelOffers": [],
+    "label": null,
+    "nextGigWeek": 8,
+    "nextLabelWeek": 13,
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "school": {
+    "enrolled": false,
+    "grade": 70,
+    "weeks": 0
+  },
+  "football": {
+    "stage": "none",
+    "club": null,
+    "position": "Midfielder",
+    "training": "balanced",
+    "ability": 11.25,
+    "discipline": 65,
+    "coachTrust": 50,
+    "reputation": 0,
+    "schoolWeeks": 0,
+    "grassrootsWeeks": 0,
+    "academyWeeks": 0,
+    "matches": 0,
+    "goals": 0,
+    "lastMatch": null,
+    "injuryWeeks": 0,
+    "nextScoutWeek": 13,
+    "offers": [],
+    "trial": null,
+    "contract": null
+  },
+  "social": {
+    "niche": "lifestyle",
+    "privacy": "public",
+    "contentSkill": 20,
+    "profiles": {
+      "lens": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "loop": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "tube": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      },
+      "stream": {
+        "active": false,
+        "followers": 0,
+        "engagement": 4,
+        "lastPostWeek": -1
+      }
+    },
+    "posts": [],
+    "offers": [],
+    "deals": [],
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextSponsorWeek": 13,
+    "history": []
+  },
+  "fame": {
+    "recognition": 0,
+    "reputation": 65
+  },
+  "experienceCooldowns": {},
+  "experienceHistory": [],
+  "debug": {
+    "enabled": false,
+    "used": false,
+    "edits": []
+  },
+  "housing": {
+    "rental": null,
+    "deposit": 0,
+    "residence": null,
+    "properties": [],
+    "weeklyIncome": 0,
+    "totalIncome": 0
+  },
+  "family": {
+    "partnerId": "person-2",
+    "sinceWeek": 0,
+    "engagement": null,
+    "pending": null,
+    "children": [],
+    "parenting": "balanced",
+    "pets": [],
+    "petMemories": [],
+    "serial": 0
+  },
+  "pastimes": {
+    "routine": "balanced",
+    "community": 0,
+    "hobbies": {
+      "writing": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "photography": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "coding": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "cooking": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "gardening": {
+        "skill": 10,
+        "sessions": 0
+      },
+      "art": {
+        "skill": 10,
+        "sessions": 0
+      }
+    },
+    "projects": [],
+    "offers": [],
+    "serial": 0,
+    "weeklyIncome": 0,
+    "totalIncome": 0,
+    "nextOffer": 4
+  },
+  "milestones": [],
+  "tradeVolumes": {
+    "index": 0,
+    "tech": 0,
+    "energy": 0,
+    "crypto": 0,
+    "bonds": 0,
+    "property": 0
+  }
+}

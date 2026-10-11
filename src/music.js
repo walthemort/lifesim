@@ -1,3 +1,4 @@
+import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng } from "./world.js";
 export const MUSIC_ROLES = {
   singer: "Singer",
@@ -65,6 +66,7 @@ export function practiseMusic(state) {
   const s = structuredClone(state),
     m = s.music;
   m.active = true;
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.energy = clamp(s.energy - 4);
   m.sessions++;
@@ -106,6 +108,7 @@ export function startMusicProject(state, { title }) {
     throw new Error("Recording and distribution cost $150.");
   const s = structuredClone(state),
     m = s.music;
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.money -= 150;
   const gear =
@@ -147,6 +150,7 @@ export function bookMusicGig(state, id) {
     throw new Error("Recover before booking a performance.");
   const s = structuredClone(state),
     g = s.music.gigs.find((g) => g.id === id);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.energy = clamp(s.energy - 8);
   g.status = "booked";
@@ -166,6 +170,7 @@ export function acceptLabelOffer(state, id) {
     throw new Error("A label agreement is already active.");
   if (age(state) < 18) throw new Error("Label contracts require age 18+.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.music.labelOffers.find((o) => o.id === id).status = "accepted";
   s.music.label = {
@@ -188,13 +193,19 @@ export function advanceMusic(s) {
   m.weeklyIncome = 0;
   if (!m.active) return;
   if (["focus", "study"].includes(s.activity))
-    m.skills[skillKey(m.role)] = clamp(m.skills[skillKey(m.role)] + 0.12);
+    m.skills[skillKey(m.role)] = clamp(
+      m.skills[skillKey(m.role)] + 0.12 * allocationRatio(s, "music", 4),
+    );
   if (m.label && m.label.expiresWeek <= s.week) {
     log(
       s,
       `${m.label.name} agreement ended. Future royalties are yours; the advance is not a cash loan.`,
     );
     m.label = null;
+  }
+  for (const p of m.projects) {
+    if (p.status === "recording" && allocationRatio(s, "project", 4) < 0.5)
+      p.releaseWeek++;
   }
   for (const p of m.projects)
     if (p.status === "recording" && p.releaseWeek <= s.week) {

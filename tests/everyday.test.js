@@ -30,9 +30,12 @@ function employed() {
   return s;
 }
 function couple() {
-  let s = g.meet(wealthy());
-  s.relationships.at(-1).bond = 95;
-  s = g.connect(s, s.relationships.at(-1).id, true);
+  let s = g.restoreGame(
+    JSON.parse(
+      fs.readFileSync(new URL("./fixtures/v4-save.json", import.meta.url)),
+    ),
+  );
+  s.money = 1e7;
   s = g.setActivity(s, "social");
   s = weeks(s, 52);
   return clear(s);
@@ -229,7 +232,10 @@ test("property caps, rental age gates and listing refreshes are enforced", () =>
 test("engagement and weddings require a sustained adult partnership and separate decisions", () => {
   let young = g.meet(fresh({ age: 14 }));
   young.relationships.at(-1).bond = 95;
-  young = g.connect(young, young.relationships.at(-1).id, true);
+  assert.throws(
+    () => g.inviteDate(young, young.relationships.at(-1).id, "walk"),
+    /not available for dating/,
+  );
   assert.throws(() => g.familyAction(young, "propose"));
   let s = couple();
   const before = s.money;

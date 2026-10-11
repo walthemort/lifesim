@@ -1,3 +1,4 @@
+import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, BUSINESSES, stakePercent } from "./world.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52);
@@ -14,6 +15,7 @@ function action(state, cost = 0, energy = 0) {
     throw new Error("Not enough uncommitted cash.");
   if (state.energy < energy) throw new Error("Rest before taking this on.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Home, hobby or family activity");
   s.actions--;
   s.money = round(s.money - cost);
   s.energy -= energy;
@@ -793,6 +795,8 @@ export function familyAction(state, mode, options = {}) {
       throw new Error(
         "Engagement needs age 18+, a year together, and 80 connection.",
       );
+    if (state.connections && state.connections.profiles[partner.id].trust < 75)
+      throw new Error("A proposal also needs 75 mutual trust.");
     const s = action(state, 250);
     s.family.engagement = { partnerId: partner.id, week: s.week };
     log(s, `Engaged to ${partner.name}.`, "milestone");
@@ -836,6 +840,14 @@ export function familyAction(state, mode, options = {}) {
       options.name.trim().length > 32
     )
       throw new Error("Choose a child name (1–32 characters).");
+    if (
+      state.connections &&
+      (!state.connections.profiles[partner.id].wantsChildren ||
+        state.connections.profiles[partner.id].trust < 70)
+    )
+      throw new Error(
+        "Your partner must want children and have at least 70 trust. Discuss your lives and respect their choice.",
+      );
     const s = action(state, mode === "child" ? 1000 : 3000);
     s.family.pending = {
       name: options.name.trim(),
@@ -879,6 +891,12 @@ export function familyAction(state, mode, options = {}) {
     const s = action(state);
     s.relationships.find((r) => r.id === partner.id).role = "Former partner";
     s.family.partnerId = null;
+    s.family.livingTogether = false;
+    for (const e of s.calendar.entries)
+      if (e.personId === partner.id && e.status === "scheduled") {
+        e.status = "cancelled";
+        s.money += e.cost * 0.8;
+      }
     s.family.engagement = null;
     s.family.sinceWeek = s.week;
     s.happiness = clamp(s.happiness - 10);
@@ -1122,6 +1140,13 @@ export function advanceEveryday(s) {
   if (p.routine === "healthy" || p.routine === "mealprep")
     s.health = clamp(s.health + 0.4);
   for (const project of p.projects) {
+    if (
+      project.status === "working" &&
+      allocationRatio(s, "project", 4) < 0.5
+    ) {
+      project.finishWeek++;
+      project.royaltyUntil++;
+    }
     if (project.status === "working" && project.finishWeek <= s.week) {
       project.status = "released";
       log(

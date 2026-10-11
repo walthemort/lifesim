@@ -1,5 +1,9 @@
+import { EXTRA_PROGRAMS, EXTRA_JOBS, EXTRA_CAREERS } from "./career-data.js";
+import { allocationRatio, spendTime } from "./calendar.js";
+import { beginEmployment } from "./careers.js";
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
+  ...EXTRA_PROGRAMS,
   {
     id: "school",
     name: "Secondary-school equivalency",
@@ -104,6 +108,7 @@ const job = (
   experience,
 });
 export const JOBS = [
+  ...EXTRA_JOBS,
   job(
     "basketball-1",
     "Development squad player",
@@ -408,6 +413,9 @@ export const JOBS = [
   ),
 ];
 export const TRACK_SKILLS = {
+  ...Object.fromEntries(
+    Object.entries(EXTRA_CAREERS).map(([id, c]) => [id, c.skill]),
+  ),
   basketball: "athletics",
   tennis: "athletics",
   music: "charisma",
@@ -807,6 +815,7 @@ export function applyForJob(state, vacancyId) {
   if (!state.actions)
     throw new Error("No free-time actions left for an application this week.");
   const s = clone(state);
+  spendTime(s, 3, "Workplace action");
   s.actions--;
   s.applications.push({
     id: `application:${v.id}`,
@@ -814,14 +823,15 @@ export function applyForJob(state, vacancyId) {
     jobId: v.jobId,
     status: "pending",
     appliedWeek: s.week,
-    decisionWeek: s.week + 2,
+    decisionWeek: s.week + (jobDefinition(v.jobId).interview ? 1 : 2),
+    ...(jobDefinition(v.jobId).interview ? { interviewed: false } : {}),
     expiresWeek: s.week + 6,
     exceptional: v.exceptional,
   });
   s.applications = s.applications.slice(-24);
   log(
     s,
-    `Applied to ${jobDefinition(v.jobId).employer} for ${jobDefinition(v.jobId).title.toLowerCase()}. A decision is due in two weeks.`,
+    `Applied to ${jobDefinition(v.jobId).employer} for ${jobDefinition(v.jobId).title.toLowerCase()}. ${jobDefinition(v.jobId).interview ? "An interview response is due next week." : "A decision is due in two weeks."}`,
   );
   return s;
 }
@@ -848,6 +858,7 @@ export function acceptJobOffer(state, id) {
     legacy: false,
   };
   s.career = j.track;
+  beginEmployment(s);
   s.progress[j.track].level = j.level;
   s.progress[j.track].unlocked = true;
   application.status = "accepted";
@@ -892,6 +903,7 @@ export function requestRaise(state) {
   const s = clone(state),
     p = s.employment,
     j = jobDefinition(p.jobId);
+  spendTime(s, 3, "Workplace action");
   s.actions--;
   p.nextRaiseWeek = s.week + 26;
   const ceiling = Math.max(j.maxPay, p.startingPay * 1.35);
@@ -930,14 +942,14 @@ export function enrolEducation(state, id) {
   if (p.requires && !state.education.completed.includes(p.requires))
     throw new Error(`You need ${qualificationName(p.requires)} first.`);
   if (p.minAge && state.startAge + Math.floor(state.week / 52) < p.minAge)
-    throw new Error(`This licence requires age ${p.minAge}+. `);
+    throw new Error(`This programme requires age ${p.minAge}+. `);
   if (p.minimumSkill && state.skills[p.skill] < p.minimumSkill)
     throw new Error(
       `This programme requires ${p.minimumSkill} ${p.skill} skill.`,
     );
   if (p.experience && state.progress[p.track].weeks < p.experience)
     throw new Error(
-      `This licence requires ${p.experience} weeks of racing experience.`,
+      `This programme requires ${p.experience} weeks of ${p.track} experience.`,
     );
   if (availableCash(state) < p.tuition)
     throw new Error(
@@ -1235,12 +1247,31 @@ function employmentTick(s) {
     }
   }
   for (const a of s.applications) {
+    if (a.status === "interview" && a.expiresWeek <= s.week) {
+      a.status = "rejected";
+      log(s, "The interview invitation expired without a response.");
+      continue;
+    }
     if (a.status === "pending" && a.decisionWeek <= s.week) {
+      if (jobDefinition(a.jobId).interview && a.interviewed === false) {
+        a.status = "interview";
+        a.expiresWeek = s.week + 3;
+        log(
+          s,
+          `Interview invitation: ${jobDefinition(a.jobId).title}. Respond within three weeks.`,
+          "milestone",
+        );
+        continue;
+      }
       const j = jobDefinition(a.jobId),
         surplus = s.skills[TRACK_SKILLS[j.track]] - j.skill;
       const chance = Math.min(
         0.9,
-        (a.exceptional ? 0.35 : 0.58) +
+        (a.exceptional
+          ? 0.35
+          : a.interviewed
+            ? 0.25 + a.interviewScore * 0.005
+            : 0.58) +
           surplus * 0.004 +
           s.skills.charisma * 0.002,
       );
@@ -1302,7 +1333,7 @@ function educationTick(s) {
   s.money -= p.tuition;
   e.spent += p.tuition;
   e.paused = false;
-  e.progress += s.activity === "study" ? 1 : 0.5;
+  e.progress += allocationRatio(s, "study", 16);
   s.energy = clamp(s.energy - 3);
   if (e.progress >= p.weeks) {
     s.education.completed.push(p.id);
@@ -1608,6 +1639,7 @@ export function validateWorld(s) {
       !n(p.weeklyPay, 0) ||
       !n(p.startingPay, 0) ||
       !integer(p.tenure) ||
+      (p.weeklyHours !== undefined && !integer(p.weeklyHours, 1, 80)) ||
       !n(p.performance, 0, 100) ||
       !integer(p.nextRaiseWeek) ||
       typeof p.legacy !== "boolean"
@@ -1644,6 +1676,7 @@ export function validateWorld(s) {
         !jobDefinition(a.jobId) ||
         ![
           "pending",
+          "interview",
           "offer",
           "accepted",
           "rejected",

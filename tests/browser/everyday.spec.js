@@ -34,9 +34,12 @@ function wealthy() {
   return s;
 }
 function couple() {
-  let s = g.meet(wealthy());
-  s.relationships.at(-1).bond = 95;
-  s = g.connect(s, s.relationships.at(-1).id, true);
+  let s = g.restoreGame(
+    JSON.parse(
+      fs.readFileSync(new URL("../fixtures/v4-save.json", import.meta.url)),
+    ),
+  );
+  s.money = 1e7;
   s = g.setActivity(s, "social");
   for (let i = 0; i < 52; i++) {
     if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
@@ -296,10 +299,10 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   await navigate(page, "Save & settings");
   const download = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await download).suggestedFilename()).toBe("lifesim-before-v4.json");
+  expect((await download).suggestedFilename()).toBe("lifesim-before-v5.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v4`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v5`)),
       KEY,
     ),
   ).toEqual(old);

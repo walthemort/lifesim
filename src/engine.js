@@ -11,7 +11,33 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 4;
+export const VERSION = 5;
+import { EXTRA_CAREERS } from "./career-data.js";
+import {
+  initializeCalendar,
+  prepareCalendar,
+  finishCalendar,
+  validateCalendar,
+  spendTime,
+} from "./calendar.js";
+import {
+  initializeWorkLife,
+  advanceWorkLife,
+  validateWorkLife,
+  pensionContribution,
+  employmentIncome,
+  pensionDue,
+} from "./careers.js";
+import {
+  initializeConnections,
+  ensurePeople,
+  advanceConnections,
+  validateConnections,
+  childExtraCosts,
+} from "./connections.js";
+export * from "./calendar.js";
+export * from "./careers.js";
+export * from "./connections.js";
 import {
   initializeEveryday,
   advanceEveryday,
@@ -37,6 +63,7 @@ import {
 } from "./life.js";
 export * from "./life.js";
 export const CAREERS = {
+  ...EXTRA_CAREERS,
   basketball: {
     name: "Basketball",
     skill: "athletics",
@@ -454,7 +481,7 @@ export const salary = (s) =>
   age(s) < 18 && !s.employment && s.career !== "business"
     ? 25
     : s.employment
-      ? s.employment.weeklyPay
+      ? employmentIncome(s)
       : s.career === "business" && s.company
         ? Math.round(
             Math.min(
@@ -482,6 +509,8 @@ export const expenses = (
     (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
   ).reduce((n, i) => n + i.upkeep, 0) +
   householdCosts(s) +
+  childExtraCosts(s) +
+  pensionDue(s) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
   (education ? tuitionDue(s) : 0) +
@@ -493,6 +522,7 @@ export const portfolioValue = (s) =>
 export const netWorth = (s) =>
   s.money +
   housingEquity(s) +
+  (s.workLife?.pension || 0) +
   portfolioValue(s) +
   (s.company?.value || 0) +
   privateOwnershipValue(s) +
@@ -548,6 +578,9 @@ export function createGame({
       business: 18,
       finance: 12,
       charisma: 20,
+      knowledge: 15,
+      technical: 15,
+      empathy: 20,
     },
     progress: Object.fromEntries(
       Object.keys(CAREERS).map((k) => [
@@ -606,6 +639,9 @@ export function createGame({
   initializeWorld(s, { background });
   initializeLife(s, { footballPosition });
   initializeEveryday(s);
+  initializeCalendar(s);
+  initializeWorkLife(s);
+  initializeConnections(s);
   if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
@@ -744,11 +780,20 @@ export function connect(state, id, romantic = false) {
     )
   )
     throw new Error("You are already in a relationship.");
+  if (romantic && !["Partner", "Spouse"].includes(r.role))
+    throw new Error("Plan dates and mutually agree to become exclusive first.");
   const cost = romantic ? 90 : 25;
   if (s.money < cost) throw new Error("Not enough cash for this outing.");
+  spendTime(s, romantic ? 4 : 2, "Quality time together");
   s.actions--;
   s.money -= cost;
   r.bond = clamp(r.bond + (s.trait === "Social" ? 18 : 12));
+  if (s.connections?.profiles[id]) {
+    s.connections.profiles[id].trust = clamp(
+      s.connections.profiles[id].trust + 4,
+    );
+    s.connections.profiles[id].lastContactWeek = s.week;
+  }
   s.happiness = clamp(s.happiness + 4);
   s.skills.charisma = clamp(s.skills.charisma + 1);
   if (romantic && r.role !== "Spouse") {
@@ -798,6 +843,8 @@ export function meet(state) {
       .map((n) => n[0])
       .join(""),
   });
+  ensurePeople(s);
+  spendTime(s, 3, "Local social gathering");
   s.actions--;
   s.money -= 35;
   s.happiness = clamp(s.happiness + 3);
@@ -1291,10 +1338,12 @@ export function advanceWeek(state) {
     focus = ACTIVITIES[s.activity],
     p = s.progress[s.career];
   s.week++;
+  prepareCalendar(s);
   if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
   const income = salary(s),
     costs = expenses(s, { education: false, sports: false, properties: false });
+  pensionContribution(s, income);
   if (s.career === "business" && s.company) s.company.cash -= income;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.money += income - costs;
@@ -1394,6 +1443,9 @@ export function advanceWeek(state) {
     s.event = clone(choices[Math.floor(random(s) * choices.length)]);
   }
   advanceEveryday(s);
+  advanceWorkLife(s);
+  advanceConnections(s);
+  finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
   s.history = s.history.slice(-52);
@@ -1414,7 +1466,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 12, 60) ||
@@ -1431,7 +1483,14 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsChapters = s.version < 5;
   const needsEveryday = s.version < 4;
+  if (needsChapters) {
+    for (const k of ["knowledge", "technical", "empathy"])
+      s.skills[k] = k === "empathy" ? 20 : 15;
+    for (const k of Object.keys(EXTRA_CAREERS))
+      s.progress[k] = { level: 0, weeks: 0, unlocked: false };
+  }
   const needsLife = s.version < 3;
   const legacy = s.version === 1;
   if (legacy) {
@@ -1461,7 +1520,16 @@ export function restoreGame(raw) {
   }
   for (const k of ["health", "energy", "happiness"])
     if (!number(s[k], 0, 100)) throw new Error("Invalid character stats.");
-  for (const k of ["athletics", "driving", "business", "finance", "charisma"])
+  for (const k of [
+    "athletics",
+    "driving",
+    "business",
+    "finance",
+    "charisma",
+    "knowledge",
+    "technical",
+    "empathy",
+  ])
     if (!number(s.skills?.[k], 0, 100)) throw new Error("Invalid skills.");
   if (needsLife) {
     for (const k of Object.keys(CAREERS))
@@ -1562,6 +1630,15 @@ export function restoreGame(raw) {
     initializeEveryday(s);
     s.version = VERSION;
   }
+  if (needsChapters) {
+    initializeCalendar(s);
+    initializeWorkLife(s);
+    initializeConnections(s);
+    s.version = VERSION;
+  }
+  validateCalendar(s);
+  validateWorkLife(s);
+  validateConnections(s);
   validateWorld(s);
   validateLife(s);
   validateEveryday(s);

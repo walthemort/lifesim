@@ -1,3 +1,4 @@
+import * as game from "../src/engine.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -98,25 +99,34 @@ test("relationship actions cost time and money and reset each week", () => {
   s = next(s);
   assert.equal(s.actions, 3);
 });
-test("dating creates a partner while marriage requires a separate family decision", () => {
+test("dating requires scheduled dates and mutual commitment, while marriage remains separate", () => {
   let s = meet(fresh());
   const id = s.relationships.at(-1).id;
-  assert.throws(() => connect(s, id, true), /60 connection/);
-  for (let i = 0; i < 6; i++) {
-    if (!s.actions) s = next(s);
-    s = connect(s, id);
+  s.relationships.at(-1).bond = 90;
+  assert.throws(() => connect(s, id, true), /mutually agree/);
+  for (
+    let i = 0;
+    i < 12 && s.connections.profiles[id].successfulDates < 3;
+    i++
+  ) {
+    s = game.inviteDate(s, id, "walk");
+    s = next(s);
   }
-  if (!s.actions) s = next(s);
-  s = connect(s, id, true);
+  assert.equal(s.connections.profiles[id].successfulDates, 3);
+  for (let i = 0; i < 5 && s.relationships.at(-1).role !== "Partner"; i++) {
+    s = game.askExclusive(s, id);
+    if (s.relationships.at(-1).role !== "Partner")
+      for (let w = 0; w < 4; w++) s = next(s);
+  }
   assert.equal(s.relationships.at(-1).role, "Partner");
-  s = next(s);
-  s.relationships.at(-1).bond = 95;
-  s = connect(s, id, true);
-  assert.equal(s.relationships.at(-1).role, "Partner");
+  assert.equal(s.family.engagement, null);
   s = meet(s);
   const other = s.relationships.at(-1);
   other.bond = 80;
-  assert.throws(() => connect(s, other.id, true), /already in a relationship/);
+  assert.throws(
+    () => game.inviteDate(s, other.id, "walk"),
+    /already in an exclusive/,
+  );
   assert.throws(() => connect(s, "jordan", true), /not a romantic/);
 });
 test("rest recovers energy and low energy harms health during demanding work", () => {

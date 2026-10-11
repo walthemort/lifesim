@@ -1,3 +1,4 @@
+import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, jobDefinition } from "./world.js";
 import { EXPERIENCES } from "./catalogue.js";
 import {
@@ -151,6 +152,7 @@ export function joinFootball(state) {
     throw new Error("You already participate in football.");
   const s = structuredClone(state),
     f = s.football;
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   f.stage = age(s) < 18 ? "school" : "community";
   f.club = f.stage === "school" ? "School football team" : "Local amateur club";
@@ -204,6 +206,7 @@ export function acceptFootballOffer(state, id) {
   const s = structuredClone(state),
     f = s.football,
     o = f.offers.find((o) => o.id === id);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   o.status = "accepted";
   if (o.kind.endsWith("trial")) {
@@ -361,15 +364,19 @@ function footballTick(s) {
     f.ability = clamp(
       f.ability +
         (recovering ? 0.05 : training + gear + kit) *
+          allocationRatio(s, "football") *
           (s.energy < 25 ? 0.35 : 1) -
         (age(s) > 30 ? 0.12 : 0),
     );
     f.discipline = clamp(f.discipline + (recovering ? -0.1 : 0.12));
     f.coachTrust = clamp(f.coachTrust + (recovering ? -0.3 : 0.2));
-    if (f.stage === "school") f.schoolWeeks++;
-    else if (f.stage === "community") f.grassrootsWeeks++;
-    else if (f.stage === "academy") f.academyWeeks++;
-    if (!recovering) {
+    if (f.stage === "school" && allocationRatio(s, "football") >= 0.5)
+      f.schoolWeeks++;
+    else if (f.stage === "community" && allocationRatio(s, "football") >= 0.5)
+      f.grassrootsWeeks++;
+    else if (f.stage === "academy" && allocationRatio(s, "football") >= 0.5)
+      f.academyWeeks++;
+    if (!recovering && allocationRatio(s, "football") >= 0.5) {
       s.energy = clamp(s.energy - (f.training === "fitness" ? 5 : 3));
       s.skills.athletics = clamp(s.skills.athletics + 0.15);
       if (s.week % 52 < 40) {
@@ -541,6 +548,7 @@ export function openSocialAccount(state, id) {
   )
     throw new Error("Buy a smartphone or computer before opening an account.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.social.profiles[id].active = true;
   log(
@@ -612,6 +620,7 @@ export function createPost(
     throw new Error("Not enough uncommitted cash for production costs.");
   if (state.energy < 10) throw new Error("Rest before creating more content.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.money -= cost;
   s.energy = clamp(s.energy - 5);
@@ -687,6 +696,7 @@ export function acceptSponsor(state, id) {
   if (state.social.deals.some((d) => d.status === "active"))
     throw new Error("Complete the current sponsorship first.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   const offer = s.social.offers.find((o) => o.id === id);
   offer.status = "accepted";
@@ -874,6 +884,7 @@ export function takeExperience(state, id) {
   )
     throw new Error("The camp is for active grassroots or academy players.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.money -= e.price;
   s.experienceCooldowns[id] = s.week + e.cooldown;

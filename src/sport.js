@@ -1,3 +1,4 @@
+import { allocationRatio, spendTime } from "./calendar.js";
 import { rng, availableCash, jobDefinition } from "./world.js";
 export const SPORTS = [
   {
@@ -90,6 +91,7 @@ export function joinSport(state, id) {
   if (!["none", "retired"].includes(state.sports[id].stage))
     throw new Error("You already participate in this sport.");
   const s = structuredClone(state);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   s.sports[id].stage = "local";
   s.sports[id].club = d.start;
@@ -158,6 +160,7 @@ export function acceptSportOffer(state, sportId, id) {
   const s = structuredClone(state),
     q = s.sports[sportId],
     offer = q.offers.find((o) => o.id === id);
+  spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
   offer.status = "accepted";
   if (o.kind === "trial") {
@@ -286,7 +289,7 @@ export function advanceSports(s) {
     if (p.injuryWeeks) p.injuryWeeks--;
     else if (availableCash(s) >= (p.stage === "local" ? d.entryFee : 0)) {
       s.money -= p.stage === "local" ? d.entryFee : 0;
-      p.experience++;
+      if (allocationRatio(s, d.id) >= 0.5) p.experience++;
       const rest = p.training === "rest",
         gain =
           p.training === "technical"
@@ -296,12 +299,16 @@ export function advanceSports(s) {
               : 0.3;
       p.ability = clamp(
         p.ability +
-          (rest ? 0.03 : gain) * (s.energy < 25 ? 0.35 : 1) -
+          (rest ? 0.03 : gain) *
+            allocationRatio(s, d.id) *
+            (s.energy < 25 ? 0.35 : 1) -
           (age(s) > 32 ? 0.1 : 0),
       );
       p.discipline = clamp(p.discipline + (rest ? -0.1 : 0.1));
-      s.skills[d.skill] = clamp(s.skills[d.skill] + (rest ? 0.02 : 0.25));
-      if (!rest) {
+      s.skills[d.skill] = clamp(
+        s.skills[d.skill] + (rest ? 0.02 : 0.25) * allocationRatio(s, d.id),
+      );
+      if (!rest && allocationRatio(s, d.id) >= 0.5) {
         s.energy = clamp(s.energy - 3);
         if (s.week % 52 < 40 && s.week % (d.id === "racing" ? 4 : 2) === 0) {
           const score = Math.round(
