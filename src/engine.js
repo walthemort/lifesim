@@ -11,7 +11,22 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 3;
+export const VERSION = 4;
+import {
+  initializeEveryday,
+  advanceEveryday,
+  validateEveryday,
+  personalLivingCosts,
+  householdCosts,
+  propertyCosts,
+  housingEquity,
+  recordMilestones,
+  EVERYDAY_EVENTS,
+  everydayEvents,
+  resolveEverydayEffects,
+} from "./everyday.js";
+export * from "./everyday.js";
+export * from "./debug.js";
 import { EXTRA_SHOP } from "./catalogue.js";
 import {
   initializeLife,
@@ -453,17 +468,21 @@ export const salary = (s) =>
             ) * 100,
           ) / 100
         : 0;
-export const expenses = (s, { education = true, sports = true } = {}) =>
-  (age(s) < 18
-    ? 15
-    : s.inventory.includes("apartment") ||
-        s.inventory.includes("villa") ||
-        SHOP.some((i) => i.effects?.residence && s.inventory.includes(i.id))
-      ? 110
-      : 280) +
+export const expenses = (
+  s,
+  { education = true, sports = true, properties = true } = {},
+) =>
+  personalLivingCosts(
+    s,
+    s.inventory.includes("apartment") ||
+      s.inventory.includes("villa") ||
+      SHOP.some((i) => i.effects?.residence && s.inventory.includes(i.id)),
+  ) +
   SHOP.filter(
     (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
   ).reduce((n, i) => n + i.upkeep, 0) +
+  householdCosts(s) +
+  (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
   (education ? tuitionDue(s) : 0) +
   (sports ? footballCosts(s) + sportCosts(s) : 0);
@@ -473,6 +492,7 @@ export const portfolioValue = (s) =>
   MARKETS.reduce((n, m) => n + s.holdings[m.id] * s.market[m.id], 0);
 export const netWorth = (s) =>
   s.money +
+  housingEquity(s) +
   portfolioValue(s) +
   (s.company?.value || 0) +
   privateOwnershipValue(s) +
@@ -585,6 +605,7 @@ export function createGame({
       : "school";
   initializeWorld(s, { background });
   initializeLife(s, { footballPosition });
+  initializeEveryday(s);
   if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
@@ -730,11 +751,14 @@ export function connect(state, id, romantic = false) {
   r.bond = clamp(r.bond + (s.trait === "Social" ? 18 : 12));
   s.happiness = clamp(s.happiness + 4);
   s.skills.charisma = clamp(s.skills.charisma + 1);
-  if (romantic)
-    r.role =
-      r.role === "Spouse" || (r.role === "Partner" && r.bond >= 90)
-        ? "Spouse"
-        : "Partner";
+  if (romantic && r.role !== "Spouse") {
+    if (r.role !== "Partner") {
+      s.family.partnerId = r.id;
+      s.family.sinceWeek = s.week;
+      s.family.engagement = null;
+    }
+    r.role = "Partner";
+  }
   addLog(
     s,
     romantic
@@ -1226,6 +1250,7 @@ export function resolveEvent(state, index) {
   const s = clone(state);
   s.money -= option.cost || 0;
   changeStats(s, option);
+  resolveEverydayEffects(s, option);
   if (option.skill)
     s.skills[primarySkill(s)] = clamp(s.skills[primarySkill(s)] + option.skill);
   if (option.charisma)
@@ -1269,7 +1294,7 @@ export function advanceWeek(state) {
   if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
   const income = salary(s),
-    costs = expenses(s, { education: false, sports: false });
+    costs = expenses(s, { education: false, sports: false, properties: false });
   if (s.career === "business" && s.company) s.company.cash -= income;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.money += income - costs;
@@ -1364,9 +1389,12 @@ export function advanceWeek(state) {
     income >= costs ? "positive" : "warning",
   );
   if (s.week % 2 === 0) {
-    const choices = age(s) < 18 ? YOUTH_EVENTS : EVENTS;
+    const choices =
+      age(s) < 18 ? YOUTH_EVENTS : [...EVENTS, ...everydayEvents(s)];
     s.event = clone(choices[Math.floor(random(s) * choices.length)]);
   }
+  advanceEveryday(s);
+  recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
   s.history = s.history.slice(-52);
   if (age(s) >= 90 || s.health <= 0) {
@@ -1386,7 +1414,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, VERSION].includes(s.version) ||
+    ![1, 2, 3, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 12, 60) ||
@@ -1403,6 +1431,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsEveryday = s.version < 4;
   const needsLife = s.version < 3;
   const legacy = s.version === 1;
   if (legacy) {
@@ -1529,14 +1558,38 @@ export function restoreGame(raw) {
     )
   )
     throw new Error("Invalid legacy ownership in current save.");
+  if (needsEveryday) {
+    initializeEveryday(s);
+    s.version = VERSION;
+  }
   validateWorld(s);
   validateLife(s);
+  validateEveryday(s);
   if (s.event !== null) {
-    const match = [...EVENTS, ...YOUTH_EVENTS].find(
+    const match = [...EVENTS, ...YOUTH_EVENTS, ...EVERYDAY_EVENTS].find(
       (e) => e.title === s.event?.title,
     );
     if (!match) throw new Error("Invalid life choice.");
     s.event = clone(match);
   }
   return clone(s);
+}
+
+// Time skips run the same simulation and resolve life choices with the last, free option.
+export function debugAdvance(state, weeks) {
+  if (!state.debug.enabled) throw new Error("Enable debug mode first.");
+  if (![1, 4, 13, 52].includes(weeks))
+    throw new Error("Choose one, four, thirteen, or fifty-two weeks.");
+  if (state.ended) throw new Error("This life is complete.");
+  let s = clone(state);
+  const start = s.week;
+  for (let i = 0; i < weeks && !s.ended; i++) {
+    if (s.event) s = resolveEvent(s, s.event.options.length - 1);
+    s = advanceWeek(s);
+  }
+  const text = `Simulated ${s.week - start} weeks; life choices used their last option.`;
+  s.debug.edits.unshift({ week: s.week, text });
+  s.debug.edits = s.debug.edits.slice(0, 20);
+  addLog(s, `Debug: ${text}`, "warning");
+  return s;
 }

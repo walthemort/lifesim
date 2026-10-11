@@ -2479,7 +2479,95 @@ select {
   min-height: 0;
   overflow-y: auto;
 }
+.everyday-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+.everyday-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.everyday-card h3 {
+  font-size: 16px;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.everyday-card p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 14px 0;
+}
+.everyday-card .meter {
+  margin: 12px 0;
+}
+.everyday-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.property-price {
+  display: block;
+  font-size: 24px;
+  margin-top: 18px;
+}
+.milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.milestone {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.milestone > span {
+  color: var(--muted);
+  font-size: 22px;
+}
+.milestone.earned > span {
+  color: var(--green);
+}
+.milestone h3 {
+  font-size: 13px;
+}
+.milestone p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+#debug-skill-form,
+#debug-audience-form,
+#debug-qualification-form {
+  margin: 24px 0;
+}
+.sandbox-banner {
+  flex-wrap: wrap;
+}
+@media (max-width: 1100px) {
+  .everyday-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 700px) {
+  .everyday-grid,
+  .milestone-grid {
+    grid-template-columns: 1fr;
+  }
+  .everyday-actions .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .sandbox-banner .button {
+    width: 100%;
+  }
   .life-metrics {
     grid-template-columns: 1fr;
     gap: 12px;

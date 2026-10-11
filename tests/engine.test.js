@@ -98,7 +98,7 @@ test("relationship actions cost time and money and reset each week", () => {
   s = next(s);
   assert.equal(s.actions, 3);
 });
-test("new relationships can become partners and spouses but require connection", () => {
+test("dating creates a partner while marriage requires a separate family decision", () => {
   let s = meet(fresh());
   const id = s.relationships.at(-1).id;
   assert.throws(() => connect(s, id, true), /60 connection/);
@@ -112,7 +112,7 @@ test("new relationships can become partners and spouses but require connection",
   s = next(s);
   s.relationships.at(-1).bond = 95;
   s = connect(s, id, true);
-  assert.equal(s.relationships.at(-1).role, "Spouse");
+  assert.equal(s.relationships.at(-1).role, "Partner");
   s = meet(s);
   const other = s.relationships.at(-1);
   other.bond = 80;

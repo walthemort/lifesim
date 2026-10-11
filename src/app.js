@@ -3,6 +3,25 @@ import "@fontsource-variable/manrope";
 import "./style.css";
 import {
   VERSION,
+  toggleDebug,
+  debugEdit,
+  debugAdvance,
+  RENTALS,
+  HOMES,
+  HOBBIES,
+  propertyListings,
+  mortgagePayment,
+  rentHome,
+  purchaseHome,
+  manageProperty,
+  setRoutine,
+  practiseHobby,
+  startHobbyProject,
+  deliverFreelance,
+  volunteer,
+  familyAction,
+  adoptPet,
+  careForPet,
   createGame,
   restoreGame,
   CAREERS,
@@ -84,6 +103,12 @@ import {
   musicScreen,
   shoppingScreen,
 } from "./life-screens.js";
+import {
+  housingScreen,
+  familyScreen,
+  hobbiesScreen,
+  debugScreen,
+} from "./everyday-screens.js";
 let shopFilters = {
   category: "All",
   query: "",
@@ -178,23 +203,29 @@ let state,
   storageWarning = "",
   recoverySave = "",
   migrationSave = "",
+  debugBackup = "",
+  migrationVersion = 4,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
+  debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v4`) ||
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v4`) ? 4 : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v3`)
+      !localStorage.getItem(`${STORAGE}-before-v4`)
     ) {
       migrationSave = saved;
-      localStorage.setItem(`${STORAGE}-before-v3`, saved);
+      migrationVersion = 4;
+      localStorage.setItem(`${STORAGE}-before-v4`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -273,6 +304,9 @@ const nav = [
   ["music", "music", "Music & creativity"],
   ["social", "video", "Social media & fame"],
   ["relationships", "users", "Relationships"],
+  ["family", "heart", "Family & pets"],
+  ["housing", "home", "Homes & property"],
+  ["hobbies", "spark", "Hobbies & journal"],
   ["investments", "chart", "Investments"],
   ["lifestyle", "bag", "Lifestyle & shopping"],
   ["teams", "trophy", "Businesses & clubs"],
@@ -282,7 +316,7 @@ function sidebar() {
 }
 function header() {
   const date = new Date(Date.UTC(2026, 0, 5 + state.week * 7));
-  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>YEAR ${Math.floor(state.week / 52) + 1} · WEEK ${(state.week % 52) + 1}</small></span></span><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
+  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>YEAR ${Math.floor(state.week / 52) + 1} · WEEK ${(state.week % 52) + 1}</small></span></span><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
 }
 function stats() {
   const cards = [
@@ -363,7 +397,17 @@ function personRow(r) {
   return `<div class="person-row"><span class="avatar small ${e(r.color)}">${e(r.icon)}</span><div><strong>${e(r.name)}</strong><small>${e(r.role)}</small></div><div class="bond"><span>${Math.round(r.bond)}<small>%</small></span>${meter(r.bond, r.color)}</div></div>`;
 }
 function ui() {
-  return { title, panelHeading, tag, icon, meter, money, e, percent };
+  return {
+    title,
+    panelHeading,
+    tag,
+    icon,
+    meter,
+    money,
+    e,
+    percent,
+    hasDebugBackup: Boolean(debugBackup),
+  };
 }
 function workingOverview() {
   const p = state.employment,
@@ -375,7 +419,7 @@ function careerView() {
   return workScreen(state, ui());
 }
 function relationshipsView() {
-  return `${title("THE PEOPLE THAT MATTER", "A life is better shared.", "Friendships, family, and a connection that might become something more.", `<button class="button primary" data-action="meet">${icon("users")} Meet someone</button>`)}<div class="info-banner">${icon("calendar")}<span>You have <strong>${state.actions} free-time actions</strong> this week. Connections fade a little without attention; a social focus helps the whole circle.</span></div><div class="relationship-grid">${state.relationships.map((r) => `<section class="panel relationship-card"><span class="avatar large ${e(r.color)}">${e(r.icon)}</span><h2>${e(r.name)}</h2>${tag(r.role, r.color)}<div class="relationship-meter"><span>Connection</span><strong>${Math.round(r.bond)} / 100</strong></div>${meter(r.bond, r.color)}<p>${r.bond >= 75 ? "A strong connection, built on the time you share." : r.bond >= 40 ? "Getting closer, one conversation at a time." : "Every meaningful relationship starts somewhere."}</p><button class="button secondary full-width" data-action="connect" data-id="${e(r.id)}" ${!state.actions ? "disabled" : ""}>Spend time together <span>$25</span></button>${!["Sibling", "Best friend", "Spouse"].includes(r.role) ? `<button class="text-button date-button" data-action="date" data-id="${e(r.id)}" ${r.bond < 60 || !state.actions ? "disabled" : ""}>${icon("heart")} ${r.role === "Partner" && r.bond >= 90 ? "Propose" : r.role === "Partner" ? "Plan a date" : "Ask on a date"} · $90</button>` : ""}</section>`).join("")}</div>`;
+  return `${title("THE PEOPLE THAT MATTER", "A life is better shared.", "Friendships, family, and a connection that might become something more.", `<button class="button primary" data-action="meet">${icon("users")} Meet someone</button>`)}<div class="info-banner">${icon("calendar")}<span>You have <strong>${state.actions} free-time actions</strong> this week. Connections fade a little without attention; a social focus helps the whole circle.</span></div><div class="relationship-grid">${state.relationships.map((r) => `<section class="panel relationship-card"><span class="avatar large ${e(r.color)}">${e(r.icon)}</span><h2>${e(r.name)}</h2>${tag(r.role, r.color)}<div class="relationship-meter"><span>Connection</span><strong>${Math.round(r.bond)} / 100</strong></div>${meter(r.bond, r.color)}<p>${r.bond >= 75 ? "A strong connection, built on the time you share." : r.bond >= 40 ? "Getting closer, one conversation at a time." : "Every meaningful relationship starts somewhere."}</p><button class="button secondary full-width" data-action="connect" data-id="${e(r.id)}" ${!state.actions ? "disabled" : ""}>Spend time together <span>$25</span></button>${!["Sibling", "Best friend", "Spouse"].includes(r.role) ? `<button class="text-button date-button" data-action="date" data-id="${e(r.id)}" ${r.bond < 60 || !state.actions ? "disabled" : ""}>${icon("heart")} ${r.role === "Partner" ? "Plan a date" : "Ask on a date"} · $90</button>` : ""}</section>`).join("")}</div>`;
 }
 function investmentsView() {
   const holdings = portfolioValue(state);
@@ -415,9 +459,13 @@ const pages = {
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
+  family: () => familyScreen(state, ui()),
+  housing: () => housingScreen(state, ui()),
+  hobbies: () => hobbiesScreen(state, ui()),
+  debug: () => debugScreen(state, ui()),
 };
 function render() {
-  app.innerHTML = `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`;
+  app.innerHTML = `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`;
 }
 function characterDialog() {
   dialog(
@@ -454,7 +502,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button></div><p class="muted">Lifesim v0.3 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.4 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -482,7 +530,7 @@ function settingsDialog() {
       );
       const link = document.createElement("a");
       link.href = url;
-      link.download = "lifesim-before-v3.json";
+      link.download = `lifesim-before-v${migrationVersion}.json`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
@@ -533,6 +581,174 @@ document.addEventListener("click", (event) => {
       break;
     case "settings":
       settingsDialog();
+      break;
+    case "toggle-debug":
+      if (!state.debug.used) {
+        debugBackup = JSON.stringify(state);
+        try {
+          localStorage.setItem(`${STORAGE}-before-debug`, debugBackup);
+        } catch {
+          notify("Backup is in memory; export it before leaving.");
+        }
+      }
+      if (update((s) => toggleDebug(s, !s.debug.enabled))) {
+        modal.close();
+        if (state.debug.enabled) {
+          view = "debug";
+          render();
+        }
+      }
+      break;
+    case "open-debug":
+      modal.close();
+      view = "debug";
+      render();
+      break;
+    case "export-debug-backup": {
+      if (!debugBackup) break;
+      const url = URL.createObjectURL(
+        new Blob([debugBackup], { type: "application/json" }),
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "lifesim-before-debug.json";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      break;
+    }
+    case "restore-debug-backup":
+      dialog(
+        '<h2>Return to your pre-debug life?</h2><p>This replaces the current life with your saved pre-debug snapshot. Export your current save first if you want to keep both.</p><button class="button primary full-width" data-action="confirm-debug-restore">Restore original life</button>',
+      );
+      break;
+    case "confirm-debug-restore":
+      if (
+        debugBackup &&
+        update(() => restoreGame(debugBackup), "Pre-debug life restored.")
+      ) {
+        modal.close();
+        view = "overview";
+        render();
+      }
+      break;
+    case "debug-quick": {
+      const changes = id.startsWith("cash-")
+        ? {
+            money: Math.min(
+              1e12,
+              state.money +
+                {
+                  "cash-small": 10000,
+                  "cash-million": 1e6,
+                  "cash-billion": 1e9,
+                }[id],
+            ),
+          }
+        : id === "wellbeing"
+          ? { health: 100, energy: 100, happiness: 100 }
+          : id === "actions"
+            ? { actions: 3 }
+            : {
+                skills: Object.fromEntries(
+                  Object.keys(state.skills).map((k) => [k, 80]),
+                ),
+              };
+      update((s) => debugEdit(s, changes), "Sandbox values updated.");
+      break;
+    }
+    case "debug-time":
+      update((s) => debugAdvance(s, Number(id)), "Time simulated.");
+      break;
+    case "rent-home": {
+      const r = RENTALS.find((r) => r.id === id);
+      dialog(
+        `<h2>${e(r.name)}</h2><p>${money(r.rent)} rent per week plus personal living costs. ${money(r.deposit)} refundable deposit and $100 moving costs; your old rental deposit is credited. Moving out of an owned residence keeps it in your portfolio. Uses one action.</p><button class="button primary full-width" data-action="confirm-rent" data-id="${id}">Move into rental</button>`,
+      );
+      break;
+    }
+    case "confirm-rent":
+      if (update((s) => rentHome(s, id), "Moved into your new rental."))
+        modal.close();
+      break;
+    case "purchase-home": {
+      const h = propertyListings(state).find((h) => h.id === id);
+      dialog(
+        `<h2>${e(h.name)}</h2><form id="home-purchase-form" data-id="${id}"><label class="field-label">Purchase method<select name="financing"><option value="cash">Cash: ${money(h.asking * 1.02)} including fees</option><option value="mortgage">Mortgage: ${money(h.asking * 0.22)} upfront, ${money(mortgagePayment(h.asking * 0.8), 2)}/week</option></select></label><p class="muted">Estimated value ${money(h.asking)}. ${money(h.upkeep)}/week upkeep. A mortgage needs 26 weeks in employment, affordable repayments, and twelve payments in cash reserves after closing. This purchase does not move you in automatically. Uses one action.</p><button class="button primary full-width" type="submit">Purchase property</button></form>`,
+      );
+      break;
+    }
+    case "manage-property": {
+      const mode = button.dataset.mode;
+      const descriptions = {
+        move: "Move in for $100. Your old rental deposit is returned.",
+        let: "Pay $150 advertising fees. Tenant reviews begin in four weeks. An occupied home earns rent minus 10% management fees. A one-year lease can renew or end.",
+        sell: "List for sale. Buyer reviews begin in four weeks and can fail. Sale deducts 5% and pays off the mortgage; you keep the remaining equity.",
+        repay: "Use cash to repay the entire remaining mortgage.",
+        endlease:
+          "Give notice now. The tenant stays and pays rent until the scheduled expiry; the lease will not renew.",
+      };
+      dialog(
+        `<h2>${e({ move: "Make this your home?", let: "Advertise for tenants?", sell: "Sell this property?", repay: "Clear this mortgage?", endlease: "End the lease at expiry?" }[mode])}</h2><p>${e(descriptions[mode])} Uses one action.</p><button class="button primary full-width" data-action="confirm-property" data-id="${e(id)}" data-mode="${mode}">Confirm property action</button>`,
+      );
+      break;
+    }
+    case "confirm-property":
+      if (
+        update(
+          (s) => manageProperty(s, id, button.dataset.mode),
+          "Property plans updated.",
+        )
+      )
+        modal.close();
+      break;
+    case "hobby-practice":
+      update((s) => practiseHobby(s, id), "Practice completed.");
+      break;
+    case "hobby-project": {
+      const h = HOBBIES.find((h) => h.id === id);
+      dialog(
+        `<h2>${e(h.project)}</h2><form id="hobby-project-form" data-id="${id}"><label class="field-label">Project title<input name="title" maxlength="60" required></label><p class="muted">${money(h.budget)} production budget, one action, 8 energy, and ${h.weeks} weeks. Skills set quality; audiences and luck affect small sales over the following year.</p><button class="button primary full-width" type="submit">Start hobby project</button></form>`,
+      );
+      break;
+    }
+    case "freelance":
+      update(
+        (s) => deliverFreelance(s, id),
+        "Commission delivered; check your story for the result.",
+      );
+      break;
+    case "volunteer":
+      update(volunteer, "Thanks for helping your neighbourhood.");
+      break;
+    case "family-plan": {
+      const mode = button.dataset.mode;
+      const text = {
+        propose:
+          "You need age 18+, a year together, and 80 connection. Engagement costs $250 and one action.",
+        wedding:
+          "The wedding must be at least four weeks after engagement. Choose a $300 city-hall ceremony or a $3,000 celebration.",
+        child:
+          "Prepare for a child over 39 weeks, with $1,000 upfront. You need age 21+, a year together, 80 connection, and a family-sized home. Recurring support and care begin after arrival.",
+        "adopt-child":
+          "This simplified adoption route takes 26 weeks and $3,000 upfront. You need age 21+, a year together, 80 connection, and a family-sized home.",
+        breakup:
+          "This ends your relationship. Existing children remain in your household and need support. Pending family arrivals must complete first.",
+      };
+      dialog(
+        `<h2>${e({ propose: "Plan your proposal", wedding: "Plan your wedding", child: "A new family chapter", "adopt-child": "Explore adoption", breakup: "Discuss separation" }[mode])}</h2><form id="family-plan-form" data-mode="${mode}"><p>${e(text[mode])}</p>${["child", "adopt-child"].includes(mode) ? '<label class="field-label">Child name<input name="name" maxlength="32" required></label>' : mode === "wedding" ? '<label class="field-label">Wedding style<select name="style"><option value="simple">City hall — $300</option><option value="celebration">Celebration — $3,000</option></select></label>' : ""}<button class="button primary full-width" type="submit">Confirm family plan</button></form>`,
+      );
+      break;
+    }
+    case "child-time":
+      update((s) => familyAction(s, "child-time", { id }), "Time well spent.");
+      break;
+    case "adopt-pet":
+      dialog(
+        '<h2>Meet your new companion.</h2><form id="pet-form"><label class="field-label">Pet name<input name="name" maxlength="32" required></label><label class="field-label">Companion<select name="kind"><option value="dog">Dog — $200 adoption, $14/week care</option><option value="cat">Cat — $125 adoption, $10/week care</option></select></label><p class="muted">One action, a private home, and age 18+ required. An $80 routine vet check is due every 26 weeks.</p><button class="button primary full-width" type="submit">Adopt pet</button></form>',
+      );
+      break;
+    case "pet-care":
+      update((s) => careForPet(s, id), "Your companion enjoyed that.");
       break;
     case "focus":
       update((s) => setActivity(s, id), "Weekly focus updated");
@@ -869,6 +1085,45 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("submit", (event) => {
+  const forms = {
+    "home-purchase-form": (s, data, form) =>
+      purchaseHome(s, form.dataset.id, data.get("financing")),
+    "hobby-project-form": (s, data, form) =>
+      startHobbyProject(s, form.dataset.id, data.get("title")),
+    "family-plan-form": (s, data, form) =>
+      familyAction(s, form.dataset.mode, Object.fromEntries(data)),
+    "pet-form": (s, data) => adoptPet(s, data.get("kind"), data.get("name")),
+    "debug-stats-form": (s, data) =>
+      debugEdit(
+        s,
+        Object.fromEntries([...data].map(([k, v]) => [k, Number(v)])),
+      ),
+    "debug-skill-form": (s, data) => {
+      const [group, id] = data.get("skill").split(":");
+      return debugEdit(s, {
+        [group === "career" ? "skills" : "hobbySkills"]: {
+          [id]: Number(data.get("value")),
+        },
+      });
+    },
+    "debug-audience-form": (s, data) =>
+      debugEdit(s, {
+        followers: { [data.get("platform")]: Number(data.get("followers")) },
+      }),
+    "debug-qualification-form": (s, data) =>
+      debugEdit(s, { qualification: data.get("qualification") }),
+  };
+  if (forms[event.target.id]) {
+    event.preventDefault();
+    const form = event.target,
+      data = new FormData(form);
+    if (
+      update((s) => forms[form.id](s, data, form), "Your plans are updated.") &&
+      modal.open
+    )
+      modal.close();
+    return;
+  }
   if (event.target.id === "post-form") {
     event.preventDefault();
     const data = new FormData(event.target);
@@ -1012,6 +1267,17 @@ document.addEventListener("input", (event) => {
   }
 });
 document.addEventListener("change", async (event) => {
+  if (event.target.id === "daily-routine") {
+    update((s) => setRoutine(s, event.target.value), "Daily routine updated.");
+    return;
+  }
+  if (event.target.id === "parenting-focus") {
+    update(
+      (s) => familyAction(s, "parenting", { style: event.target.value }),
+      "Parenting focus updated.",
+    );
+    return;
+  }
   if (["football-position", "football-training"].includes(event.target.id))
     update(
       (s) =>

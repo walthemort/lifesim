@@ -9,6 +9,9 @@ const nav = [
   "Music & creativity",
   "Social media & fame",
   "Relationships",
+  "Family & pets",
+  "Homes & property",
+  "Hobbies & journal",
   "Investments",
   "Lifestyle & shopping",
   "Businesses & clubs",
@@ -90,7 +93,7 @@ test("character interest is an aspiration, and invalid completed-degree backgrou
   expect(s.aspiration).toBe("racing");
   expect(s.city).toBe("Copenhagen");
   expect(s.week).toBe(2);
-  expect(s.version).toBe(3);
+  expect(s.version).toBe(g.VERSION);
 });
 test("application decisions, offer acceptance, and actual contract wages work in the browser", async ({
   page,
@@ -359,14 +362,14 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   );
   await load(page, old);
   const r = await saved(page);
-  expect(r.version).toBe(3);
+  expect(r.version).toBe(g.VERSION);
   expect(r.money).toBe(old.money);
   expect(r.employment.weeklyPay).toBe(2100);
   expect(r.ownership["football-team"].stake).toBe(100);
   await page.getByRole("button", { name: "Save & settings" }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v3.json");
+  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v4.json");
 });
 test("export/import and unreadable-save recovery remain usable", async ({
   page,

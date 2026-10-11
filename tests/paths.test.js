@@ -576,7 +576,7 @@ test("v2 saves retain existing professional pay and investments while pending at
   });
   const original = structuredClone(old),
     s = g.restoreGame(old);
-  assert.equal(s.version, 3);
+  assert.equal(s.version, g.VERSION);
   assert.equal(s.money, old.money);
   assert.equal(s.employment.weeklyPay, 3700);
   assert.equal(s.holdings.tech, 100);

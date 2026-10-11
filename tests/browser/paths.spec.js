@@ -286,7 +286,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   );
   await load(page, old);
   const s = await saved(page);
-  expect(s.version).toBe(3);
+  expect(s.version).toBe(g.VERSION);
   expect(s.employment.weeklyPay).toBe(3700);
   expect(s.football.stage).toBe("professional");
   await page
@@ -298,7 +298,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v3.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v4.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

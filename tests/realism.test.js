@@ -593,7 +593,7 @@ test("v1 migration preserves contracts, money, shares, companies, and club owner
       ),
     ),
     s = g.restoreGame(old);
-  assert.equal(s.version, 3);
+  assert.equal(s.version, g.VERSION);
   assert.equal(s.money, old.money);
   assert.equal(g.salary(s), 2100);
   assert.equal(s.employment.legacy, true);
