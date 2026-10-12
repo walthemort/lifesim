@@ -1,4 +1,22 @@
 import {
+  identityScreen,
+  characterCreatorForm,
+  profileFields,
+  characterPortrait,
+} from "./identity-screens.js";
+import {
+  creatorAvailable,
+  setProPreview,
+  editCharacterProfile,
+  setCareerRoutine,
+  requestPathSupport,
+  personalDevelopment,
+  choosePersonalGoal,
+  bookLocalOpportunity,
+  createCustomCharacter,
+  createRandomCharacter,
+} from "./engine.js";
+import {
   reviewContract,
   contractProposal,
   allSportExitCosts,
@@ -296,12 +314,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 10,
+  migrationVersion = 11,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v11`) ||
     localStorage.getItem(`${STORAGE}-before-v10`) ||
     localStorage.getItem(`${STORAGE}-before-v9`) ||
     localStorage.getItem(`${STORAGE}-before-v8`) ||
@@ -312,42 +331,44 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v10`)
-    ? 10
-    : localStorage.getItem(`${STORAGE}-before-v9`)
-      ? 9
-      : localStorage.getItem(`${STORAGE}-before-v8`)
-        ? 8
-        : localStorage.getItem(`${STORAGE}-before-v7`)
-          ? 7
-          : localStorage.getItem(`${STORAGE}-before-v6`)
-            ? 6
-            : localStorage.getItem(`${STORAGE}-before-v5`)
-              ? 5
-              : localStorage.getItem(`${STORAGE}-before-v4`)
-                ? 4
-                : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v11`)
+    ? 11
+    : localStorage.getItem(`${STORAGE}-before-v10`)
+      ? 10
+      : localStorage.getItem(`${STORAGE}-before-v9`)
+        ? 9
+        : localStorage.getItem(`${STORAGE}-before-v8`)
+          ? 8
+          : localStorage.getItem(`${STORAGE}-before-v7`)
+            ? 7
+            : localStorage.getItem(`${STORAGE}-before-v6`)
+              ? 6
+              : localStorage.getItem(`${STORAGE}-before-v5`)
+                ? 5
+                : localStorage.getItem(`${STORAGE}-before-v4`)
+                  ? 4
+                  : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
-    state = saved ? restoreGame(saved) : createGame();
+    state = saved ? restoreGame(saved) : createRandomCharacter();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v10`)
+      !localStorage.getItem(`${STORAGE}-before-v11`)
     ) {
       migrationSave = saved;
-      migrationVersion = 10;
-      localStorage.setItem(`${STORAGE}-before-v10`, saved);
+      migrationVersion = 11;
+      localStorage.setItem(`${STORAGE}-before-v11`, saved);
     }
   } catch {
     recoverySave = saved;
     localStorage.setItem(`${STORAGE}-recovery`, saved);
-    state = createGame();
+    state = createRandomCharacter();
     storageWarning =
       "Your previous save could not be loaded. A recovery copy is available in Save & settings.";
   }
 } catch {
-  state = createGame();
+  state = createRandomCharacter();
   storageWarning =
     "Browser storage is unavailable. Export your save before leaving.";
 }
@@ -388,6 +409,10 @@ function dialog(content) {
     heading.id = "dialog-heading";
     modal.setAttribute("aria-labelledby", heading.id);
   }
+  modal.classList.toggle(
+    "creator-modal",
+    Boolean(modal.querySelector("#character-form")),
+  );
   modal.showModal();
 }
 function tag(text, color = "green") {
@@ -412,6 +437,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 const nav = [
   ["overview", "grid", "Overview"],
   ["childhood", "heart", "Childhood & school"],
+  ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
   ["career", "briefcase", "Work & education"],
@@ -526,6 +552,7 @@ function ui() {
     e,
     percent,
     hasDebugBackup: Boolean(debugBackup),
+    programmes: PROGRAMS,
   };
 }
 function workingOverview() {
@@ -580,6 +607,7 @@ const pages = {
   investments: investmentsView,
   banking: () => bankingScreen(state, ui()),
   lifestyle: lifestyleView,
+  identity: () => identityScreen(state, ui()),
   sports: () => sportsScreen(state, ui(), focusedSport),
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
@@ -641,7 +669,7 @@ function addSectionNavigation() {
 }
 function characterDialog() {
   dialog(
-    `<div class="eyebrow">YOUR CHARACTER</div><h2>${e(state.name)}</h2><p>${age(state)} years old · ${e(state.city)} · ${e(state.trait)}</p><div class="character-stats">${Object.entries(
+    `<div class="eyebrow">YOUR CHARACTER</div><h2>${e(state.name)}</h2>${characterPortrait(state.characterLife.profile)}<p>${age(state)} years old · ${e(state.city)} · ${e(state.trait)}</p><div class="character-stats">${Object.entries(
       state.skills,
     )
       .map(
@@ -650,13 +678,27 @@ function characterDialog() {
       )
       .join(
         "",
-      )}</div><div class="info-banner">${icon("heart")} Health: ${Math.round(state.health)} / 100</div><p class="muted">Traits give a starting skill bonus. Social characters strengthen bonds faster; Athletic characters gain more from training.</p><button class="button primary full-width" data-action="new-game">Create a new character ${icon("arrow")}</button>`,
+      )}</div><div class="info-banner">${icon("heart")} Health: ${Math.round(state.health)} / 100</div><p class="muted">Traits give a starting skill bonus. Social characters strengthen bonds faster; Athletic characters gain more from training.</p><button class="button secondary full-width" data-action="identity-open">Character & hometown</button><button class="button primary full-width" data-action="new-game">Create a new character ${icon("arrow")}</button>`,
   );
 }
 function newGameDialog() {
+  if (creatorAvailable(state)) {
+    dialog(characterCreatorForm(state, ui()));
+    return;
+  }
   dialog(
-    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>Who will you become?</h2><p>Every new life begins at birth, age 0. Your family covers your needs while you grow through infancy, childhood, school and adulthood.</p><form id="character-form"><input type="hidden" name="age" value="0"><input type="hidden" name="education" value="none"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label><label class="field-label">Family background<select name="familyBackground"><option value="comfortable">Comfortable household</option><option value="modest">Modest household</option><option value="wealthy">Wealthy household</option></select></label><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career"><option value="unemployed">Still discovering</option><option value="football">Football</option><option value="racing">Karting & motorsport</option><option value="basketball">Basketball</option><option value="tennis">Tennis</option><option value="music">Music</option></select></label><p class="muted">An interest becomes available when you are old enough: football from five, other sports and music lessons from six. You can discover different interests later. School starts at five; qualifications must be earned. Use Age up to grow to your next birthday, pausing for important choices. Weekly play is also available. Starting a new life replaces your current save; export it first to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>A new life awaits.</h2><p>Begin at birth with a random name, hometown, family background and personality. Discover your interests as you grow. Starting a new life replaces your current save; export it first to keep both.</p><button class="button primary full-width" data-action="identity-random-life">Begin random life</button><p class="muted">The character creator is available with Debug or Pro access. It lets you choose a name, appearance, birthplace, family and starting interests.</p><button class="button secondary full-width" data-action="settings">Open Save & settings</button>`,
   );
+}
+function beginLife(next) {
+  state = next;
+  view = "overview";
+  focusedSport = null;
+  save();
+  render();
+  modal.close();
+  window.scrollTo({ top: 0 });
+  notify("Your story begins. Make it yours.");
 }
 
 function eventDialog() {
@@ -668,8 +710,12 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.10 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.11 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
+  const creatorSettings = document.createElement("div");
+  creatorSettings.className = "everyday-card";
+  creatorSettings.innerHTML = `<h3>Character creator</h3><p>${creatorAvailable(state) ? "Character customization is unlocked." : "Enable Debug to use the creator in this prototype."}</p>${creatorAvailable(state) ? '<button class="button secondary full-width" data-action="new-game">Open character creator</button>' : ""}${state.debug.enabled ? `<p class="muted">Pro preview is a local testing switch, without accounts, billing or a paid entitlement. It keeps profile customization unlocked after Debug is disabled; age, cash and skill edits still require Debug. This life retains its sandbox marker.</p><button class="button secondary full-width" data-action="identity-pro-preview">${state.characterLife.proPreview ? "Disable" : "Enable"} local Pro preview</button>` : ""}`;
+  modal.querySelector(".settings-actions").append(creatorSettings);
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
     recoveryButton.className = "button secondary full-width";
@@ -736,6 +782,46 @@ document.addEventListener("click", (event) => {
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "identity-open":
+      modal.close();
+      view = "identity";
+      render();
+      window.scrollTo({ top: 0 });
+      break;
+    case "identity-pro-preview":
+      if (update((s) => setProPreview(s, !s.characterLife.proPreview)))
+        settingsDialog();
+      break;
+    case "identity-random-life":
+      beginLife(createRandomCharacter());
+      break;
+    case "identity-edit-profile":
+      if (!creatorAvailable(state)) {
+        notify("Character customization requires Debug or Pro access.");
+        break;
+      }
+      dialog(
+        `<h2>Edit your character.</h2><p>Your profile changes do not move your household, award skills or rewrite family history.</p><form id="identity-profile-form">${profileFields(state, ui())}<button class="button primary full-width" type="submit">Save character profile</button></form>`,
+      );
+      break;
+    case "identity-development":
+      update(
+        (s) => personalDevelopment(s, id),
+        "Personal development session completed.",
+      );
+      break;
+    case "identity-family-support":
+      update(
+        (s) => requestPathSupport(s, id),
+        "Your family has considered your request.",
+      );
+      break;
+    case "identity-book-local":
+      update(
+        (s) => bookLocalOpportunity(s, id),
+        "Local workshop booked for next week.",
+      );
+      break;
     case "focus-sport":
       if (!["football", ...SPORTS.map((sport) => sport.id)].includes(id)) break;
       focusedSport = id;
@@ -1629,6 +1715,11 @@ document.addEventListener("submit", (event) => {
     "school-club-form": (s, data) => schoolAction(s, "club", data.get("club")),
     "teen-job-form": (s, data) => schoolAction(s, "part-time", data.get("job")),
     "school-route-form": (s, data) => chooseSchoolRoute(s, data.get("route")),
+    "identity-profile-form": (s, data) =>
+      editCharacterProfile(s, Object.fromEntries(data)),
+    "identity-goal-form": (s, data) => choosePersonalGoal(s, data.get("goal")),
+    "identity-routine": (s, data, form) =>
+      setCareerRoutine(s, form.dataset.path, data.get("focus")),
     "debug-stats-form": (s, data) =>
       debugEdit(
         s,
@@ -1697,18 +1788,33 @@ document.addEventListener("submit", (event) => {
   if (event.target.id === "character-form") {
     event.preventDefault();
     const data = new FormData(event.target);
+    const options = Object.fromEntries(
+      [...data].filter(([key]) => !key.includes(":")),
+    );
+    options.age = Number(data.get("age") || 0);
+    if (options.money === "") delete options.money;
+    else if (options.money !== undefined) options.money = Number(options.money);
+    options.personality = Object.fromEntries(
+      [...data]
+        .filter(([key]) => key.startsWith("personality:"))
+        .map(([key, value]) => [key.slice(12), Number(value)]),
+    );
+    for (const [prefix, field] of [
+      ["skill:", "skills"],
+      ["specialist:", "specialistSkills"],
+    ]) {
+      const values = Object.fromEntries(
+        [...data]
+          .filter(([key, value]) => key.startsWith(prefix) && value !== "")
+          .map(([key, value]) => [key.slice(prefix.length), Number(value)]),
+      );
+      if (Object.keys(values).length) options[field] = values;
+    }
     try {
-      state = createGame(Object.fromEntries(data));
+      beginLife(createCustomCharacter(state, options));
     } catch (error) {
       notify(error.message);
-      return;
     }
-    view = "overview";
-    focusedSport = null;
-    save();
-    render();
-    modal.close();
-    notify("Your story begins. Make it yours.");
   }
   if (event.target.id === "found-company-form") {
     event.preventDefault();
@@ -1924,3 +2030,13 @@ window.addEventListener("hashchange", () => {
 if (Object.hasOwn(pages, location.hash.slice(1))) view = location.hash.slice(1);
 save();
 render();
+
+document.addEventListener("input", (event) => {
+  const form = event.target.closest("#character-form, #identity-profile-form");
+  if (!form) return;
+  const data = new FormData(form);
+  const preview = form.querySelector(".character-portrait");
+  if (preview) preview.outerHTML = characterPortrait(Object.fromEntries(data));
+  const name = form.querySelector("[data-creator-name]");
+  if (name) name.textContent = data.get("name") || "Your character";
+});

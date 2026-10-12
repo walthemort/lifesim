@@ -1,3 +1,4 @@
+import { personalityModifier } from "./personality.js";
 import {
   JOBS,
   TRACK_SKILLS,
@@ -65,6 +66,7 @@ export function attendInterview(state, id, approach) {
   const experience = Math.min(25, s.progress[j.track].weeks / 10);
   application.interviewScore = clamp(
     35 +
+      personalityModifier(s, "interview") +
       s.skills[TRACK_SKILLS[j.track]] * 0.35 +
       s.skills.charisma * 0.15 +
       (approach === "prepared"

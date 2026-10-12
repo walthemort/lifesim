@@ -485,6 +485,43 @@ main {
 .sport-section {
   display: flow-root;
 }
+.character-portrait {
+  width: 120px;
+  height: 140px;
+  flex: 0 0 auto;
+}
+.identity-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 20px 0;
+}
+.identity-preview strong {
+  font-size: 22px;
+}
+.identity-preview p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.identity-preview .button {
+  margin: 4px 8px 4px 0;
+}
+dialog.creator-modal {
+  width: min(860px, calc(100vw - 32px));
+  max-width: 860px;
+}
+.creator-debug {
+  margin: 24px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.creator-debug summary {
+  cursor: pointer;
+  color: var(--blue);
+  font-weight: 600;
+}
 .page-title {
   display: flex;
   align-items: center;

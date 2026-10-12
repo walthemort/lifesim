@@ -1,3 +1,4 @@
+import { personalityModifier } from "./personality.js";
 import { checkContractReview, registerMusicAgreement } from "./contracts.js";
 import { milestoneAway } from "./career-milestones.js";
 import {
@@ -86,7 +87,9 @@ export function practiseMusic(state) {
   s.actions--;
   s.energy = clamp(s.energy - 4);
   m.sessions++;
-  m.skills[skillKey(m.role)] = clamp(m.skills[skillKey(m.role)] + 1);
+  m.skills[skillKey(m.role)] = clamp(
+    m.skills[skillKey(m.role)] + 1 + personalityModifier(s, "training") * 0.03,
+  );
   for (const key of Object.keys(m.skills))
     if (key !== skillKey(m.role)) m.skills[key] = clamp(m.skills[key] + 0.2);
   s.happiness = clamp(s.happiness + 2);
@@ -300,7 +303,13 @@ export function advanceMusic(s) {
     if (g.status === "booked" && g.performanceWeek <= s.week) {
       if (
         s.energy >= 10 &&
-        rng(s) < Math.min(0.95, 0.5 + m.skills[skillKey(m.role)] * 0.004)
+        rng(s) <
+          Math.min(
+            0.95,
+            0.5 +
+              m.skills[skillKey(m.role)] * 0.004 +
+              personalityModifier(s, "performance") * 0.005,
+          )
       ) {
         g.status = "performed";
         m.fans += Math.floor(15 + s.fame.recognition * 0.5);

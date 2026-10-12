@@ -1,3 +1,4 @@
+import { personalityModifier } from "./personality.js";
 import {
   releaseSportAgreement,
   prepareSportReplacement,
@@ -407,6 +408,7 @@ function footballTick(s) {
       f.ability +
         (recovering ? 0.05 : training + gear + kit) *
           allocationRatio(s, "football") *
+          (1 + personalityModifier(s, "training") * 0.03) *
           (s.energy < 25 ? 0.35 : 1) -
         athleticDecline(s, "football"),
     );

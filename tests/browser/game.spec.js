@@ -72,13 +72,20 @@ test("new characters start at birth with deferred interests and no qualification
 }) => {
   await load(page);
   await page
+    .getByRole("button", { name: "Save & settings", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Enable debug mode", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  await page
     .getByRole("button", { name: "Your character", exact: true })
     .click();
   await page.getByRole("button", { name: "Create a new character" }).click();
   await page.getByLabel("Your name").fill("Riley Andersen");
   await page.getByLabel("Home city").selectOption("Copenhagen");
   await page.getByLabel("Life path / interest").selectOption("racing");
-  expect(await page.getByLabel("Starting age").count()).toBe(0);
+  expect(await page.getByLabel("Starting age").count()).toBe(1);
   expect(await page.getByLabel("Starting education").count()).toBe(0);
   await page.getByRole("button", { name: "Begin my story" }).click();
   await expect(
@@ -372,7 +379,9 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   await page.getByRole("button", { name: "Save & settings" }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await downloaded).suggestedFilename()).toBe("lifesim-before-v10.json");
+  expect((await downloaded).suggestedFilename()).toBe(
+    "lifesim-before-v11.json",
+  );
 });
 test("export/import and unreadable-save recovery remain usable", async ({
   page,

@@ -38,6 +38,8 @@ test("new family backgrounds change parents finances and a sibling arrives while
   page,
 }) => {
   await load(page, g.createGame({ seed: 1 }));
+  await nav(page, "Save & settings");
+  await nav(page, "Enable debug mode");
   await nav(page, "View your character");
   await nav(page, "Create a new character");
   await page.getByLabel("Family background").selectOption("modest");
@@ -236,7 +238,7 @@ test("authentic v7 saves preserve managers and finances with an exact downloadab
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v10.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v11.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("expanded school, family and health screens fit phones without browser errors", async ({

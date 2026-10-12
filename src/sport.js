@@ -1,3 +1,4 @@
+import { personalityModifier } from "./personality.js";
 import {
   releaseSportAgreement,
   prepareSportReplacement,
@@ -342,6 +343,7 @@ export function advanceSports(s) {
         p.ability +
           (rest ? 0.03 : gain) *
             allocationRatio(s, d.id) *
+            (1 + personalityModifier(s, "training") * 0.03) *
             (s.energy < 25 ? 0.35 : 1) -
           athleticDecline(s, d.id),
       );

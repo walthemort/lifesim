@@ -186,9 +186,9 @@ test("authentic v4 lives upgrade with a downloadable unmodified pre-v9 snapshot"
   await navigate(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v10.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v11.json");
   const backup = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(`${key}-before-v10`)),
+    (key) => JSON.parse(localStorage.getItem(`${key}-before-v11`)),
     KEY,
   );
   expect(backup).toEqual(old);

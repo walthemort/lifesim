@@ -309,7 +309,7 @@ test("investor introductions disclose ordinary board fees and transfer no free e
   await expect(page.getByRole("dialog")).toContainText("premium");
   expect((await saved(page)).ownership).toEqual(s.ownership);
 });
-test("authentic v9 migration keeps the original life records and an exact pre-v10 backup", async ({
+test("authentic v9 migration keeps the original life records and an exact pre-v11 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -328,7 +328,7 @@ test("authentic v9 migration keeps the original life records and an exact pre-v1
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v10.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v11.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("contract, milestone and evolving-contact panels fit phones without browser errors", async ({

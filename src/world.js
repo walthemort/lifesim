@@ -1,3 +1,4 @@
+import { personalityModifier } from "./personality.js";
 import { releaseSportAgreement } from "./contracts.js";
 import {
   schoolScholarshipRate,
@@ -1279,7 +1280,12 @@ function employmentTick(s) {
       skill = s.skills[TRACK_SKILLS[j.track]];
     const effort = s.activity === "focus" ? 8 : s.activity === "rest" ? -12 : 3;
     const score = clamp(
-      40 + skill * 0.25 + s.energy * 0.25 + effort + (rng(s) * 2 - 1) * 8,
+      40 +
+        skill * 0.25 +
+        s.energy * 0.25 +
+        effort +
+        personalityModifier(s, "work") +
+        (rng(s) * 2 - 1) * 8,
     );
     p.performance = Math.round(p.performance * 0.8 + score * 0.2);
     p.tenure++;

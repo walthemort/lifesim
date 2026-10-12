@@ -1,3 +1,15 @@
+import { toggleDebug, debugEdit } from "./debug.js";
+import {
+  initializeIdentity,
+  advanceIdentity,
+  validateIdentity,
+  creatorAvailable,
+  PROFILE_OPTIONS,
+  editCharacterProfile,
+  PERSONALITY,
+} from "./identity.js";
+import { personalityModifier, personalityChoice } from "./personality.js";
+export * from "./identity.js";
 import {
   initializeContracts,
   advanceContracts,
@@ -79,7 +91,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 10;
+export const VERSION = 11;
 import {
   initializeBanking,
   validateBanking,
@@ -777,6 +789,7 @@ export function createGame({
   } else if (s.startAge < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
+  initializeIdentity(s);
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -935,7 +948,11 @@ export function connect(state, id, romantic = false) {
   spendTime(s, romantic ? 4 : 2, "Quality time together");
   s.actions--;
   s.money -= cost;
-  r.bond = clamp(r.bond + (s.trait === "Social" ? 18 : 12));
+  r.bond = clamp(
+    r.bond +
+      (s.trait === "Social" ? 18 : 12) +
+      personalityModifier(s, "relationships"),
+  );
   if (s.connections?.profiles[id]) {
     s.connections.profiles[id].trust = clamp(
       s.connections.profiles[id].trust + 4,
@@ -1482,6 +1499,7 @@ export function resolveEvent(state, index) {
       won ? "positive" : "warning",
     );
   }
+  personalityChoice(s, option);
   addLog(s, `Life choice: ${option.label.toLowerCase()}.`);
   s.event = null;
   return s;
@@ -1668,6 +1686,7 @@ export function advanceWeek(state) {
   advanceStories(s);
   advanceCareerSupport(s);
   advanceBanking(s, employmentPay);
+  advanceIdentity(s);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1689,7 +1708,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1707,6 +1726,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsIdentity = s.version < 11;
   const needsDepth = s.version < 10;
   const needsCareerWorld = s.version < 9;
   const needsLifeCourse = s.version < 8;
@@ -1890,6 +1910,11 @@ export function restoreGame(raw) {
     initializeLivingWorld(s);
     s.version = VERSION;
   }
+  if (needsIdentity) {
+    initializeIdentity(s, { legacy: true });
+    s.version = VERSION;
+  }
+  validateIdentity(s);
   validateContracts(s);
   validateMilestones(s);
   validateLivingWorld(s);
@@ -1947,5 +1972,116 @@ export function ageUp(state) {
   let s = clone(state);
   const birthday = state.week + 52 - (state.week % 52);
   while (s.week < birthday && !s.event && !s.ended) s = advanceWeek(s);
+  return s;
+}
+
+export function createCustomCharacter(current, options = {}) {
+  if (!creatorAvailable(current))
+    throw new Error("Character creation requires Debug or Pro access.");
+  if (!options || typeof options !== "object" || Array.isArray(options))
+    throw new Error("Choose valid creator options.");
+  const isDebug = current.debug.enabled;
+  if (
+    !isDebug &&
+    (Number(options.age || 0) !== 0 ||
+      (options.education && options.education !== "none") ||
+      options.money !== undefined ||
+      options.health !== undefined ||
+      options.energy !== undefined ||
+      options.happiness !== undefined ||
+      options.skills !== undefined ||
+      options.specialistSkills !== undefined ||
+      options.qualification !== undefined)
+  )
+    throw new Error(
+      "Pro characters start at birth; money, age and skills require Debug.",
+    );
+  let s = createGame({
+    ...options,
+    age: isDebug ? Number(options.age || 0) : 0,
+    education: "none",
+  });
+  if (isDebug) s = toggleDebug(s, true);
+  s.characterLife.proPreview = current.characterLife.proPreview;
+  if (s.characterLife.proPreview) s.debug.used = true;
+  const profile = Object.fromEntries(
+    [
+      "name",
+      "birthplace",
+      "nationality",
+      "pronouns",
+      "skin",
+      "hair",
+      "hairstyle",
+      "eyes",
+      "outfit",
+    ]
+      .filter((k) => options[k] !== undefined)
+      .map((k) => [k, options[k]]),
+  );
+  s = editCharacterProfile(s, profile);
+  if (options.personality !== undefined) {
+    if (
+      !options.personality ||
+      typeof options.personality !== "object" ||
+      Array.isArray(options.personality) ||
+      Object.keys(options.personality).some(
+        (k) => !Object.hasOwn(PERSONALITY, k),
+      )
+    )
+      throw new Error("Choose valid personality values.");
+    for (const [k, v] of Object.entries(options.personality)) {
+      if (
+        !Number.isFinite(v) ||
+        v < (isDebug ? 0 : 30) ||
+        v > (isDebug ? 100 : 70)
+      )
+        throw new Error(
+          "Pro personality values range from 30 to 70; Debug permits 0 to 100.",
+        );
+      s.characterLife.personality[k] = v;
+    }
+  }
+  if (isDebug) {
+    const cheats = Object.fromEntries(
+      [
+        "money",
+        "health",
+        "energy",
+        "happiness",
+        "skills",
+        "specialistSkills",
+        "qualification",
+      ]
+        .filter((k) => options[k] !== undefined && options[k] !== "")
+        .map((k) => [k, options[k]]),
+    );
+    if (Object.keys(cheats).length) s = debugEdit(s, cheats);
+  }
+  // Birthplace is immutable history, independent of the household's current home.
+  if (s.startAge === 0)
+    s.characterLife.memories[0].text = `Born in ${s.characterLife.profile.birthplace}.`;
+  s.history[0].value = netWorth(s);
+  return s;
+}
+export function createRandomCharacter(seed = Date.now() >>> 0) {
+  if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295)
+    throw new Error("Choose a valid random-life seed.");
+  const stream = { seed },
+    pick = (values) => values[Math.floor(rng(stream) * values.length)];
+  const s = createGame({
+    seed,
+    name: `${pick(["Alex", "Riley", "Jamie", "Robin", "Morgan", "Casey", "Taylor", "Jordan"])} ${pick(["Andersen", "Morgan", "Chen", "Silva", "Rossi", "Taylor", "Patel", "Martin"])}`,
+    city: pick(["London", "Copenhagen", "New York", "Monaco"]),
+    trait: pick(["Ambitious", "Social", "Analytical", "Athletic"]),
+    familyBackground: pick(["modest", "comfortable", "comfortable", "wealthy"]),
+    age: 0,
+    education: "none",
+  });
+  for (const [key, values] of Object.entries(PROFILE_OPTIONS)) {
+    if (key !== "nationality") s.characterLife.profile[key] = pick(values);
+  }
+  for (const key of Object.keys(PERSONALITY))
+    s.characterLife.personality[key] = pick([35, 45, 50, 55, 65]);
   return s;
 }
