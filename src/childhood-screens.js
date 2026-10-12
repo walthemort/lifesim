@@ -1,3 +1,4 @@
+import { schoolLifeScreen, originFamilyScreen } from "./life-course-screens.js";
 import {
   age,
   CHILD_ACTIVITIES,
@@ -9,9 +10,8 @@ import {
 export function childhoodScreen(s, u) {
   const { title, panelHeading, e, money, tag, meter } = u,
     a = age(s),
-    c = s.childhood,
-    parents = s.relationships.filter((r) => r.role === "Parent");
-  return `${title("FROM YOUR FIRST BREATH", "Your early years.", "Family, play, school and little choices build the person you become. Your interests can change as you grow.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">YOUR LIFE STAGE</span><h2>${e(childhoodStage(s))}</h2><p>Age ${a} · next birthday in ${52 - (s.week % 52)} weeks</p></section><section class="panel"><span class="eyebrow">SCHOOL & LEARNING</span><h2>${a < 3 ? "Learning at home" : a < 5 ? "Preschool" : a < 12 ? "Primary school" : a < 18 ? "Secondary school" : "School years completed"}</h2><p>${s.school.enrolled ? `School results ${Math.round(s.school.grade)} / 100. Graduation depends on your results at eighteen.` : a < 5 ? "Your family cares for you. Formal school starts at five." : "Your existing qualifications stay with your adult life."}</p></section><section class="panel"><span class="eyebrow">FAMILY SUPPORT</span><h2>${a < 18 ? money(childhoodAllowance(s)) + "/week" : "Your own budget"}</h2><p>${a < 6 ? "Your basic needs are covered; you do not earn wages or pay rent." : a < 12 ? "Your family covers basic needs and childhood club fees. The allowance is your own money." : a < 18 ? "$15 weekly personal costs. Independent work and investments unlock at eighteen." : "Childhood support has ended. Earnings and expenses follow your current circumstances."}</p></section></div><section class="panel wide-panel">${panelHeading("Growing at your own pace", "Childhood development comes from time, care and the activities you choose.")}<div class="everyday-grid">${Object.entries(
+    c = s.childhood;
+  return `${title("FROM YOUR FIRST BREATH", "Your early years.", "Family, play, school and little choices build the person you become. Your interests can change as you grow.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">YOUR LIFE STAGE</span><h2>${e(childhoodStage(s))}</h2><p>Age ${a} · next birthday in ${52 - (s.week % 52)} weeks</p></section><section class="panel"><span class="eyebrow">SCHOOL & LEARNING</span><h2>${a < 3 ? "Learning at home" : a < 5 ? "Preschool" : a < 12 ? "Primary school" : a < 18 ? "Secondary school" : "School years completed"}</h2><p>${s.school.enrolled ? `School results ${Math.round(s.school.grade)} / 100. Graduation depends on your results at eighteen.` : a < 5 ? "Your family cares for you. Formal school starts at five." : "Your existing qualifications stay with your adult life."}</p></section><section class="panel"><span class="eyebrow">FAMILY SUPPORT</span><h2>${a < 18 ? money(childhoodAllowance(s)) + "/week" : "Your own budget"}</h2><p>${a < 6 ? "Your basic needs are covered; you do not earn wages or pay rent." : a < 12 ? "Your family covers basic needs and childhood club fees. The allowance is your own money." : a < 18 ? "$15 weekly personal costs. Adult job applications and investments unlock at eighteen." : "Childhood support has ended. Earnings and expenses follow your current circumstances."}</p></section></div>${schoolLifeScreen(s, u)}<section class="panel wide-panel">${panelHeading("Growing at your own pace", "Childhood development comes from time, care and the activities you choose.")}<div class="everyday-grid">${Object.entries(
     c.development,
   )
     .map(
@@ -33,22 +33,7 @@ export function childhoodScreen(s, u) {
             "",
           )}</div><p class="muted">Football begins at five; karting, basketball, tennis and music lessons begin at six. Your family covers local sport fees before twelve. Academy assessments begin from eight in football and ten in other sports. Existing hobbies can continue together; exploring an interest does not award a job.</p></section>`
       : ""
-  }<section class="panel wide-panel">${panelHeading("The family you grew up with", "These relationships are separate from a future partner or children of your own.")}<div class="everyday-grid">${
-    parents
-      .map((r) => {
-        const p = s.connections.profiles[r.id];
-        return `<article class="everyday-card"><h3>${e(r.name)}</h3>${tag("Parent", "purple")}<p>Age ${a + p.ageOffset} · ${e(p.job)}<br>Connection ${Math.round(r.bond)} · trust ${Math.round(p.trust)}</p>${meter(r.bond, "purple")}</article>`;
-      })
-      .join("") ||
-    '<p class="muted">Older saved lives keep their existing family and contacts. No childhood is invented for them.</p>'
-  }</div>${
-    s.relationships.some((r) => r.role === "Best friend")
-      ? `<p class="muted">School friends: ${s.relationships
-          .filter((r) => r.role === "Best friend")
-          .map((r) => e(r.name))
-          .join(", ")}.</p>`
-      : ""
-  }</section><section class="panel wide-panel">${panelHeading("Your childhood memories", "Birthdays, milestones and choices remain part of your story.")}<div class="application-list">${
+  }${originFamilyScreen(s, u)}<section class="panel wide-panel">${panelHeading("Your childhood memories", "Birthdays, milestones and choices remain part of your story.")}<div class="application-list">${
     c.milestones
       .slice()
       .reverse()

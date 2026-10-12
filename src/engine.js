@@ -1,4 +1,20 @@
 import {
+  eligibleLifeCourseEvents,
+  LIFE_COURSE_EVENTS,
+  resolveLifeCourseEffects,
+} from "./life-course.js";
+import {
+  initializeLifeCourse,
+  prepareLifeCourse,
+  advanceSchoolLife,
+  teenWages,
+  lifeCourseCosts,
+  validateLifeCourse,
+  relativeAlive,
+  FAMILY_BACKGROUNDS,
+} from "./life-course.js";
+export * from "./life-course.js";
+import {
   initializeCareerSupport,
   validateCareerSupport,
   advanceCareerSupport,
@@ -36,7 +52,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 7;
+export const VERSION = 8;
 import {
   initializeBanking,
   validateBanking,
@@ -571,6 +587,7 @@ export const expenses = (
   sportingCosts(s) +
   storyWeeklyCosts(s) +
   careerSupportCosts(s) +
+  lifeCourseCosts(s) +
   (banking ? bankWeeklyCosts(s) : 0) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
@@ -612,6 +629,7 @@ export function createGame({
   trait = "Ambitious",
   career = "unemployed",
   education = "school",
+  familyBackground = "comfortable",
   seed = Date.now() >>> 0,
 } = {}) {
   if (
@@ -712,6 +730,11 @@ export function createGame({
   initializeConnections(s);
   initializeChildhood(s);
   initializeCareerSupport(s);
+  initializeLifeCourse(s, {
+    background: Object.hasOwn(FAMILY_BACKGROUNDS, familyBackground)
+      ? familyBackground
+      : "comfortable",
+  });
   initializeBanking(s);
   initializeSeasons(s);
   initializeStories(s);
@@ -850,6 +873,10 @@ export function sellItem(state, id) {
   return s;
 }
 export function connect(state, id, romantic = false) {
+  if (!relativeAlive(state, id))
+    throw new Error(
+      "This relative has died; their memory remains part of your family.",
+    );
   writable(state);
   const s = clone(state),
     r = s.relationships.find((r) => r.id === id);
@@ -1393,6 +1420,7 @@ export function resolveEvent(state, index) {
   resolveEverydayEffects(s, option);
   resolveStoryEffects(s, event, option);
   resolveChildhoodEffects(s, event, option);
+  resolveLifeCourseEffects(s, event, option);
   if (option.skill)
     s.skills[primarySkill(s)] = clamp(s.skills[primarySkill(s)] + option.skill);
   if (option.charisma)
@@ -1436,6 +1464,7 @@ export function advanceWeek(state) {
   s.week++;
   startBankingWeek(s);
   prepareChildhood(s);
+  prepareLifeCourse(s);
   prepareCalendar(s);
   prepareSeasons(s);
   if (s.employment || s.career === "business") p.weeks++;
@@ -1460,6 +1489,8 @@ export function advanceWeek(state) {
     { deduction: pensionDue(s) + agentCommission(s) },
   );
   s.money -= costs;
+  teenWages(s);
+  advanceSchoolLife(s);
   if (age(s) < 12) childhoodWeek(s);
   else {
     const skill = focus.skill || primarySkill(s);
@@ -1566,6 +1597,11 @@ export function advanceWeek(state) {
   );
   if (age(s) < 12) {
     if (s.week % 52 === 0) s.event = childhoodEvent(s);
+    else if (age(s) >= 5 && s.week % 13 === 0) {
+      const choices = eligibleLifeCourseEvents(s);
+      if (choices.length)
+        s.event = clone(choices[Math.floor(random(s) * choices.length)]);
+    }
   } else if (s.childhood.startedAtBirth && age(s) === 12 && s.week % 52 === 0)
     s.event = childhoodEvent(s);
   else if (
@@ -1574,8 +1610,17 @@ export function advanceWeek(state) {
   ) {
     const choices =
       age(s) < 18
-        ? [...YOUTH_EVENTS, ...eligibleStoryEvents(s)]
-        : [...EVENTS, ...everydayEvents(s), ...eligibleStoryEvents(s)];
+        ? [
+            ...YOUTH_EVENTS,
+            ...eligibleStoryEvents(s),
+            ...eligibleLifeCourseEvents(s),
+          ]
+        : [
+            ...EVENTS,
+            ...everydayEvents(s),
+            ...eligibleStoryEvents(s),
+            ...eligibleLifeCourseEvents(s),
+          ];
     s.event = clone(choices[Math.floor(random(s) * choices.length)]);
   }
   advanceEveryday(s);
@@ -1606,7 +1651,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1624,6 +1669,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsLifeCourse = s.version < 8;
   const needsChildhood = s.version < 7;
   const needsSeasons = s.version < 6;
   const needsChapters = s.version < 5;
@@ -1790,6 +1836,11 @@ export function restoreGame(raw) {
     initializeCareerSupport(s);
     s.version = VERSION;
   }
+  if (needsLifeCourse) {
+    initializeLifeCourse(s, { legacy: true });
+    s.version = VERSION;
+  }
+  validateLifeCourse(s);
   validateChildhood(s);
   validateCareerSupport(s);
   validateBanking(s);
@@ -1808,6 +1859,7 @@ export function restoreGame(raw) {
       ...CHILDHOOD_EVENTS,
       ...EVERYDAY_EVENTS,
       ...STORY_EVENTS,
+      ...LIFE_COURSE_EVENTS,
     ].find((e) => e.title === s.event?.title);
     if (!match) throw new Error("Invalid life choice.");
     s.event = clone(match);

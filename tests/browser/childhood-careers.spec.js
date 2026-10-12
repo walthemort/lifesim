@@ -211,7 +211,7 @@ test("authentic v6 migration keeps old lives and downloads an exact backup", asy
   );
   await load(page, raw);
   const s = await saved(page);
-  expect(s.version).toBe(7);
+  expect(s.version).toBe(g.VERSION);
   expect(s.startAge).toBe(raw.startAge);
   expect(s.banking).toEqual(raw.banking);
   expect(s.family).toEqual(raw.family);
@@ -220,7 +220,7 @@ test("authentic v6 migration keeps old lives and downloads an exact backup", asy
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v7.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v8.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("birth and expanded career panels fit phones without browser errors", async ({

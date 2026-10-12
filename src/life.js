@@ -1,3 +1,4 @@
+import { athleticDecline } from "./life-course.js";
 import { footballRecruitmentChance } from "./career-support.js";
 import {
   syncSeason,
@@ -389,7 +390,7 @@ function footballTick(s) {
         (recovering ? 0.05 : training + gear + kit) *
           allocationRatio(s, "football") *
           (s.energy < 25 ? 0.35 : 1) -
-        (age(s) > 30 ? 0.12 : 0),
+        athleticDecline(s, "football"),
     );
     f.discipline = clamp(f.discipline + (recovering ? -0.1 : 0.12));
     f.coachTrust = clamp(f.coachTrust + (recovering ? -0.3 : 0.2));

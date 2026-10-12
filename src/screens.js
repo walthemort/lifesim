@@ -1,8 +1,10 @@
+import { schoolLifeScreen } from "./life-course-screens.js";
 import { careerSupportScreen } from "./career-support.js";
 import { careerEquipmentScreen } from "./career-equipment.js";
 import { workplaceScreen } from "./calendar-screens.js";
 import {
   PROGRAMS,
+  programmeTuition,
   TRACK_SKILLS,
   BUSINESSES,
   COLLECTIBLES,
@@ -55,7 +57,7 @@ export function workScreen(s, u) {
             ? `${c.experience} weeks of ${c.track} experience`
             : "",
         ].filter(Boolean);
-      return `<div class="education-card"><h3>${e(c.name)}</h3><p>${c.weeks} weeks full-time · ${money(c.tuition)}/week</p><small>${held ? "Qualification completed" : requirements.length ? `Requires: ${e(requirements.join(", "))}` : "Entry requirements met"}</small><button class="button secondary full-width" data-action="enrol" data-id="${c.id}" ${held || course || requirements.length ? "disabled" : ""}>${held ? "Completed" : "Review programme"}</button></div>`;
+      return `<div class="education-card"><h3>${e(c.name)}</h3><p>${c.weeks} weeks full-time · ${money(programmeTuition(s, c.id), 2)}/week</p><small>${held ? "Qualification completed" : requirements.length ? `Requires: ${e(requirements.join(", "))}` : "Entry requirements met"}</small><button class="button secondary full-width" data-action="enrol" data-id="${c.id}" ${held || course || requirements.length ? "disabled" : ""}>${held ? "Completed" : "Review programme"}</button></div>`;
     },
   ).join("")}</div></section>`;
   const vacancies = `<div class="section-title"><h2>The job board</h2><span>New vacancies every 4 weeks · ${s.actions} actions left</span></div><div class="career-grid job-grid">${s.vacancies
@@ -67,7 +69,7 @@ export function workScreen(s, u) {
       return `<section class="panel vacancy-card" data-vacancy="${e(v.id)}"><div class="eyebrow">${e(j.employer)}</div><h2>${e(j.title)}</h2><div class="vacancy-pay">${money(j.pay)}–${money(j.maxPay)}<small> / week</small></div>${v.exceptional ? `<div class="opportunity-note">${icon("spark")} The previous coordinator left unexpectedly. A contact is introducing unconventional applicants; a degree and management history are not required.</div>` : ""}<div class="path-meta"><span>Qualification<strong>${j.qualification ? e(qualificationName(j.qualification)) : "No formal requirement"}</strong></span><span>Relevant skill<strong>${j.skill} ${e(TRACK_SKILLS[j.track])}</strong></span><span>Experience<strong>${j.experience} weeks</strong></span><span>Closing in<strong>${v.expiresWeek - s.week} weeks</strong></span></div><p class="eligibility ${eligibility.eligible ? "positive" : "muted"}">${eligibility.eligible ? "You meet the application requirements." : `Still needed: ${e(eligibility.missing.join("; "))}.`}</p><button class="button ${eligibility.eligible ? "primary" : "secondary"} full-width" data-action="apply-job" data-id="${e(v.id)}" ${!eligibility.eligible || applied || same || !s.actions ? "disabled" : ""}>${same ? "Your current job" : applied ? "Application submitted" : eligibility.eligible ? "Submit application" : "Not yet qualified"} ${icon("arrow")}</button></section>`;
     })
     .join("")}</div>`;
-  return `${title("WORK, LEARNING & OPPORTUNITY", "Earn your next chapter.", "Find a vacancy, qualify, apply, and decide whether to accept the offer.")}${contract}${careerEquipmentScreen(s, u)}${careerSupportScreen(s, u)}${workplaceScreen(s, u)}${applications}${education}${vacancies}${founderPanel(s, u)}`;
+  return `${title("WORK, LEARNING & OPPORTUNITY", "Earn your next chapter.", "Find a vacancy, qualify, apply, and decide whether to accept the offer.")}${contract}${careerEquipmentScreen(s, u)}${careerSupportScreen(s, u)}${workplaceScreen(s, u)}${applications}${education}${vacancies}${founderPanel(s, u)}${schoolLifeScreen(s, u)}`;
 }
 export function founderPanel(s, u) {
   const { panelHeading, tag, icon, money, e, percent } = u,

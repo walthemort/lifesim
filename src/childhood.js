@@ -1,3 +1,4 @@
+import { relativeAlive } from "./life-course.js";
 import { joinFootball } from "./life.js";
 import { joinSport, SPORTS } from "./sport.js";
 import { configureMusic } from "./music.js";
@@ -254,7 +255,9 @@ export function childhoodWeek(s) {
 }
 export function guardianSupport(s) {
   if (age(s) >= 12) return;
-  const parents = s.relationships.filter((r) => r.role === "Parent");
+  const parents = s.relationships.filter(
+    (r) => r.role === "Parent" && relativeAlive(s, r.id),
+  );
   const fees =
     (s.football.stage === "school" ? 5 : 0) +
     SPORTS.reduce(
@@ -300,7 +303,9 @@ export function childhoodActivity(state, id) {
     s.skills.knowledge = clamp(s.skills.knowledge + 0.5);
   }
   if (id === "family")
-    for (const r of s.relationships.filter((r) => r.role === "Parent")) {
+    for (const r of s.relationships.filter(
+      (r) => r.role === "Parent" && relativeAlive(s, r.id),
+    )) {
       r.bond = clamp(r.bond + 2);
       s.connections.profiles[r.id].trust = clamp(
         s.connections.profiles[r.id].trust + 1,
@@ -541,7 +546,9 @@ export function resolveChildhoodEffects(s, event, option) {
         s.childhood.development[key] + value,
       );
     else if (key === "family")
-      for (const r of s.relationships.filter((r) => r.role === "Parent"))
+      for (const r of s.relationships.filter(
+        (r) => r.role === "Parent" && relativeAlive(s, r.id),
+      ))
         r.bond = clamp(r.bond + value);
     else if (key === "grade") s.school.grade = clamp(s.school.grade + value);
     else if (Object.hasOwn(s.skills, key))

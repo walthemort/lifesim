@@ -1,3 +1,8 @@
+import {
+  schoolScholarshipRate,
+  consumeScholarship,
+  relevantWorkWeeks,
+} from "./life-course.js";
 import { receiveIncome, recordCapitalGain, recordTrade } from "./banking.js";
 import { storyTuitionSupport } from "./stories.js";
 import { EXTRA_PROGRAMS, EXTRA_JOBS, EXTRA_CAREERS } from "./career-data.js";
@@ -6,6 +11,19 @@ import { beginEmployment } from "./careers.js";
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
   ...EXTRA_PROGRAMS,
+  {
+    id: "football-coaching",
+    name: "Football coaching certificate",
+    weeks: 26,
+    tuition: 50,
+    requires: "school",
+    skill: "athletics",
+    gain: 4,
+    minimumSkill: 30,
+    minAge: 18,
+    experience: 52,
+    track: "football",
+  },
   {
     id: "school",
     name: "Secondary-school equivalency",
@@ -111,6 +129,16 @@ const job = (
 });
 export const JOBS = [
   ...EXTRA_JOBS,
+  job(
+    "coach-0",
+    "Academy coach",
+    "Harbor Athletic academy",
+    "office",
+    0,
+    700,
+    "football-coaching",
+    10,
+  ),
   job(
     "basketball-1",
     "Development squad player",
@@ -616,11 +644,11 @@ function hasQualification(s, id) {
     (degree && s.education.completed.includes(degree))
   );
 }
+export const programmeTuition = (s, id) =>
+  program(id).tuition *
+  (1 - Math.max(storyTuitionSupport(s, id), schoolScholarshipRate(s)));
 export const tuitionDue = (s) =>
-  s.education?.active
-    ? program(s.education.active.programId).tuition *
-      (1 - storyTuitionSupport(s, s.education.active.programId))
-    : 0;
+  s.education?.active ? programmeTuition(s, s.education.active.programId) : 0;
 export const reservedCash = (s) =>
   s.negotiations
     .filter((n) => ["submitted", "accepted"].includes(n.status))
@@ -806,7 +834,7 @@ export function jobEligibility(s, vacancy) {
     missing.push(qualificationName(j.qualification));
   const key = TRACK_SKILLS[j.track];
   if (s.skills[key] < j.skill) missing.push(`${j.skill} ${key} skill`);
-  if (s.progress[j.track].weeks < j.experience)
+  if (relevantWorkWeeks(s, j.track) < j.experience)
     missing.push(`${j.experience} weeks of relevant experience`);
   if (vacancy.exceptional && s.skills.charisma < 25)
     missing.push("25 charisma for this introduction");
@@ -966,7 +994,7 @@ export function enrolEducation(state, id) {
     throw new Error(
       `This programme requires ${p.experience} weeks of ${p.track} experience.`,
     );
-  if (availableCash(state) < p.tuition)
+  if (availableCash(state) < programmeTuition(state, id))
     throw new Error(
       "You need enough available cash for the first tuition payment.",
     );
@@ -1341,7 +1369,7 @@ function educationTick(s) {
   const e = s.education.active;
   if (!e) return 0;
   const p = program(e.programId);
-  const due = p.tuition * (1 - storyTuitionSupport(s, p.id));
+  const due = programmeTuition(s, p.id);
   if (availableCash(s) < due) {
     e.paused = true;
     log(
@@ -1353,6 +1381,7 @@ function educationTick(s) {
   }
   s.money -= due;
   e.spent += due;
+  consumeScholarship(s, schoolScholarshipRate(s) > 0 ? p.tuition * 0.5 : 0);
   e.paused = false;
   e.progress += allocationRatio(s, "study", 16);
   s.energy = clamp(s.energy - 3);

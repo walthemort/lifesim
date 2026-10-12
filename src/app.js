@@ -1,3 +1,13 @@
+import { programmeTuition } from "./world.js";
+import {
+  schoolAction,
+  applyScholarship,
+  familySupport,
+  requestFamilyFunding,
+  bodyAction,
+  chooseSchoolRoute,
+} from "./life-course.js";
+import { ageingScreen, originFamilyScreen } from "./life-course-screens.js";
 import {
   hireMusicManager,
   dismissMusicManager,
@@ -257,12 +267,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 7,
+  migrationVersion = 8,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v8`) ||
     localStorage.getItem(`${STORAGE}-before-v7`) ||
     localStorage.getItem(`${STORAGE}-before-v6`) ||
     localStorage.getItem(`${STORAGE}-before-v5`) ||
@@ -270,26 +281,28 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v7`)
-    ? 7
-    : localStorage.getItem(`${STORAGE}-before-v6`)
-      ? 6
-      : localStorage.getItem(`${STORAGE}-before-v5`)
-        ? 5
-        : localStorage.getItem(`${STORAGE}-before-v4`)
-          ? 4
-          : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v8`)
+    ? 8
+    : localStorage.getItem(`${STORAGE}-before-v7`)
+      ? 7
+      : localStorage.getItem(`${STORAGE}-before-v6`)
+        ? 6
+        : localStorage.getItem(`${STORAGE}-before-v5`)
+          ? 5
+          : localStorage.getItem(`${STORAGE}-before-v4`)
+            ? 4
+            : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v7`)
+      !localStorage.getItem(`${STORAGE}-before-v8`)
     ) {
       migrationSave = saved;
-      migrationVersion = 7;
-      localStorage.setItem(`${STORAGE}-before-v7`, saved);
+      migrationVersion = 8;
+      localStorage.setItem(`${STORAGE}-before-v8`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -364,6 +377,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 const nav = [
   ["overview", "grid", "Overview"],
   ["childhood", "heart", "Childhood & school"],
+  ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
   ["career", "briefcase", "Work & education"],
   ["sports", "football", "Sport & development"],
@@ -535,7 +549,11 @@ const pages = {
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
-  family: () => familyScreen(state, ui()) + familyDepthScreen(state, ui()),
+  family: () =>
+    familyScreen(state, ui()) +
+    familyDepthScreen(state, ui()) +
+    originFamilyScreen(state, ui()),
+  ageing: () => ageingScreen(state, ui()),
   housing: () => housingScreen(state, ui()),
   hobbies: () => hobbiesScreen(state, ui()) + storyScreen(state, ui()),
   debug: () => debugScreen(state, ui()),
@@ -579,7 +597,7 @@ function characterDialog() {
 }
 function newGameDialog() {
   dialog(
-    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>Who will you become?</h2><p>Every new life begins at birth, age 0. Your family covers your needs while you grow through infancy, childhood, school and adulthood.</p><form id="character-form"><input type="hidden" name="age" value="0"><input type="hidden" name="education" value="none"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career"><option value="unemployed">Still discovering</option><option value="football">Football</option><option value="racing">Karting & motorsport</option><option value="basketball">Basketball</option><option value="tennis">Tennis</option><option value="music">Music</option></select></label><p class="muted">An interest becomes available when you are old enough: football from five, other sports and music lessons from six. You can discover different interests later. School starts at five; qualifications must be earned. Use Age up to grow to your next birthday, pausing for important choices. Weekly play is also available. Starting a new life replaces your current save; export it first to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>Who will you become?</h2><p>Every new life begins at birth, age 0. Your family covers your needs while you grow through infancy, childhood, school and adulthood.</p><form id="character-form"><input type="hidden" name="age" value="0"><input type="hidden" name="education" value="none"><label class="field-label">Your name<input name="name" maxlength="32" value="Alex Morgan" required autocomplete="off"></label><label class="field-label">Home city<select name="city"><option>London</option><option>Copenhagen</option><option>New York</option><option>Monaco</option></select></label><label class="field-label">Family background<select name="familyBackground"><option value="comfortable">Comfortable household</option><option value="modest">Modest household</option><option value="wealthy">Wealthy household</option></select></label><label class="field-label">Your personality<select name="trait"><option>Ambitious</option><option>Social</option><option>Analytical</option><option>Athletic</option></select></label><label class="field-label">Life path / interest<select name="career"><option value="unemployed">Still discovering</option><option value="football">Football</option><option value="racing">Karting & motorsport</option><option value="basketball">Basketball</option><option value="tennis">Tennis</option><option value="music">Music</option></select></label><p class="muted">An interest becomes available when you are old enough: football from five, other sports and music lessons from six. You can discover different interests later. School starts at five; qualifications must be earned. Use Age up to grow to your next birthday, pausing for important choices. Weekly play is also available. Starting a new life replaces your current save; export it first to keep it.</p><button class="button primary full-width" type="submit">Begin my story ${icon("arrow")}</button></form>`,
   );
 }
 
@@ -592,7 +610,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.7 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.8 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -848,6 +866,24 @@ document.addEventListener("click", (event) => {
       else if (update(ageUp, "Your life is growing.")) {
         if (state.event) eventDialog();
       }
+      break;
+    case "school-peer":
+      update((s) => schoolAction(s, button.dataset.kind, id));
+      break;
+    case "exam-prepare":
+      update((s) => schoolAction(s, "prepare"));
+      break;
+    case "school-scholarship":
+      update(applyScholarship);
+      break;
+    case "family-funding":
+      update(requestFamilyFunding);
+      break;
+    case "relative-support":
+      update((s) => familySupport(s, id, button.dataset.kind));
+      break;
+    case "body-care":
+      update((s) => bodyAction(s, id));
       break;
     case "childhood-activity":
       update((s) => childhoodActivity(s, id), "A little moment in your story.");
@@ -1115,7 +1151,7 @@ document.addEventListener("click", (event) => {
       const p = PROGRAMS.find((p) => p.id === id);
       if (!p) break;
       dialog(
-        `<div class="eyebrow">EDUCATION</div><h2>${e(p.name)}</h2><p>Tuition is ${money(p.tuition)} per calendar week. This programme requires ${p.weeks} study weeks: one per week with Study focus, or half a week otherwise. If you cannot pay, progress pauses. The credential is awarded only on completion.</p><button class="button primary full-width" data-action="confirm-enrol" data-id="${id}">Enrol in programme</button>`,
+        `<div class="eyebrow">EDUCATION</div><h2>${e(p.name)}</h2><p>Tuition is ${money(programmeTuition(state, id), 2)} per calendar week${programmeTuition(state, id) < p.tuition ? ` (usual fee ${money(p.tuition)}; your current tuition support applies)` : ""}. This programme requires ${p.weeks} study weeks: sixteen allocated study hours advance one study week; an overbooked calendar slows progress. If you cannot pay, progress pauses. The credential is awarded only on completion.</p><button class="button primary full-width" data-action="confirm-enrol" data-id="${id}">Enrol in programme</button>`,
       );
       break;
     }
@@ -1376,6 +1412,11 @@ document.addEventListener("submit", (event) => {
     "family-plan-form": (s, data, form) =>
       familyAction(s, form.dataset.mode, Object.fromEntries(data)),
     "pet-form": (s, data) => adoptPet(s, data.get("kind"), data.get("name")),
+    "school-focus-form": (s, data) =>
+      schoolAction(s, "focus", data.get("focus")),
+    "school-club-form": (s, data) => schoolAction(s, "club", data.get("club")),
+    "teen-job-form": (s, data) => schoolAction(s, "part-time", data.get("job")),
+    "school-route-form": (s, data) => chooseSchoolRoute(s, data.get("route")),
     "debug-stats-form": (s, data) =>
       debugEdit(
         s,

@@ -154,7 +154,7 @@ test("authentic v6 saves retain age, household, finances, milestones and existin
     ),
   );
   const s = g.restoreGame(JSON.stringify(old));
-  assert.equal(s.version, 7);
+  assert.equal(s.version, g.VERSION);
   assert.equal(s.childhood.startedAtBirth, false);
   assert.equal(s.childhood.milestones.length, 0);
   for (const key of Object.keys(old).filter((k) => k !== "version"))

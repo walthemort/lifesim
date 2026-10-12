@@ -1,3 +1,8 @@
+import {
+  physicalPerformance,
+  injuryRisk,
+  recordSportInjury,
+} from "./life-course.js";
 import { rng, jobDefinition, availableCash } from "./world.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { receiveIncome } from "./banking.js";
@@ -612,6 +617,7 @@ function result(s, id, path, f) {
   const score = Math.round(
     clamp(
       p.ability * 0.65 +
+        physicalPerformance(s, id) +
         p.discipline * 0.15 +
         s.energy * 0.2 +
         (rng(s) * 2 - 1) * 15,
@@ -741,8 +747,12 @@ function result(s, id, path, f) {
         }
       }
     }
-    if (rng(s) < (p.training === "fitness" ? 0.012 : 0.004)) {
+    if (
+      rng(s) <
+      (p.training === "fitness" ? 0.012 : 0.004) * injuryRisk(s, id)
+    ) {
       p.injuryWeeks = 2 + Math.floor(rng(s) * 4);
+      recordSportInjury(s, id);
       log(s, `${id} injury: ${p.injuryWeeks} weeks of recovery.`, "warning");
     }
   }

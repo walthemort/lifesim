@@ -1,3 +1,4 @@
+import { relativeAlive } from "./life-course.js";
 import { availableCash, rng } from "./world.js";
 import { spendTime, requiredHours } from "./calendar.js";
 const age = (s) => s.startAge + Math.floor(s.week / 52);
@@ -593,6 +594,7 @@ export function advanceConnections(s) {
   }
   for (const r of s.relationships) {
     const p = s.connections.profiles[r.id];
+    if (!relativeAlive(s, r.id)) continue;
     p.wealth = Math.max(
       0,
       p.wealth +
@@ -621,7 +623,8 @@ export function advanceConnections(s) {
         p.job = "Working and studying";
         p.weeklyPay = 400;
         log(s, `${r.name} started their own working life.`);
-      } else if (p.weeklyPay) p.weeklyPay = Math.round(p.weeklyPay * 1.03);
+      } else if (p.weeklyPay && !s.lifeCourse?.relatives[r.id])
+        p.weeklyPay = Math.round(p.weeklyPay * 1.03);
     }
     if (
       s.week % 26 === 0 &&
@@ -723,8 +726,8 @@ export function validateConnections(s) {
     ["trust", "mood"].every((k) => n(p[k], 0, 100)) &&
     n(
       p.ageOffset,
-      r?.role === "Parent" ? 18 : -2,
-      r?.role === "Parent" ? 60 : 2,
+      r?.role === "Parent" ? 18 : r?.role === "Sibling" ? -30 : -2,
+      r?.role === "Parent" ? 60 : r?.role === "Sibling" ? 30 : 2,
     ) &&
     typeof p.city === "string" &&
     typeof p.job === "string" &&

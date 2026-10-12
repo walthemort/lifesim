@@ -1,3 +1,4 @@
+import { lifeCourseHours, teenWorkHours } from "./life-course.js";
 import { recommendedSleep } from "./childhood.js";
 import { careerSupportHours } from "./career-support.js";
 import { storyWeeklyHours } from "./stories.js";
@@ -32,14 +33,16 @@ export function initializeCalendar(s) {
   };
 }
 export function requiredHours(s, week = s.week) {
-  const working = s.employment
-    ? s.employment.weeklyHours ||
-      (["football", "racing", "basketball", "tennis"].includes(s.career)
-        ? 35
-        : 40)
-    : s.company
-      ? 20
-      : 0;
+  const working =
+    teenWorkHours(s) +
+    (s.employment
+      ? s.employment.weeklyHours ||
+        (["football", "racing", "basketball", "tennis"].includes(s.career)
+          ? 35
+          : 40)
+      : s.company
+        ? 20
+        : 0);
   const school = s.school.enrolled && age(s) < 18 ? 30 : 0;
   const extra = s.workLife?.arrangement === "overtime" && s.employment ? 8 : 0;
   const care =
@@ -63,7 +66,8 @@ export function requiredHours(s, week = s.week) {
     }, 0) +
     s.family.pets.length * 3 +
     storyWeeklyHours(s) +
-    careerSupportHours(s, week);
+    careerSupportHours(s, week) +
+    lifeCourseHours(s);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,

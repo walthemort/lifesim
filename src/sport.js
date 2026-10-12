@@ -1,3 +1,4 @@
+import { athleticDecline } from "./life-course.js";
 import {
   syncSeason,
   enhanceSportOffer,
@@ -322,7 +323,7 @@ export function advanceSports(s) {
           (rest ? 0.03 : gain) *
             allocationRatio(s, d.id) *
             (s.energy < 25 ? 0.35 : 1) -
-          (age(s) > 32 ? 0.1 : 0),
+          athleticDecline(s, d.id),
       );
       p.discipline = clamp(p.discipline + (rest ? -0.1 : 0.1));
       s.skills[d.skill] = clamp(

@@ -2,6 +2,11 @@ import { PROGRAMS, reservedCash } from "./world.js";
 import { HOBBIES } from "./everyday.js";
 
 export const DEBUG_SPECIALIST_SKILLS = [
+  ...["fitness", "mobility"].map((key) => ({
+    id: `body.${key}`,
+    label: `Physical: ${key}`,
+    path: ["lifeCourse", "body", key],
+  })),
   ...["vocals", "lyrics", "production"].map((key) => ({
     id: `music.${key}`,
     label: `Music: ${key}`,
