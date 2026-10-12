@@ -1,3 +1,4 @@
+import { sportChemistryBonus, internationalDuty } from "./career-world.js";
 import {
   physicalPerformance,
   injuryRisk,
@@ -303,13 +304,15 @@ export function prepareSeasons(s) {
     syncSeason(s, id, true);
     const path = s.seasons[id],
       p = actor(s, id);
-    path.blocked = p.injuryWeeks
-      ? "injured"
-      : p.training === "rest"
-        ? "rest"
-        : allocationRatio(s, id) < 0.5
-          ? "unavailable"
-          : "ready";
+    path.blocked = internationalDuty(s, id)
+      ? "unavailable"
+      : p.injuryWeeks
+        ? "injured"
+        : p.training === "rest"
+          ? "rest"
+          : allocationRatio(s, id) < 0.5
+            ? "unavailable"
+            : "ready";
     for (const o of p.offers) {
       const n = o.terms?.negotiation;
       if (
@@ -381,6 +384,10 @@ export function negotiateSportOffer(state, id, offerId, approach) {
   if (state.ended || !state.actions)
     throw new Error(
       "Contract talks need a free-time action in an active life.",
+    );
+  if (state.careerWorld?.sports[id]?.moves[offerId]?.kind === "loan")
+    throw new Error(
+      "Loan terms preserve your parent contract; request a permanent move to renegotiate pay or duration.",
     );
   const p = actor(state, id),
     o = p?.offers.find((o) => o.id === offerId);
@@ -603,6 +610,7 @@ function result(s, id, path, f) {
         p.discipline * 0.15 +
         s.energy * 0.15 +
         path.form * 0.08 +
+        sportChemistryBonus(s, id) +
         (p.contract.role === "starter" ? 8 : 0) >=
         55 + path.level * 10);
   const status = selected
@@ -617,6 +625,7 @@ function result(s, id, path, f) {
   const score = Math.round(
     clamp(
       p.ability * 0.65 +
+        sportChemistryBonus(s, id) +
         physicalPerformance(s, id) +
         p.discipline * 0.15 +
         s.energy * 0.2 +
@@ -972,7 +981,12 @@ export function validateSeasons(s) {
       const t = o.terms;
       if (
         t &&
-        (![52, 104, 156].includes(t.weeks) ||
+        (!(
+          [52, 104, 156].includes(t.weeks) ||
+          (t.weeks === 26 &&
+            ["football", "basketball"].includes(id) &&
+            s.careerWorld?.sports[id]?.moves[o.id]?.kind === "loan")
+        ) ||
           !["rotation", "starter"].includes(t.role) ||
           !n(t.appearanceBonus) ||
           !n(t.winBonus) ||

@@ -339,14 +339,14 @@ test("authentic v7 migration preserves the household, manager, investments and c
     fs.readFileSync(new URL("./fixtures/v7-save.json", import.meta.url)),
   );
   const s = g.restoreGame(raw);
-  assert.equal(s.version, 8);
+  assert.equal(s.version, g.VERSION);
   for (const key of Object.keys(raw).filter((k) => k !== "version"))
     assert.deepEqual(s[key], raw[key], key);
   assert.equal(s.lifeCourse.background, "existing");
   assert.deepEqual(s.lifeCourse.school.exams, []);
   assert.deepEqual(s.lifeCourse.memories, []);
   assert.equal(s.careerSupport.music.manager.id, "local");
-  assert.equal(g.restoreGame(s).version, 8);
+  assert.equal(g.restoreGame(s).version, g.VERSION);
 });
 test("save validation rejects forged or malformed school, relative and body records", () => {
   for (const change of [

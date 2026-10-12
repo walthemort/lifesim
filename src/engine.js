@@ -1,4 +1,13 @@
 import {
+  initializeCareerWorld,
+  prepareCareerWorld,
+  advanceSportWorld,
+  advanceMusicWorld,
+  validateCareerWorld,
+  careerWorldCosts,
+} from "./career-world.js";
+export * from "./career-world.js";
+import {
   eligibleLifeCourseEvents,
   LIFE_COURSE_EVENTS,
   resolveLifeCourseEffects,
@@ -52,7 +61,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 8;
+export const VERSION = 9;
 import {
   initializeBanking,
   validateBanking,
@@ -588,6 +597,7 @@ export const expenses = (
   storyWeeklyCosts(s) +
   careerSupportCosts(s) +
   lifeCourseCosts(s) +
+  careerWorldCosts(s) +
   (banking ? bankWeeklyCosts(s) : 0) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
@@ -730,6 +740,7 @@ export function createGame({
   initializeConnections(s);
   initializeChildhood(s);
   initializeCareerSupport(s);
+  initializeCareerWorld(s);
   initializeLifeCourse(s, {
     background: Object.hasOwn(FAMILY_BACKGROUNDS, familyBackground)
       ? familyBackground
@@ -1465,6 +1476,7 @@ export function advanceWeek(state) {
   startBankingWeek(s);
   prepareChildhood(s);
   prepareLifeCourse(s);
+  prepareCareerWorld(s);
   prepareCalendar(s);
   prepareSeasons(s);
   if (s.employment || s.career === "business") p.weeks++;
@@ -1580,6 +1592,8 @@ export function advanceWeek(state) {
   const paidTuition = advanceWorld(s);
   advanceLife(s);
   advanceSeasons(s);
+  advanceSportWorld(s);
+  advanceMusicWorld(s);
   for (const m of MARKETS) {
     s.marketHistory[m.id].push(s.market[m.id]);
     s.marketHistory[m.id] = s.marketHistory[m.id].slice(-24);
@@ -1651,7 +1665,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1669,6 +1683,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsCareerWorld = s.version < 9;
   const needsLifeCourse = s.version < 8;
   const needsChildhood = s.version < 7;
   const needsSeasons = s.version < 6;
@@ -1840,6 +1855,11 @@ export function restoreGame(raw) {
     initializeLifeCourse(s, { legacy: true });
     s.version = VERSION;
   }
+  if (needsCareerWorld) {
+    initializeCareerWorld(s);
+    s.version = VERSION;
+  }
+  validateCareerWorld(s);
   validateLifeCourse(s);
   validateChildhood(s);
   validateCareerSupport(s);

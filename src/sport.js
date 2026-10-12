@@ -1,3 +1,4 @@
+import { checkCareerMoveSigning, signedCareerMove } from "./career-world.js";
 import { athleticDecline } from "./life-course.js";
 import {
   syncSeason,
@@ -197,6 +198,14 @@ export function acceptSportOffer(state, sportId, id) {
         "Professional sport recruitment ends at age 42; local participation remains available.",
       );
     const j = jobDefinition(o.jobId);
+    checkCareerMoveSigning(s, sportId, o);
+    const previous = {
+      club: q.club,
+      stage: q.stage,
+      contract: structuredClone(q.contract),
+      employment: structuredClone(s.employment),
+      city: s.careerWorld?.sports[sportId].assignmentCity || s.city,
+    };
     checkSportSigning(s, sportId, o);
     if (
       age(s) < 16 ||
@@ -220,6 +229,7 @@ export function acceptSportOffer(state, sportId, id) {
       legacy: false,
     };
     s.career = j.track;
+    signedCareerMove(s, sportId, o, previous);
     s.progress[j.track].level = j.level;
     s.progress[j.track].unlocked = true;
     for (const a of s.applications)

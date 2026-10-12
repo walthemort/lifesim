@@ -1,3 +1,4 @@
+import { sportWorldScreen, musicWorldScreen } from "./career-world-screens.js";
 import { careerSupportScreen } from "./career-support.js";
 import {
   careerEquipmentScreen,
@@ -62,7 +63,7 @@ export function sportsScreen(s, u) {
     }</section>`;
   }).join(
     "",
-  )}</div>${careerSupportScreen(s, u, "football", false)}${careerEquipmentScreen(s, u, "football")}${careerEquipmentScreen(s, u, "racing")}`;
+  )}</div>${careerSupportScreen(s, u, "football", false)}${careerEquipmentScreen(s, u, "football")}${careerEquipmentScreen(s, u, "racing")}${sportWorldScreen(s, u)}`;
 }
 export function socialScreen(s, u) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
@@ -127,7 +128,7 @@ export function musicScreen(s, u) {
     )
     .join(
       "",
-    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
+    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
     .filter((p) => p.status === "recording")
     .map(
       (p) =>

@@ -1,4 +1,9 @@
 import {
+  musicReleaseShare,
+  musicAudienceBoost,
+  musicTourWeek,
+} from "./career-world.js";
+import {
   currentMusicManager,
   musicPromotionMultiplier,
   musicManagerCommission,
@@ -151,6 +156,8 @@ export function startMusicProject(state, { title }) {
 }
 export function bookMusicGig(state, id) {
   action(state);
+  if (musicTourWeek(state, state.week + 1))
+    throw new Error("Your tour already has a show booked for next week.");
   const gig = state.music.gigs.find((g) => g.id === id);
   if (!gig || gig.status !== "offered" || gig.expiresWeek <= state.week)
     throw new Error("This gig invitation expired.");
@@ -227,7 +234,10 @@ export function advanceMusic(s) {
         0,
       );
       const base = Math.round(
-        (40 + p.quality * 6 + fans * 0.015) *
+        (40 +
+          p.quality * 6 +
+          fans * 0.015 +
+          musicAudienceBoost(s, p.id) * 0.015) *
           (0.4 + rng(s) * 1.2) *
           (m.label ? 1.2 : 1) *
           musicPromotionMultiplier(s),
@@ -268,7 +278,7 @@ export function advanceMusic(s) {
       if (promoted) m.fans += Math.floor((r.weeklyStreams - organic) * 0.005);
     }
     r.totalStreams += r.weeklyStreams;
-    const gross = round(r.weeklyStreams * 0.002);
+    const gross = round(r.weeklyStreams * 0.002 * musicReleaseShare(s, r.id));
     let earned = m.label ? round(gross * m.label.share) : gross;
     if (m.label?.unrecouped > 0) {
       const recoup = Math.min(earned, m.label.unrecouped);

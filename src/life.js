@@ -1,3 +1,4 @@
+import { checkCareerMoveSigning, signedCareerMove } from "./career-world.js";
 import { athleticDecline } from "./life-course.js";
 import { footballRecruitmentChance } from "./career-support.js";
 import {
@@ -255,6 +256,14 @@ export function acceptFootballOffer(state, id) {
         "Professional football recruitment ends at age 40; local football remains available.",
       );
     const j = jobDefinition(o.jobId);
+    checkCareerMoveSigning(s, "football", o);
+    const previous = {
+      club: f.club,
+      stage: f.stage,
+      contract: structuredClone(f.contract),
+      employment: structuredClone(s.employment),
+      city: s.careerWorld?.sports.football.assignmentCity || s.city,
+    };
     checkSportSigning(s, "football", o);
     clearOtherSportContracts(s, "football");
     if (age(s) < 16) throw new Error("A playing contract requires age 16+.");
@@ -272,6 +281,7 @@ export function acceptFootballOffer(state, id) {
       legacy: false,
     };
     s.career = "football";
+    signedCareerMove(s, "football", o, previous);
     s.progress.football.level = j.level;
     s.progress.football.unlocked = true;
     for (const a of s.applications)

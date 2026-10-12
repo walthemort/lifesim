@@ -1,3 +1,4 @@
+import { careerWorldHours } from "./career-world.js";
 import { lifeCourseHours, teenWorkHours } from "./life-course.js";
 import { recommendedSleep } from "./childhood.js";
 import { careerSupportHours } from "./career-support.js";
@@ -67,7 +68,8 @@ export function requiredHours(s, week = s.week) {
     s.family.pets.length * 3 +
     storyWeeklyHours(s) +
     careerSupportHours(s, week) +
-    lifeCourseHours(s);
+    lifeCourseHours(s) +
+    careerWorldHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,

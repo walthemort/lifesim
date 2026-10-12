@@ -1,3 +1,18 @@
+import {
+  requestSportMove,
+  signSportMove,
+  hireSportStaff,
+  dismissSportStaff,
+  sportCareerAction,
+  bookSportInvitation,
+  negotiateCollaboration,
+  acceptMusicOpportunity,
+  assembleAlbum,
+  rehearseLive,
+  startMusicTour,
+  cancelMusicTour,
+} from "./career-world.js";
+import { careerMoveDialog } from "./career-world-screens.js";
 import { programmeTuition } from "./world.js";
 import {
   schoolAction,
@@ -267,12 +282,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 8,
+  migrationVersion = 9,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v9`) ||
     localStorage.getItem(`${STORAGE}-before-v8`) ||
     localStorage.getItem(`${STORAGE}-before-v7`) ||
     localStorage.getItem(`${STORAGE}-before-v6`) ||
@@ -281,28 +297,30 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v8`)
-    ? 8
-    : localStorage.getItem(`${STORAGE}-before-v7`)
-      ? 7
-      : localStorage.getItem(`${STORAGE}-before-v6`)
-        ? 6
-        : localStorage.getItem(`${STORAGE}-before-v5`)
-          ? 5
-          : localStorage.getItem(`${STORAGE}-before-v4`)
-            ? 4
-            : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v9`)
+    ? 9
+    : localStorage.getItem(`${STORAGE}-before-v8`)
+      ? 8
+      : localStorage.getItem(`${STORAGE}-before-v7`)
+        ? 7
+        : localStorage.getItem(`${STORAGE}-before-v6`)
+          ? 6
+          : localStorage.getItem(`${STORAGE}-before-v5`)
+            ? 5
+            : localStorage.getItem(`${STORAGE}-before-v4`)
+              ? 4
+              : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v8`)
+      !localStorage.getItem(`${STORAGE}-before-v9`)
     ) {
       migrationSave = saved;
-      migrationVersion = 8;
-      localStorage.setItem(`${STORAGE}-before-v8`, saved);
+      migrationVersion = 9;
+      localStorage.setItem(`${STORAGE}-before-v9`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -610,7 +628,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.8 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.9 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -867,6 +885,54 @@ document.addEventListener("click", (event) => {
         if (state.event) eventDialog();
       }
       break;
+    case "world-staff-hire":
+      update((s) => hireSportStaff(s, button.dataset.sport, id));
+      break;
+    case "world-staff-dismiss":
+      update((s) => dismissSportStaff(s, button.dataset.sport, id));
+      break;
+    case "world-sport-activity":
+      update((s) =>
+        sportCareerAction(s, button.dataset.sport, button.dataset.kind),
+      );
+      break;
+    case "world-international":
+      update((s) => bookSportInvitation(s, button.dataset.sport, id));
+      break;
+    case "world-move-review": {
+      const html = careerMoveDialog(state, button.dataset.sport, id, ui());
+      if (html) dialog(html);
+      break;
+    }
+    case "world-collab-negotiate":
+      update((s) => negotiateCollaboration(s, id));
+      break;
+    case "world-collab-record":
+      dialog(
+        `<h2>Record for your music agreement</h2><form id="world-collab-form" data-id="${e(id)}"><label class="field-label">Project title<input name="title" maxlength="60" required></label><p>Recording costs $150 plus any agreed artist fee, one action and three hours. The usual equipment and practice requirements apply.</p><button class="button primary" type="submit">Start agreed recording</button></form>`,
+      );
+      break;
+    case "world-live-rehearse":
+      update(rehearseLive);
+      break;
+    case "world-tour-cancel": {
+      const t = state.careerWorld.music.tours.find(
+        (t) => t.id === state.careerWorld.music.activeTour,
+      );
+      if (t)
+        dialog(
+          `<h2>Cancel remaining shows?</h2><p>Cancellation costs ${money(
+            t.stops
+              .filter((x) => x.status === "scheduled")
+              .reduce((n, x) => n + x.cost * 0.25, 0),
+            2,
+          )}. Setup and completed shows are retained in your accounts.</p><button class="button primary" data-action="world-tour-cancel-confirm">Cancel remaining tour</button>`,
+        );
+      break;
+    }
+    case "world-tour-cancel-confirm":
+      if (update(cancelMusicTour)) modal.close();
+      break;
     case "school-peer":
       update((s) => schoolAction(s, button.dataset.kind, id));
       break;
@@ -994,6 +1060,10 @@ document.addEventListener("click", (event) => {
           sport === "football" ? state.football : state.sports[sport]
         ).offers.find((o) => o.id === id);
       if (!o) break;
+      if (state.careerWorld.sports[sport].moves[id]) {
+        dialog(careerMoveDialog(state, sport, id, { e, money }));
+        break;
+      }
       dialog(
         `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A ${o.terms?.weeks || o.duration || 104}-week sporting contract offers ${money(o.pay)}/week gross base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p>${o.kind === "contract" && o.terms ? `<p>Role: ${e(o.terms.role)}. Appearance bonus ${money(o.terms.appearanceBonus)}; win bonus ${money(o.terms.winBonus)}. Annual driver funding: ${money(o.terms.annualFunding)}.</p><p class="muted">Income tax and any agent commission reduce spendable pay. Racing needs thirteen weeks of uncovered funding in cash reserves before signing.</p>${o.terms?.negotiation ? `<p>${o.terms?.negotiation.status === "pending" ? `Your counteroffer is being considered until week ${o.terms?.negotiation.decisionWeek}.` : `Negotiation: ${e(o.terms?.negotiation.status)}.`}</p>` : `<form id="sport-negotiation-form" data-sport="${sport}" data-id="${e(id)}"><label class="field-label">Contract approach<select name="approach"><option value="security">Security: 156 weeks, 5% less pay</option><option value="balanced">Balanced: 104 weeks, 8% more pay</option><option value="ambitious">Ambitious: 52 weeks, 20% more pay, starter role</option></select></label><p class="muted">One action and three hours. The club may refuse, and an ambitious counter can cost you the invitation. You can negotiate once.</p><button class="button secondary full-width" type="submit">Send counteroffer</button></form>`}` : ""}<button class="button primary full-width" ${o.terms?.negotiation?.status === "pending" ? "disabled" : ""} data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
       );
@@ -1412,6 +1482,23 @@ document.addEventListener("submit", (event) => {
     "family-plan-form": (s, data, form) =>
       familyAction(s, form.dataset.mode, Object.fromEntries(data)),
     "pet-form": (s, data) => adoptPet(s, data.get("kind"), data.get("name")),
+    "sport-move-form": (s, data, form) =>
+      requestSportMove(s, form.dataset.sport, Object.fromEntries(data)),
+    "world-move-sign-form": (s, data, form) =>
+      signSportMove(
+        s,
+        form.dataset.sport,
+        form.dataset.id,
+        data.get("familyPlan"),
+      ),
+    "world-collab-form": (s, data, form) =>
+      acceptMusicOpportunity(s, form.dataset.id, data.get("title")),
+    "world-album-form": (s, data) =>
+      assembleAlbum(s, {
+        title: data.get("title"),
+        tracks: data.getAll("track"),
+      }),
+    "world-tour-form": (s, data) => startMusicTour(s, Object.fromEntries(data)),
     "school-focus-form": (s, data) =>
       schoolAction(s, "focus", data.get("focus")),
     "school-club-form": (s, data) => schoolAction(s, "club", data.get("club")),
