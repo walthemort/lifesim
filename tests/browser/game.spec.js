@@ -380,7 +380,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
   expect((await downloaded).suggestedFilename()).toBe(
-    "lifesim-before-v11.json",
+    "lifesim-before-v12.json",
   );
 });
 test("export/import and unreadable-save recovery remain usable", async ({

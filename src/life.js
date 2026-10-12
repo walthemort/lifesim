@@ -1,3 +1,4 @@
+import { contentCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
 import {
   releaseSportAgreement,
@@ -750,7 +751,8 @@ function socialTick(s) {
           rng(s) < 0.02;
       const base =
         (30 + post.quality * 3 + p.followers * (0.08 + rng(s) * 0.14)) *
-        (post.approach === "clickbait" ? 1.7 : 1);
+        (post.approach === "clickbait" ? 1.7 : 1) *
+        contentCampaignBoost(s, post.id);
       post.views = Math.round(
         discoverable
           ? viral

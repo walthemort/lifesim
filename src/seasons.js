@@ -1,3 +1,9 @@
+import {
+  performanceBonus,
+  performanceInjuryRisk,
+  finishPerformancePlan,
+  familySportAbsence,
+} from "./pressure-effects.js";
 import { milestoneAway } from "./career-milestones.js";
 import { sportChemistryBonus, internationalDuty } from "./career-world.js";
 import {
@@ -272,6 +278,7 @@ export function standings(s, id) {
   return [...s.seasons[id].table].sort(
     (a, b) =>
       b.points - a.points ||
+      (["racing", "tennis"].includes(id) ? b.wins - a.wins : 0) ||
       b.for - b.against - (a.for - a.against) ||
       b.for - a.for ||
       a.id - b.id,
@@ -306,7 +313,9 @@ export function prepareSeasons(s) {
     const path = s.seasons[id],
       p = actor(s, id);
     path.blocked =
-      internationalDuty(s, id) || milestoneAway(s, id)
+      internationalDuty(s, id) ||
+      milestoneAway(s, id) ||
+      familySportAbsence(s, id)
         ? "unavailable"
         : p.injuryWeeks
           ? "injured"
@@ -627,6 +636,7 @@ function result(s, id, path, f) {
   const score = Math.round(
     clamp(
       p.ability * 0.65 +
+        performanceBonus(s, id, f) +
         sportChemistryBonus(s, id) +
         physicalPerformance(s, id) +
         p.discipline * 0.15 +
@@ -645,7 +655,11 @@ function result(s, id, path, f) {
         a = path.table[match.away];
       const strength = (t) =>
         t.id === 0
-          ? clamp(t.rating * 0.65 + (selected ? p.ability : t.rating) * 0.35)
+          ? clamp(
+              t.rating * 0.65 +
+                (selected ? p.ability + performanceBonus(s, id, f) : t.rating) *
+                  0.35,
+            )
           : t.rating;
       const football = id === "football";
       const hs = football
@@ -760,7 +774,9 @@ function result(s, id, path, f) {
     }
     if (
       rng(s) <
-      (p.training === "fitness" ? 0.012 : 0.004) * injuryRisk(s, id)
+      (p.training === "fitness" ? 0.012 : 0.004) *
+        injuryRisk(s, id) *
+        performanceInjuryRisk(s, id, f)
     ) {
       p.injuryWeeks = 2 + Math.floor(rng(s) * 4);
       recordSportInjury(s, id);
@@ -769,6 +785,7 @@ function result(s, id, path, f) {
   }
   f.status = status;
   f.result = { score, won, ownScore, otherScore, position, points };
+  finishPerformancePlan(s, id, f, selected);
   log(
     s,
     `${id}: ${f.opponent} · ${selected ? (id === "football" || id === "basketball" ? `${ownScore}–${otherScore}` : `finished ${position}, ${points} points`) : status === "bench" ? "not selected" : status}.`,

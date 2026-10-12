@@ -342,7 +342,7 @@ test("existing achievements in v10 saves are preserved without fabricated earlie
   const s = g.restoreGame(old);
   for (const [key, value] of Object.entries(old))
     if (key !== "version") assert.deepEqual(s[key], value);
-  assert.equal(s.version, 11);
+  assert.equal(s.version, g.VERSION);
   assert.deepEqual(s.characterLife.memories, []);
   assert.deepEqual(s.characterLife.completedGoals, []);
   assert.ok(Object.values(s.characterLife.personality).every((v) => v === 50));

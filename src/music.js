@@ -1,3 +1,4 @@
+import { recordingCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
 import { checkContractReview, registerMusicAgreement } from "./contracts.js";
 import { milestoneAway } from "./career-milestones.js";
@@ -250,7 +251,8 @@ export function advanceMusic(s) {
           musicAudienceBoost(s, p.id) * 0.015) *
           (0.4 + rng(s) * 1.2) *
           (m.label ? 1.2 : 1) *
-          musicPromotionMultiplier(s),
+          musicPromotionMultiplier(s) *
+          recordingCampaignBoost(s, p.id),
       );
       const viral = p.quality >= 60 && rng(s) < 0.02;
       const streams = base + (viral ? Math.floor(5000 + rng(s) * 20000) : 0);

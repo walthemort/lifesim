@@ -1,3 +1,4 @@
+import { chapterHours } from "./pressure-effects.js";
 import { identityHours } from "./identity.js";
 import { contractHours } from "./contracts.js";
 import { milestoneHours } from "./career-milestones.js";
@@ -75,7 +76,8 @@ export function requiredHours(s, week = s.week) {
     careerWorldHours(s, week) +
     contractHours(s, week) +
     milestoneHours(s, week) +
-    identityHours(s, week);
+    identityHours(s, week) +
+    chapterHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,

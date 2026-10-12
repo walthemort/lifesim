@@ -1,3 +1,15 @@
+import {
+  initializePressure,
+  advancePressure,
+  validatePressure,
+} from "./pressure.js";
+import {
+  initializeOwnershipPlay,
+  advanceOwnershipPlay,
+  validateOwnershipPlay,
+} from "./ownership-play.js";
+export * from "./pressure.js";
+export * from "./ownership-play.js";
 import { toggleDebug, debugEdit } from "./debug.js";
 import {
   initializeIdentity,
@@ -91,7 +103,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 11;
+export const VERSION = 12;
 import {
   initializeBanking,
   validateBanking,
@@ -790,6 +802,8 @@ export function createGame({
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
   initializeIdentity(s);
+  initializeOwnershipPlay(s);
+  initializePressure(s);
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -1631,6 +1645,7 @@ export function advanceWeek(state) {
   const paidTuition = advanceWorld(s);
   advanceLife(s);
   advanceSeasons(s);
+  advanceOwnershipPlay(s);
   advanceSportWorld(s);
   advanceMusicWorld(s);
   advanceContracts(s);
@@ -1687,6 +1702,7 @@ export function advanceWeek(state) {
   advanceCareerSupport(s);
   advanceBanking(s, employmentPay);
   advanceIdentity(s);
+  advancePressure(s);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1708,7 +1724,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1726,6 +1742,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsPressure = s.version < 12;
   const needsIdentity = s.version < 11;
   const needsDepth = s.version < 10;
   const needsCareerWorld = s.version < 9;
@@ -1914,6 +1931,13 @@ export function restoreGame(raw) {
     initializeIdentity(s, { legacy: true });
     s.version = VERSION;
   }
+  if (needsPressure) {
+    initializeOwnershipPlay(s);
+    initializePressure(s);
+    s.version = VERSION;
+  }
+  validateOwnershipPlay(s);
+  validatePressure(s);
   validateIdentity(s);
   validateContracts(s);
   validateMilestones(s);

@@ -522,6 +522,57 @@ dialog.creator-modal {
   color: var(--blue);
   font-weight: 600;
 }
+.ownership-shortcuts {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0 16px;
+  margin: 0;
+}
+.standings-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 16px 0 24px;
+}
+.owner-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+.owner-table th,
+.owner-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.owner-table thead {
+  color: var(--muted);
+  background: var(--bg);
+}
+.owner-table .your-side {
+  color: var(--green);
+  background: #65dda712;
+}
+.inbox-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.inbox-message.unread {
+  border-left: 3px solid var(--blue);
+}
+.inbox-message .inline-actions {
+  flex-wrap: wrap;
+}
+.inbox-count {
+  margin-left: auto;
+  color: var(--blue);
+  font-size: 11px;
+}
 .page-title {
   display: flex;
   align-items: center;

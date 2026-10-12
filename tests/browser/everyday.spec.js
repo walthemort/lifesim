@@ -299,10 +299,10 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   await navigate(page, "Save & settings");
   const download = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await download).suggestedFilename()).toBe("lifesim-before-v11.json");
+  expect((await download).suggestedFilename()).toBe("lifesim-before-v12.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v11`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v12`)),
       KEY,
     ),
   ).toEqual(old);

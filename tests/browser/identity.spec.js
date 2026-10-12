@@ -205,7 +205,7 @@ test("personal goals can be chosen and personal development uses actual actions"
     page.getByRole("button", { name: "Reflect & listen", exact: true }),
   ).toBeDisabled();
 });
-test("v10 import preserves the original life and exports an exact pre-v11 backup", async ({
+test("v10 import preserves the original life and exports an exact pre-v12 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -218,13 +218,13 @@ test("v10 import preserves the original life and exports an exact pre-v11 backup
   const state = await saved(page);
   for (const [key, value] of Object.entries(old))
     if (key !== "version") expect(state[key]).toEqual(value);
-  expect(state.version).toBe(11);
+  expect(state.version).toBe(g.VERSION);
   expect(state.characterLife.memories).toEqual([]);
   await nav(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const download = await pending;
-  expect(download.suggestedFilename()).toBe("lifesim-before-v11.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v12.json");
   expect(JSON.parse(fs.readFileSync(await download.path(), "utf8"))).toEqual(
     old,
   );

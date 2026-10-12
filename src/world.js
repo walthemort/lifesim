@@ -1,3 +1,5 @@
+import { ownerOperatingAdjustment } from "./ownership-play.js";
+import { publicHiringPenalty } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
 import { releaseSportAgreement } from "./contracts.js";
 import {
@@ -1332,7 +1334,7 @@ function employmentTick(s) {
           surplus * 0.004 +
           s.skills.charisma * 0.002,
       );
-      if (rng(s) < chance) {
+      if (rng(s) < Math.max(0.05, chance - publicHiringPenalty(s))) {
         a.status = "offer";
         a.offeredPay = Math.round(j.pay * (1 + rng(s) * 0.06));
         a.expiresWeek = s.week + 4;
@@ -1511,15 +1513,19 @@ function businessesTick(s) {
         );
         const season = s.week % 52 < 40;
         if (season && (!b.racing || s.week % 2 === 0)) {
-          t.races++;
-          if (rng(s) < t.rating / 130) {
-            t.wins++;
-            revenue *= 1.1;
+          const legacyWin = rng(s) < t.rating / 130;
+          if (!s.ownershipPlay) {
+            t.races++;
+            if (legacyWin) {
+              t.wins++;
+              revenue *= 1.1;
+            }
           }
         }
       }
       if (s.week % 52 >= 40) revenue *= 0.7;
     }
+    ({ revenue, costs } = ownerOperatingAdjustment(s, b.id, revenue, costs));
     r.profit = Math.round(revenue - costs);
     r.cash += r.profit;
     r.periodProfit += r.profit;
@@ -1576,7 +1582,13 @@ function businessesTick(s) {
       (rng(s) * 2 - 1) * volatility;
     c.revenue = Math.max(50, round(c.revenue * (1 + growth)));
     c.costs = round(c.costs * (1 + 0.0003 + (rng(s) * 2 - 1) * 0.008));
-    c.profit = round(c.revenue - c.costs);
+    const operations = ownerOperatingAdjustment(
+      s,
+      "founder",
+      c.revenue,
+      c.costs,
+    );
+    c.profit = round(operations.revenue - operations.costs);
     c.cash += c.profit;
     c.periodProfit += c.profit;
     c.value = Math.max(

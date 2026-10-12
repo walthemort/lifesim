@@ -1,3 +1,7 @@
+import {
+  performanceScreen,
+  creativePlanningScreen,
+} from "./pressure-screens.js";
 import { routineScreen } from "./identity-screens.js";
 import { seasonScreen } from "./finance-season-screens.js";
 import { contractsScreen, milestonesScreen } from "./depth-screens.js";
@@ -92,7 +96,7 @@ export function sportsScreen(s, u, focusedSport = null) {
     ordered
       .map(
         ({ id, name }) =>
-          `<div class="sport-section" id="sport-section-${id}" role="region" aria-label="${e(name)} development">${cards[id]}${routineScreen(s, u, id)}${id === "football" ? careerSupportScreen(s, u, "football", false) : ""}${careerEquipmentScreen(s, u, id)}${sportWorldScreen(s, u, id)}${contractsScreen(s, u, id)}${milestonesScreen(s, u, id)}${seasonScreen(s, u, id)}</div>`,
+          `<div class="sport-section" id="sport-section-${id}" role="region" aria-label="${e(name)} development">${cards[id]}${performanceScreen(s, u, id)}${routineScreen(s, u, id)}${id === "football" ? careerSupportScreen(s, u, "football", false) : ""}${careerEquipmentScreen(s, u, id)}${sportWorldScreen(s, u, id)}${contractsScreen(s, u, id)}${milestonesScreen(s, u, id)}${seasonScreen(s, u, id)}</div>`,
       )
       .join("")
   );
@@ -137,7 +141,7 @@ export function socialScreen(s, u) {
       )
       .join("") ||
     '<p class="muted">Your first post starts here. An ordinary post can reach very few people.</p>'
-  }</div></section>${routineScreen(s, u, "creator")}${careerEquipmentScreen(s, u, "creator")}`;
+  }</div></section>${creativePlanningScreen(s, u, "creator")}${routineScreen(s, u, "creator")}${careerEquipmentScreen(s, u, "creator")}`;
 }
 export function musicScreen(s, u) {
   const { title, panelHeading, tag, meter, money, e } = u,
@@ -160,7 +164,7 @@ export function musicScreen(s, u) {
     )
     .join(
       "",
-    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
+    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${creativePlanningScreen(s, u, "music")}${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
     .filter((p) => p.status === "recording")
     .map(
       (p) =>

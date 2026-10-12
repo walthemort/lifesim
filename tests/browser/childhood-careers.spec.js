@@ -220,7 +220,7 @@ test("authentic v6 migration keeps old lives and downloads an exact backup", asy
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v11.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v12.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("birth and expanded career panels fit phones without browser errors", async ({

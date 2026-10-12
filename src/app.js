@@ -1,4 +1,24 @@
 import {
+  inboxScreen,
+  familyConflictScreen,
+  recordingPlanDialog,
+  contentPlanDialog,
+} from "./pressure-screens.js";
+import {
+  refreshInbox,
+  markInboxMessage,
+  choosePerformancePlan,
+  startPlannedRecording,
+  producePlannedContent,
+  respondFamilyRequest,
+  respondPublicMessage,
+  deliverCommunityPromise,
+  setOwnerPlan,
+  appointOwnerStaff,
+  dismissOwnerStaff,
+  upgradeOwnerFacility,
+} from "./engine.js";
+import {
   identityScreen,
   characterCreatorForm,
   profileFields,
@@ -226,6 +246,7 @@ let shopFilters = {
 };
 
 const icons = {
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
   camera:
     '<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="4"/>',
   video:
@@ -310,16 +331,19 @@ const STORAGE = "lifesim-save-v1";
 let state,
   view = "overview",
   focusedSport = null,
+  focusedOwnership = null,
+  inboxArchived = false,
   storageWarning = "",
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 11,
+  migrationVersion = 12,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v12`) ||
     localStorage.getItem(`${STORAGE}-before-v11`) ||
     localStorage.getItem(`${STORAGE}-before-v10`) ||
     localStorage.getItem(`${STORAGE}-before-v9`) ||
@@ -331,34 +355,36 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v11`)
-    ? 11
-    : localStorage.getItem(`${STORAGE}-before-v10`)
-      ? 10
-      : localStorage.getItem(`${STORAGE}-before-v9`)
-        ? 9
-        : localStorage.getItem(`${STORAGE}-before-v8`)
-          ? 8
-          : localStorage.getItem(`${STORAGE}-before-v7`)
-            ? 7
-            : localStorage.getItem(`${STORAGE}-before-v6`)
-              ? 6
-              : localStorage.getItem(`${STORAGE}-before-v5`)
-                ? 5
-                : localStorage.getItem(`${STORAGE}-before-v4`)
-                  ? 4
-                  : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v12`)
+    ? 12
+    : localStorage.getItem(`${STORAGE}-before-v11`)
+      ? 11
+      : localStorage.getItem(`${STORAGE}-before-v10`)
+        ? 10
+        : localStorage.getItem(`${STORAGE}-before-v9`)
+          ? 9
+          : localStorage.getItem(`${STORAGE}-before-v8`)
+            ? 8
+            : localStorage.getItem(`${STORAGE}-before-v7`)
+              ? 7
+              : localStorage.getItem(`${STORAGE}-before-v6`)
+                ? 6
+                : localStorage.getItem(`${STORAGE}-before-v5`)
+                  ? 5
+                  : localStorage.getItem(`${STORAGE}-before-v4`)
+                    ? 4
+                    : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createRandomCharacter();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v11`)
+      !localStorage.getItem(`${STORAGE}-before-v12`)
     ) {
       migrationSave = saved;
-      migrationVersion = 11;
-      localStorage.setItem(`${STORAGE}-before-v11`, saved);
+      migrationVersion = 12;
+      localStorage.setItem(`${STORAGE}-before-v12`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -391,7 +417,9 @@ function notify(text) {
 }
 function update(fn, success = "") {
   try {
-    state = fn(state);
+    const next = fn(state);
+    refreshInbox(next);
+    state = next;
     save();
     render();
     if (success) notify(success);
@@ -436,6 +464,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 }
 const nav = [
   ["overview", "grid", "Overview"],
+  ["inbox", "mail", "Messages & decisions"],
   ["childhood", "heart", "Childhood & school"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
@@ -454,7 +483,7 @@ const nav = [
   ["teams", "trophy", "Businesses & clubs"],
 ];
 function sidebar() {
-  return `<aside class="sidebar"><a class="brand" href="#overview" aria-label="Lifesim overview"><span class="brand-mark">l<span>.</span></span><span>lifesim<span class="brand-dot">.</span></span></a><div class="save-label"><span class="live-dot"></span> YOUR LIFE, IN PLAY</div><div class="nav-label">YOUR WORLD</div><nav aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="nav-item ${view === id ? "active" : ""}" data-view="${id}" aria-label="${e(label)}" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span>${id === "overview" ? '<span class="nav-active-dot"></span>' : ""}</button>`).join("")}</nav><div class="sidebar-bottom"><div class="chapter-box">${icon("spark")}<strong>One life. Endless possibilities.</strong><p>There’s no right way to live.<br>Find yours.</p></div><button class="nav-item" data-action="settings" aria-label="Save & settings">${icon("settings")}<span>Save & settings</span></button><button class="profile" data-action="character" aria-label="View your character"><span class="avatar">${e(initials(state.name))}</span><span><strong>${e(state.name)}</strong><small>${age(state)} years · ${e(state.city)}</small></span>${icon("chevronDown")}</button></div></aside>`;
+  return `<aside class="sidebar"><a class="brand" href="#overview" aria-label="Lifesim overview"><span class="brand-mark">l<span>.</span></span><span>lifesim<span class="brand-dot">.</span></span></a><div class="save-label"><span class="live-dot"></span> YOUR LIFE, IN PLAY</div><div class="nav-label">YOUR WORLD</div><nav aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="nav-item ${view === id ? "active" : ""}" data-view="${id}" aria-label="${e(label)}" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span>${id === "inbox" ? `<span class="inbox-count">${state.nextChapter.messages.filter((m) => !m.read && !m.archived && m.status === "open").length}</span>` : ""}${id === "overview" ? '<span class="nav-active-dot"></span>' : ""}</button>`).join("")}</nav><div class="sidebar-bottom"><div class="chapter-box">${icon("spark")}<strong>One life. Endless possibilities.</strong><p>There’s no right way to live.<br>Find yours.</p></div><button class="nav-item" data-action="settings" aria-label="Save & settings">${icon("settings")}<span>Save & settings</span></button><button class="profile" data-action="character" aria-label="View your character"><span class="avatar">${e(initials(state.name))}</span><span><strong>${e(state.name)}</strong><small>${age(state)} years · ${e(state.city)}</small></span>${icon("chevronDown")}</button></div></aside>`;
 }
 function header() {
   const date = new Date(Date.UTC(2026, 0, 5 + state.week * 7));
@@ -553,6 +582,7 @@ function ui() {
     percent,
     hasDebugBackup: Boolean(debugBackup),
     programmes: PROGRAMS,
+    selectedOwnership: focusedOwnership,
   };
 }
 function workingOverview() {
@@ -597,12 +627,14 @@ function teamsView() {
 }
 const pages = {
   overview,
+  inbox: () => inboxScreen(state, ui(), { archived: inboxArchived }),
   career: careerView,
   childhood: () => childhoodScreen(state, ui()),
   calendar: () =>
     calendarScreen(state, ui()) +
     fixtureCalendar(state, ui()) +
-    storyScreen(state, ui()),
+    storyScreen(state, ui()) +
+    familyConflictScreen(state, ui()),
   relationships: relationshipsView,
   investments: investmentsView,
   banking: () => bankingScreen(state, ui()),
@@ -615,7 +647,8 @@ const pages = {
   family: () =>
     familyScreen(state, ui()) +
     familyDepthScreen(state, ui()) +
-    originFamilyScreen(state, ui()),
+    originFamilyScreen(state, ui()) +
+    familyConflictScreen(state, ui()),
   ageing: () => ageingScreen(state, ui()),
   housing: () => housingScreen(state, ui()),
   hobbies: () => hobbiesScreen(state, ui()) + storyScreen(state, ui()),
@@ -694,6 +727,8 @@ function beginLife(next) {
   state = next;
   view = "overview";
   focusedSport = null;
+  focusedOwnership = null;
+  inboxArchived = false;
   save();
   render();
   modal.close();
@@ -710,7 +745,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.11 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.12 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -776,12 +811,59 @@ document.addEventListener("click", (event) => {
   if (!button || button.disabled) return;
   if (button.dataset.view) {
     view = button.dataset.view;
+    if (
+      view === "sports" &&
+      ["football", "racing", "basketball", "tennis"].includes(
+        button.dataset.sport,
+      )
+    )
+      focusedSport = button.dataset.sport;
     render();
     window.scrollTo({ top: 0 });
     return;
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "chapter-inbox-filter":
+      inboxArchived = !inboxArchived;
+      render();
+      break;
+    case "chapter-read-message":
+      update((s) => markInboxMessage(s, id));
+      break;
+    case "chapter-archive-message":
+      update((s) => markInboxMessage(s, id, "archive"));
+      break;
+    case "chapter-owner-focus":
+      focusedOwnership = id;
+      view = "teams";
+      render();
+      window.scrollTo({ top: 0 });
+      break;
+    case "chapter-owner-dismiss":
+      update(
+        (s) => dismissOwnerStaff(s, id, button.dataset.role),
+        "Appointment ended; the company paid notice.",
+      );
+      break;
+    case "chapter-owner-upgrade":
+      update(
+        (s) => upgradeOwnerFacility(s, id),
+        "Facility construction commissioned from company cash.",
+      );
+      break;
+    case "chapter-plan-recording":
+      dialog(recordingPlanDialog(state, ui()));
+      break;
+    case "chapter-plan-content":
+      dialog(contentPlanDialog(state, ui()));
+      break;
+    case "chapter-community-promise":
+      update(
+        (s) => deliverCommunityPromise(s, id),
+        "Community session delivered.",
+      );
+      break;
     case "identity-open":
       modal.close();
       view = "identity";
@@ -1715,6 +1797,25 @@ document.addEventListener("submit", (event) => {
     "school-club-form": (s, data) => schoolAction(s, "club", data.get("club")),
     "teen-job-form": (s, data) => schoolAction(s, "part-time", data.get("job")),
     "school-route-form": (s, data) => chooseSchoolRoute(s, data.get("route")),
+    "performance-plan": (s, data, form) =>
+      choosePerformancePlan(s, form.dataset.path, data.get("choice")),
+    "chapter-recording-form": (s, data) =>
+      startPlannedRecording(s, Object.fromEntries(data)),
+    "chapter-content-form": (s, data) =>
+      producePlannedContent(s, Object.fromEntries(data)),
+    "chapter-family": (s, data, form) =>
+      respondFamilyRequest(s, form.dataset.id, data.get("choice")),
+    "chapter-public": (s, data, form) =>
+      respondPublicMessage(s, form.dataset.id, data.get("choice")),
+    "chapter-owner-plan": (s, data, form) =>
+      setOwnerPlan(s, form.dataset.id, Object.fromEntries(data)),
+    "chapter-owner-hire": (s, data, form) =>
+      appointOwnerStaff(
+        s,
+        form.dataset.id,
+        form.dataset.role,
+        data.get("tier"),
+      ),
     "identity-profile-form": (s, data) =>
       editCharacterProfile(s, Object.fromEntries(data)),
     "identity-goal-form": (s, data) => choosePersonalGoal(s, data.get("goal")),
@@ -1998,6 +2099,8 @@ document.addEventListener("change", async (event) => {
         state = imported;
         view = "overview";
         focusedSport = null;
+        focusedOwnership = null;
+        inboxArchived = false;
         save();
         render();
         modal.close();

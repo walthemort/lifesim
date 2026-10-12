@@ -358,11 +358,13 @@ test("tennis qualifying reserves competition time and pays only after a successf
 });
 for (const path of ["football", "basketball"]) {
   test(`${path}: cup or playoff entry needs an earned league finish and advances through real rounds`, () => {
-    let s = professional(path),
+    let s = weeks(professional(path, path === "football" ? 1 : 3), 38),
       m = s.careerMilestones.paths[path];
-    s.week = 39;
-    m.stats.appearances = 10;
-    s.seasons[path].table[0].points = 200;
+    assert.ok(m.stats.appearances >= 10);
+    assert.ok(
+      g.standings(s, path).findIndex((t) => t.id === 0) <
+        (path === "football" ? 8 : 4),
+    );
     const kind = path === "football" ? "cup" : "playoff",
       o = challengeOffer(s, path, kind);
     s = g.bookCareerChallenge(s, path, o.id);
@@ -407,8 +409,7 @@ for (const role of ["singer", "rapper", "producer"]) {
 test("a cup champion needs three successful rounds before the prize or title is awarded", () => {
   let s = professional("football");
   s = weeks(s, 38);
-  // Prescribe a winning league finish, retaining the actual appearance history.
-  s.seasons.football.table[0].points = 200;
+  assert.ok(g.standings(s, "football").findIndex((t) => t.id === 0) < 8);
   const o = challengeOffer(s, "football", "cup");
   s = g.bookCareerChallenge(s, "football", o.id);
   for (let i = 0; i < 3; i++) {
