@@ -223,6 +223,10 @@ test("fractional crypto and company shares trade, while shopping and relationshi
   await page
     .getByRole("button", { name: "Lifestyle & shopping", exact: true })
     .click();
+  await page
+    .locator('[data-action="retail-store"][data-id="Home & hobbies"]')
+    .click();
+  await page.getByLabel("Shopping category").selectOption("Style");
   await page.locator('[data-action="buy"][data-id="watch"]').click();
   await expect(
     page.locator(".shop-card").filter({ hasText: "The everyday watch" }),
@@ -346,7 +350,7 @@ test("a side company can be founded, configured, and developed while retaining a
   s.skills.business = 35;
   await load(page, s);
   await page
-    .getByRole("button", { name: "Work & education", exact: true })
+    .getByRole("button", { name: "Start & run a company", exact: true })
     .click();
   await page.getByRole("button", { name: "Plan a company" }).click();
   await page.getByLabel("Company name").fill("Northstar Labs");
@@ -380,7 +384,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
   expect((await downloaded).suggestedFilename()).toBe(
-    "lifesim-before-v12.json",
+    "lifesim-before-v13.json",
   );
 });
 test("export/import and unreadable-save recovery remain usable", async ({

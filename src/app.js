@@ -1,4 +1,42 @@
 import {
+  retailScreen,
+  relocationDialog,
+  crimeScreen,
+  studioScreen,
+  trackDialog,
+  companyScreen,
+  companyLaunchDialog,
+  notificationDialog,
+  notificationCount,
+} from "./expansion-screens.js";
+import {
+  COUNTRIES,
+  CITY_CATALOGUE,
+  placeCountry,
+  country,
+} from "./geography.js";
+import { CLOTHING, INDUSTRIES, CRIMES } from "./expansion-data.js";
+import {
+  applyImmigration,
+  moveCountry,
+  studyLanguage,
+  buyClothing,
+  wearClothing,
+  visitBarber,
+  commitCrime,
+  prisonActivity,
+  setArtistName,
+  startTrack,
+  workTrack,
+  releaseTrack,
+  releaseReadyRecording,
+  fundFounder,
+  businessDevelopment,
+  setBusinessModel,
+  acceptKartOffer,
+} from "./engine.js";
+import { gameDate, displayDates } from "./dates.js";
+import {
   inboxScreen,
   familyConflictScreen,
   recordingPlanDialog,
@@ -246,6 +284,7 @@ let shopFilters = {
 };
 
 const icons = {
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
   camera:
     '<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="4"/>',
@@ -330,6 +369,7 @@ const initials = (name) =>
 const STORAGE = "lifesim-save-v1";
 let state,
   view = "overview",
+  retailStore = null,
   focusedSport = null,
   focusedOwnership = null,
   inboxArchived = false,
@@ -337,12 +377,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 12,
+  migrationVersion = 13,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v13`) ||
     localStorage.getItem(`${STORAGE}-before-v12`) ||
     localStorage.getItem(`${STORAGE}-before-v11`) ||
     localStorage.getItem(`${STORAGE}-before-v10`) ||
@@ -355,36 +396,38 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v12`)
-    ? 12
-    : localStorage.getItem(`${STORAGE}-before-v11`)
-      ? 11
-      : localStorage.getItem(`${STORAGE}-before-v10`)
-        ? 10
-        : localStorage.getItem(`${STORAGE}-before-v9`)
-          ? 9
-          : localStorage.getItem(`${STORAGE}-before-v8`)
-            ? 8
-            : localStorage.getItem(`${STORAGE}-before-v7`)
-              ? 7
-              : localStorage.getItem(`${STORAGE}-before-v6`)
-                ? 6
-                : localStorage.getItem(`${STORAGE}-before-v5`)
-                  ? 5
-                  : localStorage.getItem(`${STORAGE}-before-v4`)
-                    ? 4
-                    : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v13`)
+    ? 13
+    : localStorage.getItem(`${STORAGE}-before-v12`)
+      ? 12
+      : localStorage.getItem(`${STORAGE}-before-v11`)
+        ? 11
+        : localStorage.getItem(`${STORAGE}-before-v10`)
+          ? 10
+          : localStorage.getItem(`${STORAGE}-before-v9`)
+            ? 9
+            : localStorage.getItem(`${STORAGE}-before-v8`)
+              ? 8
+              : localStorage.getItem(`${STORAGE}-before-v7`)
+                ? 7
+                : localStorage.getItem(`${STORAGE}-before-v6`)
+                  ? 6
+                  : localStorage.getItem(`${STORAGE}-before-v5`)
+                    ? 5
+                    : localStorage.getItem(`${STORAGE}-before-v4`)
+                      ? 4
+                      : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createRandomCharacter();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v12`)
+      !localStorage.getItem(`${STORAGE}-before-v13`)
     ) {
       migrationSave = saved;
-      migrationVersion = 12;
-      localStorage.setItem(`${STORAGE}-before-v12`, saved);
+      migrationVersion = 13;
+      localStorage.setItem(`${STORAGE}-before-v13`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -431,7 +474,9 @@ function update(fn, success = "") {
 }
 function dialog(content) {
   if (modal.open) modal.close();
-  modal.innerHTML = `<button class="modal-close icon-button" data-action="close-modal" aria-label="Close dialog">${icon("close")}</button>${content}`;
+  modal.innerHTML = displayDates(
+    `<button class="modal-close icon-button" data-action="close-modal" aria-label="Close dialog">${icon("close")}</button>${content}`,
+  );
   const heading = modal.querySelector("h2");
   if (heading) {
     heading.id = "dialog-heading";
@@ -470,6 +515,8 @@ const nav = [
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
   ["career", "briefcase", "Work & education"],
+  ["company", "rocket", "Start & run a company"],
+  ["crime", "flag", "Crime & consequences"],
   ["sports", "football", "Sport & development"],
   ["music", "music", "Music & creativity"],
   ["social", "video", "Social media & fame"],
@@ -487,7 +534,7 @@ function sidebar() {
 }
 function header() {
   const date = new Date(Date.UTC(2026, 0, 5 + state.week * 7));
-  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>YEAR ${Math.floor(state.week / 52) + 1} · WEEK ${(state.week % 52) + 1}</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
+  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><button class="icon-button notification-bell" data-action="notification-bell" aria-label="Notifications">${icon("bell")}<span>${notificationCount(state)}</span></button><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>AGE ${age(state)} · Space advances time</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
 }
 function stats() {
   const cards = [
@@ -611,7 +658,37 @@ function investmentsView() {
   )}</div></section><div class="info-banner">${icon("chart")}<span>Global funds are steadier. Individual stocks fluctuate more. Digital assets can swing sharply. Company share prices respond to trading profits as well as market conditions. Funds and profitable issuers can distribute quarterly income; crypto has no dividend. Large trades are limited by weekly liquidity.</span></div>${collectiblesScreen(state, ui())}`;
 }
 function lifestyleView() {
-  return shoppingScreen(state, ui(), shopFilters);
+  const head = retailScreen(state, ui(), retailStore);
+  if (
+    !retailStore ||
+    ["Budget wardrobe", "High street", "Designer atelier", "Barbers"].includes(
+      retailStore,
+    )
+  )
+    return head;
+  if (retailStore === "Experiences") {
+    const page = shoppingScreen(state, ui(), { category: "All" });
+    return (
+      head +
+      page.slice(page.indexOf('<section class="panel experiences-panel">'))
+    );
+  }
+  const categories =
+    retailStore === "Car dealers"
+      ? ["Garage"]
+      : retailStore === "Electronics"
+        ? ["Essentials", "Creator gear", "Workspace"]
+        : ["Property", "Hobbies", "Wellbeing", "Style"];
+  const selected = categories.includes(shopFilters.category)
+    ? shopFilters.category
+    : categories[0];
+  return (
+    head +
+    shoppingScreen(state, ui(), {
+      ...shopFilters,
+      category: shopFilters.category === "All" ? "All" : selected,
+    })
+  );
 }
 function lifeOverview() {
   const pending =
@@ -641,7 +718,9 @@ const pages = {
   lifestyle: lifestyleView,
   identity: () => identityScreen(state, ui()),
   sports: () => sportsScreen(state, ui(), focusedSport),
-  music: () => musicScreen(state, ui()),
+  music: () => studioScreen(state, ui()) + musicScreen(state, ui()),
+  company: () => companyScreen(state, ui()),
+  crime: () => crimeScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
   family: () =>
@@ -656,6 +735,7 @@ const pages = {
 };
 for (const id of [
   "career",
+  "company",
   "investments",
   "banking",
   "teams",
@@ -675,7 +755,9 @@ for (const id of [
       : original();
 }
 function render() {
-  app.innerHTML = `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`;
+  app.innerHTML = displayDates(
+    `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
+  );
   addSectionNavigation();
 }
 function addSectionNavigation() {
@@ -745,7 +827,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.12 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.13 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -869,6 +951,169 @@ document.addEventListener("click", (event) => {
       view = "identity";
       render();
       window.scrollTo({ top: 0 });
+      break;
+    case "retail-store":
+      retailStore = id;
+      shopFilters.category = "";
+      render();
+      break;
+    case "retail-reset": {
+      const area = document.querySelector("[data-dressing-room]");
+      if (area) {
+        area.querySelector(".character-portrait").outerHTML = characterPortrait(
+          state.characterLife.profile,
+        );
+        area.querySelector("[data-outfit-name]").textContent =
+          "Your current look";
+      }
+      break;
+    }
+    case "outfit-preview": {
+      const item = CLOTHING.find((i) => i.id === id),
+        area = document.querySelector("[data-dressing-room]");
+      if (item && area) {
+        area.querySelector(".character-portrait").outerHTML = characterPortrait(
+          {
+            ...state.characterLife.profile,
+            outfit: item.outfit,
+            garment: item.garment,
+          },
+        );
+        area.querySelector("[data-outfit-name]").textContent = item.name;
+      }
+      break;
+    }
+    case "outfit-buy":
+      update((s) => buyClothing(s, id), "Outfit purchased and worn.");
+      break;
+    case "outfit-wear":
+      update((s) => wearClothing(s, id), "Outfit changed.");
+      break;
+    case "relocation-dialog":
+      dialog(relocationDialog(state, ui()));
+      break;
+    case "language-study":
+      update(studyLanguage, "Language & civic knowledge improved.");
+      break;
+    case "naturalisation":
+      dialog(
+        `<h2>Apply for citizenship?</h2><p>This submits an application for ${e(country(state.globalLife.residence.country).name)}. The non-refundable fee is paid now; residence, civic knowledge and criminal-record requirements are checked again at review.</p><button class="button primary" data-action="naturalisation-confirm">Submit citizenship application</button>`,
+      );
+      break;
+    case "naturalisation-confirm":
+      if (
+        update(
+          (s) =>
+            applyImmigration(s, {
+              country: s.globalLife.residence.country,
+              route: "citizenship",
+            }),
+          "Application submitted.",
+        )
+      )
+        modal.close();
+      break;
+    case "crime-review": {
+      const d = CRIMES[id];
+      if (d)
+        dialog(
+          `<div class="eyebrow">A SERIOUS CHOICE</div><h2>${e(d.name)}?</h2><p>This risks arrest, a ${money(d.fine)} fine and up to ${d.sentence} weeks in custody. A conviction ends employment and can affect future jobs and immigration.</p><button class="button primary" data-action="crime-confirm" data-id="${id}">Take the risk</button>`,
+        );
+      break;
+    }
+    case "crime-confirm":
+      if (update((s) => commitCrime(s, id), "Your choice has consequences.")) {
+        modal.close();
+        view = "crime";
+        render();
+      }
+      break;
+    case "prison-activity":
+      update((s) => prisonActivity(s, id), "Supervised activity completed.");
+      break;
+    case "track-new":
+      dialog(trackDialog(state, ui()));
+      break;
+    case "track-work":
+      update((s) => workTrack(s, id), "Studio session completed.");
+      break;
+    case "ready-recording-release":
+      update(
+        (s) => releaseReadyRecording(s, id),
+        "Recording scheduled for release.",
+      );
+      break;
+    case "track-release":
+      if (update((s) => releaseTrack(s, id), "Single scheduled for release."))
+        modal.close();
+      break;
+    case "founder-fund-dialog":
+      dialog(
+        '<h2>Fund your company.</h2><form id="founder-fund-form"><label class="field-label">Capital contribution<input name="amount" type="number" min="100" max="1000000000" step="0.01" required></label><p>Personal cash becomes company cash and equity. This uses one action and two hours. You can spend company funds on development, facilities and an industry pivot.</p><button class="button primary">Transfer founder capital</button></form>',
+      );
+      break;
+    case "business-develop":
+      update(
+        (s) => businessDevelopment(s, id),
+        "Company development completed.",
+      );
+      break;
+    case "kart-seat":
+      update((s) => acceptKartOffer(s, id), "Karting seat accepted.");
+      break;
+    case "notification-bell": {
+      const content = notificationDialog(state, ui());
+      update((s) => {
+        const n = structuredClone(s);
+        n.globalLife.readAlerts = [
+          ...new Set([
+            ...n.globalLife.readAlerts,
+            ...n.globalLife.racing.offers
+              .filter((o) => o.status === "offered")
+              .map((o) => o.id),
+            ...n.music.projects
+              .filter((p) => p.status === "ready")
+              .map((p) => `studio:${p.id}`),
+            ...n.nextChapter.messages
+              .filter((m) => m.status === "open")
+              .map((m) => m.id),
+            ...n.globalLife.marketAlerts.map((a) => a.id),
+            ...n.globalLife.applications
+              .filter((a) => a.status !== "pending")
+              .map((a) => a.id),
+            ...(n.event ? [`event:${n.week}`] : []),
+          ]),
+        ].slice(-80);
+        return n;
+      });
+      dialog(content);
+      break;
+    }
+    case "notification-sports":
+      modal.close();
+      view = "sports";
+      focusedSport = "racing";
+      render();
+      break;
+    case "notification-music":
+      modal.close();
+      view = "music";
+      render();
+      break;
+    case "notification-inbox":
+      modal.close();
+      view = "inbox";
+      render();
+      break;
+    case "notification-markets":
+      modal.close();
+      view = "investments";
+      render();
+      break;
+    case "notification-identity":
+      modal.close();
+      view = "identity";
+      render();
       break;
     case "identity-pro-preview":
       if (update((s) => setProPreview(s, !s.characterLife.proPreview)))
@@ -1265,7 +1510,15 @@ document.addEventListener("click", (event) => {
       const c = state.company;
       if (!c) break;
       dialog(
-        `<div class="eyebrow">BUILD SOMETHING OF YOUR OWN</div><h2>Your company, your direction.</h2><form id="company-form"><label class="field-label">Company name<input name="name" maxlength="40" value="${e(c.name)}" required></label><label class="field-label">Industry<select name="sector">${["Technology", "Consumer goods", "Clean energy"].map((v) => `<option ${c.sector === v ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="field-label">Company strategy<select name="strategy"><option value="balanced" ${c.strategy === "balanced" ? "selected" : ""}>Balanced — draw 25% of positive profit</option><option value="reinvest" ${c.strategy === "reinvest" ? "selected" : ""}>Reinvest — retain all founder profit</option><option value="dividends" ${c.strategy === "dividends" ? "selected" : ""}>Take income — draw 50% of positive profit</option></select></label><p class="muted">Technology has the biggest weekly swings; consumer goods are steadier. All sectors can grow or lose value. Staffing follows company revenue. Side-business distributions use this strategy and are paid quarterly.</p><button class="button primary full-width" type="submit">Set my direction ${icon("arrow")}</button></form>`,
+        `<div class="eyebrow">BUILD SOMETHING OF YOUR OWN</div><h2>Your company, your direction.</h2><form id="company-form"><label class="field-label">Company name<input name="name" maxlength="40" value="${e(c.name)}" required></label><label class="field-label">Industry<select name="sector">${INDUSTRIES.map(
+          (i) => i.name,
+        )
+          .map(
+            (v) => `<option ${c.sector === v ? "selected" : ""}>${v}</option>`,
+          )
+          .join(
+            "",
+          )}</select></label><label class="field-label">Company strategy<select name="strategy"><option value="balanced" ${c.strategy === "balanced" ? "selected" : ""}>Balanced — draw 25% of positive profit</option><option value="reinvest" ${c.strategy === "reinvest" ? "selected" : ""}>Reinvest — retain all founder profit</option><option value="dividends" ${c.strategy === "dividends" ? "selected" : ""}>Take income — draw 50% of positive profit</option></select></label><p class="muted">Technology has the biggest weekly swings; consumer goods are steadier. All sectors can grow or lose value. Changing industry requires an action and company-funded retooling plus any higher capital requirement. Staffing follows company revenue. Side-business distributions use this strategy and are paid quarterly.</p><button class="button primary full-width" type="submit">Set my direction ${icon("arrow")}</button></form>`,
       );
       break;
     }
@@ -1429,9 +1682,7 @@ document.addEventListener("click", (event) => {
       update(practiseMusic, "Practice session complete.");
       break;
     case "record-music":
-      dialog(
-        `<div class="eyebrow">MUSIC PRODUCTION</div><h2>Record your next release.</h2><form id="music-project-form"><label class="field-label">Release title<input name="title" maxlength="60" required placeholder="Your first track"></label><p class="muted">Recording and distribution cost $150. The project takes four weeks. Producers need a computer; vocalists need a phone or microphone. Craft and equipment determine quality, while audience and luck affect streams.</p><button class="button primary full-width" type="submit">Start recording</button></form>`,
-      );
+      dialog(trackDialog(state, ui()));
       break;
     case "music-gig": {
       const g = state.music.gigs.find((g) => g.id === id);
@@ -1529,9 +1780,10 @@ document.addEventListener("click", (event) => {
       if (update(withdrawEducation, "Enrolment withdrawn.")) modal.close();
       break;
     case "found-company":
-      dialog(
-        `<div class="eyebrow">ENTREPRENEURSHIP</div><h2>Build your own business.</h2><form id="found-company-form"><label class="field-label">Company name<input name="name" maxlength="40" required value="${e(state.name.split(" ")[0])} Ventures"></label><label class="field-label">Industry<select name="sector"><option>Technology</option><option>Consumer goods</option><option>Clean energy</option></select></label><p class="muted">Startup capital: $5,000. Income depends on trading profit. You can retain your existing employment contract.</p><button type="submit" class="button primary full-width">Launch company</button></form>`,
-      );
+      dialog(companyLaunchDialog(state, ui()));
+      break;
+    case "company-launch-plan":
+      dialog(companyLaunchDialog(state, ui(), id));
       break;
     case "approach": {
       const b = BUSINESSES.find((b) => b.id === id);
@@ -1816,6 +2068,24 @@ document.addEventListener("submit", (event) => {
         form.dataset.role,
         data.get("tier"),
       ),
+    "relocation-form": (s, data) =>
+      data.get("step") === "apply"
+        ? applyImmigration(s, {
+            country: data.get("country"),
+            route: data.get("route"),
+          })
+        : moveCountry(s, {
+            country: data.get("country"),
+            city: data.get("city"),
+            contact: data.get("step") === "contact",
+          }),
+    "barber-form": (s, data) => visitBarber(s, Object.fromEntries(data)),
+    "artist-name-form": (s, data) => setArtistName(s, data.get("name")),
+    "track-form": (s, data) => startTrack(s, Object.fromEntries(data)),
+    "founder-fund-form": (s, data) =>
+      fundFounder(s, Number(data.get("amount"))),
+    "business-model-form": (s, data) =>
+      setBusinessModel(s, Object.fromEntries(data)),
     "identity-profile-form": (s, data) =>
       editCharacterProfile(s, Object.fromEntries(data)),
     "identity-goal-form": (s, data) => choosePersonalGoal(s, data.get("goal")),
@@ -2135,11 +2405,97 @@ save();
 render();
 
 document.addEventListener("input", (event) => {
-  const form = event.target.closest("#character-form, #identity-profile-form");
+  const form = event.target.closest(
+    "#character-form, #identity-profile-form, #barber-form",
+  );
   if (!form) return;
   const data = new FormData(form);
   const preview = form.querySelector(".character-portrait");
-  if (preview) preview.outerHTML = characterPortrait(Object.fromEntries(data));
+  if (preview)
+    preview.outerHTML = characterPortrait({
+      ...state.characterLife.profile,
+      ...Object.fromEntries(data),
+    });
   const name = form.querySelector("[data-creator-name]");
   if (name) name.textContent = data.get("name") || "Your character";
+});
+
+function fillCityOptions(form, kind) {
+  const code = form.querySelector(
+    kind === "creator" ? "#creator-country" : "#relocation-country",
+  )?.value;
+  const search =
+    form
+      .querySelector(
+        kind === "creator" ? "#creator-city-search" : "#relocation-city-search",
+      )
+      ?.value.toLocaleLowerCase() || "";
+  const select = form.querySelector(
+    kind === "creator" ? 'select[name="birthplace"]' : "#relocation-city",
+  );
+  if (!select || !code) return;
+  const names = (CITY_CATALOGUE[code] || []).filter((c) =>
+    c.toLocaleLowerCase().includes(search),
+  );
+  select.innerHTML = names
+    .slice(0, 200)
+    .map((c) => `<option>${e(c)}</option>`)
+    .join("");
+  const description = form.querySelector("[data-immigration-rule]");
+  if (description)
+    description.textContent = `${country(code).name}: confirm residence permission before moving. Citizenship remains separate. ${names.length.toLocaleString()} cities match your search.`;
+}
+document.addEventListener("input", (event) => {
+  if (event.target.id === "creator-city-search")
+    fillCityOptions(event.target.form, "creator");
+  if (event.target.id === "relocation-city-search")
+    fillCityOptions(event.target.form, "relocation");
+});
+document.addEventListener("change", (event) => {
+  if (event.target.id === "creator-country")
+    fillCityOptions(event.target.form, "creator");
+  if (event.target.id === "relocation-country")
+    fillCityOptions(event.target.form, "relocation");
+  if (
+    event.target.name === "birthplace" &&
+    event.target.closest("#character-form")
+  ) {
+    const form = event.target.form,
+      select = form.querySelector("#creator-country");
+    if (select && !CITY_CATALOGUE[select.value].includes(event.target.value))
+      select.value = placeCountry(event.target.value);
+  }
+  if (
+    event.target.name === "sector" &&
+    event.target.closest("#found-company-form")
+  ) {
+    const d = INDUSTRIES.find((i) => i.name === event.target.value);
+    event.target.form.querySelector("[data-startup-cost]").textContent =
+      `${money(d.capital)} startup capital · age eighteen and 30 business skill. Capital moves into the company's cash account.`;
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (
+    event.code !== "Space" ||
+    event.repeat ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    state.ended
+  )
+    return;
+  if (modal.open) {
+    if (!event.target.closest('input,textarea,[contenteditable="true"]'))
+      event.preventDefault();
+    return;
+  }
+  if (
+    event.target.closest(
+      'input,textarea,select,button,a,[contenteditable="true"]',
+    )
+  )
+    return;
+  event.preventDefault();
+  document.querySelector('[data-action="next-week"]')?.click();
 });

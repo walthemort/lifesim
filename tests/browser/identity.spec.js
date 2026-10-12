@@ -205,7 +205,7 @@ test("personal goals can be chosen and personal development uses actual actions"
     page.getByRole("button", { name: "Reflect & listen", exact: true }),
   ).toBeDisabled();
 });
-test("v10 import preserves the original life and exports an exact pre-v12 backup", async ({
+test("v10 import preserves the original life and exports an exact pre-v13 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -224,7 +224,7 @@ test("v10 import preserves the original life and exports an exact pre-v12 backup
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const download = await pending;
-  expect(download.suggestedFilename()).toBe("lifesim-before-v12.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v13.json");
   expect(JSON.parse(fs.readFileSync(await download.path(), "utf8"))).toEqual(
     old,
   );

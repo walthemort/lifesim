@@ -1,3 +1,4 @@
+import { careerCockpit } from "./expansion-screens.js";
 import {
   performanceScreen,
   creativePlanningScreen,
@@ -93,6 +94,7 @@ export function sportsScreen(s, u, focusedSport = null) {
   return (
     introduction +
     navigation +
+    careerCockpit(s, u, preferred) +
     ordered
       .map(
         ({ id, name }) =>
@@ -164,11 +166,11 @@ export function musicScreen(s, u) {
     )
     .join(
       "",
-    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. A release requires eight sessions, recording equipment, $150, and four weeks. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Record a release</button></div></section>${creativePlanningScreen(s, u, "music")}${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
-    .filter((p) => p.status === "recording")
+    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. Tracks begin in the workshop above: prepare a beat, write lyrics, record, then mix for four weeks. Finished tracks stay in your unreleased library until you choose a single or album. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Open track workshop</button></div></section>${creativePlanningScreen(s, u, "music")}${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
+    .filter((p) => ["recording", "ready"].includes(p.status))
     .map(
       (p) =>
-        `<div class="application-row"><div><strong>${e(p.title)}</strong><small>Recording · releases in ${p.releaseWeek - s.week} weeks</small></div>${tag("In production", "purple")}</div>`,
+        `<div class="application-row"><div><strong>${e(p.title)}</strong><small>${p.status === "ready" ? "Finished · unreleased" : "Recording · mixing completes in " + (p.releaseWeek - s.week) + " weeks"}</small></div>${p.status === "ready" ? `<button class="button primary" data-action="ready-recording-release" data-id="${e(p.id)}">Release finished recording</button>` : tag("In production", "purple")}</div>`,
     )
     .join("")}${
     m.releases
@@ -176,7 +178,7 @@ export function musicScreen(s, u) {
       .reverse()
       .map(
         (r) =>
-          `<div class="application-row"><div><strong>${e(r.title)}</strong><small>${e(r.genre)} · ${e(MUSIC_ROLES[r.role])} · ${r.quality}/100 quality · ${count(r.totalStreams)} streams</small></div><strong>${money(r.totalRoyalties, 2)} earned</strong></div>`,
+          `<div class="application-row"><div><strong>${e(r.title)}</strong><small>${e(r.artist || s.globalLife.artistName)} · ${e(r.genre)} · ${e(MUSIC_ROLES[r.role])} · ${r.quality}/100 quality · ${count(r.totalStreams)} streams</small></div><strong>${money(r.totalRoyalties, 2)} earned</strong></div>`,
       )
       .join("") ||
     '<p class="muted">No released music yet. Choose a direction, practise, and record your first track.</p>'

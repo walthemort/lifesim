@@ -218,7 +218,7 @@ export function acceptSportOffer(state, sportId, id) {
     };
     checkSportSigning(s, sportId, o);
     if (
-      age(s) < 16 ||
+      age(s) < (sportId === "racing" && j.level === 1 ? 15 : 16) ||
       (j.qualification && !s.education.completed.includes(j.qualification))
     )
       throw new Error(
@@ -375,6 +375,10 @@ export function advanceSports(s) {
         );
     }
     if (s.week >= p.nextScoutWeek) {
+      if (d.id === "racing" && s.globalLife) {
+        p.nextScoutWeek = s.week + 13;
+        continue;
+      }
       p.nextScoutWeek = s.week + 13;
       if (
         p.trial ||

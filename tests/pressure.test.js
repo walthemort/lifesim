@@ -249,6 +249,14 @@ test("planned recordings pay budgets and guest fees upfront and respect their re
     ),
   );
   s = next(s);
+  assert.equal(
+    s.music.projects.find((p) => p.id === project.id).status,
+    "ready",
+  );
+  assert.ok(!s.music.releases.some((p) => p.id === project.id));
+  if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
+  s = g.releaseReadyRecording(s, project.id);
+  s = next(s);
   assert.ok(s.music.releases.some((p) => p.id === project.id));
   assert.deepEqual(g.restoreGame(s), s);
 });
@@ -316,7 +324,7 @@ test("v11 migration preserves every existing field and starts observing new owne
     s = g.restoreGame(old);
   for (const [key, value] of Object.entries(old))
     if (key !== "version") assert.deepEqual(s[key], value, key);
-  assert.equal(s.version, 12);
+  assert.equal(s.version, g.VERSION);
   for (const c of Object.values(s.ownershipPlay.competitions)) {
     assert.equal(c.trackedFromWeek, old.week);
     assert.ok(c.table.every((t) => t.played === 0));

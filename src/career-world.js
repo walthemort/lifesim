@@ -1,3 +1,4 @@
+import { placeCountry, immigrationRule } from "./geography.js";
 import { checkMusicOutsideWork } from "./contracts.js";
 import { milestoneAway } from "./career-milestones.js";
 import {
@@ -205,6 +206,15 @@ export function sportMoveEligibility(s, id, kind, destination) {
     ? jobDefinition(p.contract.jobId).level + (kind === "step-up" ? 1 : 0)
     : 0;
   const j = JOBS.find((j) => j.track === id && j.level === level);
+  if (
+    id === "racing" &&
+    kind === "step-up" &&
+    s.globalLife &&
+    !s.globalLife.racing.history.some(
+      (h) => h.tier === s.globalLife.racing.tier && h.position <= 3,
+    )
+  )
+    missing.push("a championship podium at your current racing tier");
   if (!j) missing.push("an available career level");
   else {
     if (s.skills[TRACK_SKILLS[id]] < j.skill || p.ability < j.skill)
@@ -367,6 +377,14 @@ export function checkCareerMoveSigning(s, id, o) {
   if (meta.familyPlan === "move" && meta.city !== s.city) {
     if (age(s) < 18 || availableCash(s) < 1500)
       throw new Error("Moving your household needs age eighteen and $1,500.");
+    if (
+      s.globalLife?.crime.record.some(
+        (r) => r.severity >= 3 || s.week - r.week < 260,
+      )
+    )
+      throw new Error(
+        "A criminal-record review is required before sponsored household relocation.",
+      );
     const partner =
       s.family.partnerId && s.connections.profiles[s.family.partnerId];
     if (partner && partner.trust < 50)
@@ -410,6 +428,28 @@ export function signedCareerMove(s, id, o, previous) {
     s.money -= 1500;
     const old = s.city;
     s.city = meta.city;
+    if (s.globalLife) {
+      const g = s.globalLife,
+        code = placeCountry(meta.city),
+        oldCountry = g.residence.country;
+      g.residence = { country: code, city: meta.city, sinceWeek: s.week };
+      g.language = 25;
+      if (!g.citizenships.includes(code))
+        g.permits.push({
+          country: code,
+          route: "work",
+          startsWeek: s.week,
+          endsWeek: s.week + 312,
+        });
+      g.moves.push({
+        from: oldCountry,
+        to: code,
+        city: meta.city,
+        week: s.week,
+        cost: 1500,
+      });
+      g.moves = g.moves.slice(-40);
+    }
     c.travel = false;
     const partner =
       s.family.partnerId && s.connections.profiles[s.family.partnerId];
@@ -966,12 +1006,14 @@ export function assembleAlbum(state, { title, tracks }) {
     new Set(tracks).size !== tracks.length ||
     tracks.some(
       (id) =>
-        !state.music.releases.some((r) => r.id === id) ||
-        musicReleaseShare(state, id) === 0,
+        !(
+          state.music.releases.some((r) => r.id === id) ||
+          state.music.projects.some((p) => p.id === id && p.status === "ready")
+        ) || musicReleaseShare(state, id) === 0,
     )
   )
     throw new Error(
-      "An album needs age sixteen, a title and three to eight released tracks you own.",
+      "An album needs age sixteen, a title and three to eight finished tracks you own.",
     );
   if (
     state.careerWorld.music.albums.some((a) =>
@@ -984,6 +1026,16 @@ export function assembleAlbum(state, { title, tracks }) {
     );
   const s = action(state, 4, "Album mastering and sequencing");
   s.money -= 250;
+  for (const id of tracks) {
+    const p = s.music.projects.find((p) => p.id === id && p.status === "ready");
+    if (p) {
+      p.status = "recording";
+      p.manualRelease = false;
+      p.releaseWeek = s.week + 2;
+      const track = s.globalLife?.tracks.find((t) => t.projectId === id);
+      if (track) track.stage = "scheduled";
+    }
+  }
   let serial = s.careerWorld.music.albums.length;
   while (
     s.careerWorld.music.albums.some((a) => a.id === `album:${s.week}:${serial}`)

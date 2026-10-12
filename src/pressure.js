@@ -124,6 +124,7 @@ export function startPlannedRecording(
     );
   const s = startMusicProject(state, { title }),
     p = s.music.projects.at(-1);
+  p.manualRelease=true;
   spendTime(s, 2, "Recording budget and release planning");
   s.money = round(s.money - extra);
   p.quality = clamp(

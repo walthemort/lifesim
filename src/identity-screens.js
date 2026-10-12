@@ -1,4 +1,13 @@
 import {
+  COUNTRIES,
+  CITY_CATALOGUE,
+  placeCountry,
+  WORLD_CITIES,
+  country,
+} from "./geography.js";
+import { PRO_HAIRSTYLES } from "./expansion-data.js";
+import { relocationScreen } from "./expansion-screens.js";
+import {
   HOMETOWNS,
   PROFILE_OPTIONS,
   PERSONALITY,
@@ -26,42 +35,134 @@ const colours = {
   Purple: "#b4a0ef",
   Orange: "#e9a080",
 };
+let portraitSerial = 0;
 export function characterPortrait(p) {
-  const colour = (key, fallback) => colours[p[key]] || fallback;
-  const hair =
-    p.hairstyle === "Shaved"
-      ? ""
-      : p.hairstyle === "Long"
-        ? '<path d="M27 58V44a33 33 0 0 1 66 0v44H78V52H42v36H27Z"/>'
-        : p.hairstyle === "Curly"
-          ? '<path d="M27 48a14 14 0 0 1 8-24 14 14 0 0 1 23-8 14 14 0 0 1 25 10 15 15 0 0 1 9 24l-13-6-20-13-20 14Z"/>'
-          : '<path d="M29 48V38c0-34 63-34 63 0v12L73 33 47 42Z"/>';
-  return `<svg class="character-portrait" viewBox="0 0 120 140" role="img" aria-label="Character portrait"><rect width="120" height="140" rx="18" fill="#1b2636"/><path d="M12 140v-18c0-38 96-38 96 0v18Z" fill="${colour("outfit", colours.Green)}"/><path d="M49 79h22v30H49Z" fill="${colour("skin", colours.Medium)}"/><g fill="${colour("hair", colours.Brown)}">${p.hairstyle === "Long" ? hair : ""}</g><ellipse cx="60" cy="58" rx="29" ry="36" fill="${colour("skin", colours.Medium)}"/><g fill="${colour("hair", colours.Brown)}">${p.hairstyle !== "Long" ? hair : ""}</g><g fill="${colour("eyes", colours.Brown)}"><circle cx="48" cy="59" r="3"/><circle cx="72" cy="59" r="3"/></g><path d="M52 77q8 6 16 0" fill="none" stroke="#704335" stroke-width="2" stroke-linecap="round"/></svg>`;
+  const id = `portrait-${portraitSerial++}`;
+  const skin =
+    {
+      Porcelain: "#f3d8c7",
+      Light: "#e9bb99",
+      Olive: "#c7a27a",
+      Medium: "#bd825d",
+      Tan: "#a66e4f",
+      Deep: "#79523d",
+      "Rich deep": "#4e342b",
+    }[p.skin] || "#bd825d";
+  const hair = colours[p.hair] || colours.Brown,
+    outfit = colours[p.outfit] || "#202633",
+    eye = colours[p.eyes] || "#5e4230";
+  const rx = p.face === "Round" ? 30 : p.face === "Angular" ? 25 : 27;
+  const styles = {
+    Short: "M31 56V39Q32 12 59 13Q92 11 91 45L83 57 80 36Q57 43 39 35L38 56Z",
+    Long: "M27 109V39Q28 9 59 9Q94 9 94 44V114L81 107V45L69 29Q54 42 38 41V108Z",
+    Curly:
+      "M28 53Q17 36 31 29Q25 17 42 17Q47 4 60 14Q77 3 84 21Q102 24 94 39Q102 48 88 57L80 36Q63 43 40 37L36 57Z",
+    Shaved: "",
+    "Buzz cut": "M33 42Q35 16 61 17Q87 18 88 44L82 34Q60 21 39 35Z",
+    Fade: "M32 59V38Q35 12 62 14Q89 17 89 44L85 60 80 37Q59 45 39 35L36 59Z",
+    "Side part":
+      "M32 56V36Q39 9 70 15Q92 19 89 46L84 52 79 29Q62 37 38 38L36 55Z",
+    Ponytail:
+      "M87 30Q110 30 103 64L99 94Q84 80 89 62L85 46M32 51V35Q33 12 62 12Q92 12 89 51L82 40Q60 24 39 42Z",
+    Bob: "M28 88V37Q29 10 61 10Q94 9 94 40V88L80 92V43L70 29Q53 39 40 40V92Z",
+    Braids:
+      "M30 48Q28 10 61 10Q93 11 93 47L84 41 77 26Q63 19 40 37ZM29 40L24 117 33 115 39 39ZM86 38L94 116 102 114 93 38Z",
+    Dreadlocks:
+      "M26 48Q22 12 60 10Q96 10 96 48L86 46 80 28 70 42 64 26 54 45 46 27 37 52ZM27 42L24 105 33 105 37 46ZM88 43L92 104 100 104 95 41Z",
+    Afro: "M29 64Q8 49 19 34Q10 12 35 13Q38 -2 58 6Q77 -1 86 13Q110 13 103 34Q114 48 94 65L84 43Q66 23 38 43Z",
+    "Space buns":
+      "M28 34Q8 27 20 14Q33 7 41 22M80 21Q88 5 104 16Q115 31 93 36M31 51V34Q33 12 62 12Q92 15 90 53L81 40Q61 23 39 42Z",
+    "Wolf cut":
+      "M25 93L28 36Q28 11 62 12Q94 12 95 39L100 95 83 83 79 38 73 51 63 33 52 52 43 35 37 84Z",
+    Pompadour:
+      "M31 54V37Q17 15 45 7Q89 -3 91 31L87 53 81 36Q64 41 40 34L37 54Z",
+  };
+  const shape = styles[p.hairstyle] || styles.Short,
+    back = [
+      "Long",
+      "Bob",
+      "Braids",
+      "Dreadlocks",
+      "Afro",
+      "Ponytail",
+      "Wolf cut",
+    ].includes(p.hairstyle);
+  const hairDetail =
+    p.hairstyle === "Braids"
+      ? `<g stroke="#160e09" stroke-width="1.3" opacity=".55" fill="none">${Array.from(
+          { length: 12 },
+          (_, i) => {
+            const y = 48 + i * 5;
+            return `<path d="M29 ${y}l5 3-5 3m65-6 5 3-5 3"/>`;
+          },
+        ).join(
+          "",
+        )}<path d="M38 29q5-12 17-13m-13 17q7-14 20-16m-12 17q9-15 19-15"/></g>`
+      : ["Afro", "Curly"].includes(p.hairstyle)
+        ? `<g fill="none" stroke="#fff" opacity=".12" stroke-width=".9">${Array.from({ length: 18 }, (_, i) => `<circle cx="${25 + (i % 6) * 13}" cy="${19 + Math.floor(i / 6) * 9}" r="3"/>`).join("")}</g>`
+        : p.hairstyle === "Dreadlocks"
+          ? '<g stroke="#1b120e" opacity=".5" fill="none" stroke-width="1.5"><path d="M30 46l-2 58m5-57-2 51m61-50 4 53m-6-48 3 47M38 27l-1 18m10-26-1 17m12-20-1 17m12-19-1 17m12-16-1 18"/></g>'
+          : "";
+  const garment = p.garment || "T-shirt";
+  const outfitDetail =
+    garment === "Suit" || garment === "Formal"
+      ? '<path d="M47 109L60 142 73 109 65 111 60 133 55 111Z" fill="#f1e9df"/><path d="M39 111L50 155 59 140 43 107M81 111L70 155 61 140 77 107" fill="#101b29"/>'
+      : garment === "Hoodie"
+        ? '<path d="M42 109Q60 141 78 109L75 102Q60 127 45 102Z" fill="#000" opacity=".25"/><path d="M50 122v25m20-25v25" stroke="#e6e6e6" opacity=".6"/>'
+        : garment === "Jacket"
+          ? '<path d="M43 106L57 137 57 190M77 106L63 137 63 190" stroke="#1a202d" stroke-width="5"/><path d="M31 141h18m22 0h18" stroke="#fff" opacity=".15"/>'
+          : garment === "Shirt"
+            ? '<path d="M47 108L58 126 60 115 62 126 73 108" fill="#fff" opacity=".35"/><path d="M60 118v73" stroke="#fff" opacity=".2"/>'
+            : garment === "Knitwear"
+              ? '<path d="M28 132h64m-66 8h68m-67 8h66m-66 8h66m-66 8h66m-66 8h66" stroke="#fff" opacity=".09"/>'
+              : "";
+  const brows = p.eyebrows === "Thick" ? 3 : p.eyebrows === "Arched" ? 1.4 : 2;
+  const beard =
+    p.facialHair === "Beard"
+      ? '<path d="M34 73Q36 105 60 105Q85 103 87 73L77 88Q60 96 43 86Z"/>'
+      : p.facialHair === "Stubble"
+        ? '<path d="M35 77Q40 105 61 104Q82 99 86 76L76 89Q58 97 44 86Z" opacity=".25"/>'
+        : p.facialHair === "Moustache"
+          ? '<path d="M48 82Q60 76 72 82L76 87Q61 83 45 87Z"/>'
+          : "";
+  return `<svg class="character-portrait shaded-portrait" viewBox="0 0 120 200" role="img" aria-label="Character portrait"><defs><linearGradient id="${id}-skin" x1="0" x2="1" y1="0" y2=".5"><stop stop-color="${skin}"/><stop offset=".45" stop-color="${skin}"/><stop offset="1" stop-color="#20151a" stop-opacity=".65"/></linearGradient><linearGradient id="${id}-fabric" x1="0" x2="1" y2=".6"><stop stop-color="${outfit}"/><stop offset=".55" stop-color="${outfit}"/><stop offset="1" stop-color="#080e1c"/></linearGradient><radialGradient id="${id}-bg"><stop stop-color="#33475b"/><stop offset="1" stop-color="#111b2a"/></radialGradient></defs><rect width="120" height="200" rx="18" fill="url(#${id}-bg)"/><ellipse cx="60" cy="194" rx="48" ry="6" fill="#000" opacity=".3"/>${back ? `<path d="${shape}" fill="${hair}"/>` : ""}<path d="M49 86h22v29H49Z" fill="url(#${id}-skin)"/><path d="M49 89Q60 103 71 89v13q-11 7-22-1Z" fill="#39231a" opacity=".25"/><path d="M10 198v-55Q10 112 45 109q15 16 30 0 35 3 35 34v55Z" fill="url(#${id}-fabric)"/><path d="M26 144l-4 54m73-54 3 54" stroke="#000" opacity=".15" stroke-width="4"/>${outfitDetail}<ellipse cx="32" cy="65" rx="5" ry="10" fill="${skin}"/><ellipse cx="89" cy="65" rx="5" ry="10" fill="${skin}"/><ellipse cx="60" cy="60" rx="${rx}" ry="38" fill="url(#${id}-skin)"/><path d="M42 59q6-5 13 0m10 0q6-5 13 0" stroke="#392b28" stroke-width="1.3" fill="none"/><g fill="#e9e4df"><ellipse cx="48" cy="61" rx="6" ry="3"/><ellipse cx="72" cy="61" rx="6" ry="3"/></g><g fill="${eye}"><circle cx="49" cy="61" r="2.7"/><circle cx="71" cy="61" r="2.7"/></g><g fill="#171923"><circle cx="49" cy="61" r="1.3"/><circle cx="71" cy="61" r="1.3"/></g><g fill="#fff"><circle cx="50" cy="60" r=".7"/><circle cx="72" cy="60" r=".7"/></g><path d="M41 52q8-${p.eyebrows === "Arched" ? 6 : 2} 14 0m10 0q8-2 14 0" stroke="${hair}" stroke-width="${brows}" fill="none" stroke-linecap="round"/><path d="M61 61l-4 12q4 3 8 0" stroke="#5e382c" opacity=".5" fill="none"/><path d="M50 84q10 4 20 0" stroke="#703f3b" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M49 81q11-4 22 0" stroke="#b57868" opacity=".3" fill="none"/><g fill="${hair}">${beard}<path d="${shape}"/></g>${hairDetail}<path d="M40 32Q49 20 68 21" stroke="#fff" opacity=".1" stroke-width="3" fill="none"/></svg>`;
 }
 function selectField(key, label, values, current, e) {
   return `<label class="field-label">${label}<select name="${key}" aria-label="${e(label)}">${values.map((value) => `<option value="${e(value)}" ${value === current ? "selected" : ""}>${e(value)}</option>`).join("")}</select></label>`;
 }
-export function profileFields(s, u) {
+export function profileFields(s, u, creating = false) {
   const { e } = u,
     p = s.characterLife.profile;
-  return `<div class="identity-preview">${characterPortrait(p)}<div><strong data-creator-name>${e(s.name)}</strong><p>Appearance is cosmetic. Your skills develop through life.</p></div></div><div class="everyday-grid"><label class="field-label">Your name<input name="name" maxlength="32" value="${e(s.name)}" required autocomplete="off"></label>${selectField("pronouns", "Pronouns", PROFILE_OPTIONS.pronouns, p.pronouns, e)}${selectField("nationality", "Nationality", PROFILE_OPTIONS.nationality, p.nationality, e)}${selectField("birthplace", "Birthplace", Object.keys(HOMETOWNS), p.birthplace, e)}${Object.entries(
+  return `<div class="identity-preview">${characterPortrait(p)}<div><strong data-creator-name>${e(s.name)}</strong><p>Appearance is cosmetic. Your skills develop through life.</p></div></div><div class="everyday-grid"><label class="field-label">Your name<input name="name" maxlength="32" value="${e(s.name)}" required autocomplete="off"></label>${selectField("pronouns", "Pronouns", PROFILE_OPTIONS.pronouns, p.pronouns, e)}${creating ? `<label class="field-label">Birth country<select name="country" id="creator-country">${COUNTRIES.map((c) => `<option value="${c.code}" ${c.code === placeCountry(p.birthplace) ? "selected" : ""}>${e(c.name)}</option>`).join("")}</select></label><label class="field-label">Find a birthplace<input id="creator-city-search" type="search" placeholder="Search cities in this country"></label>${selectField("birthplace", "Birthplace", [...new Set([...WORLD_CITIES, p.birthplace])], p.birthplace, e)}` : s.debug.enabled ? selectField("birthplace", "Birthplace", [...new Set([...WORLD_CITIES, p.birthplace])], p.birthplace, e) : ""}${Object.entries(
     {
       skin: "Skin tone",
       hair: "Hair colour",
       hairstyle: "Hair style",
       eyes: "Eye colour",
       outfit: "Outfit colour",
+      face: "Face shape",
+      eyebrows: "Eyebrows",
+      facialHair: "Facial hair",
+      garment: "Outfit style",
     },
   )
     .map(([key, label]) =>
-      selectField(key, label, PROFILE_OPTIONS[key], p[key], e),
+      selectField(
+        key,
+        label,
+        key === "hairstyle" && !creatorAvailable(s)
+          ? PROFILE_OPTIONS[key].filter((v) => !PRO_HAIRSTYLES.includes(v))
+          : PROFILE_OPTIONS[key],
+        p[key],
+        e,
+      ),
     )
     .join("")}</div>`;
 }
 export function characterCreatorForm(s, u) {
   const { e } = u,
     debug = s.debug.enabled;
-  return `<div class="eyebrow">${debug ? "DEBUG CHARACTER CREATOR" : "PRO CHARACTER CREATOR"}</div><h2>Create your next life.</h2><p>${debug ? "Customize a sandbox life. Age, cash and skills are Debug controls." : "Choose your identity and family. Your life still starts at birth; skills and qualifications must be earned."} This replaces your current life; export it first to keep both.</p><form id="character-form">${profileFields(s, u)}<div class="everyday-grid">${selectField("city", "Home city", Object.keys(HOMETOWNS), s.city, e)}${selectField("trait", "Your personality", ["Ambitious", "Social", "Analytical", "Athletic"], s.trait, e)}<label class="field-label">Family background<select name="familyBackground"><option value="modest">Modest household</option><option value="comfortable" selected>Comfortable household</option><option value="wealthy">Wealthy household</option></select></label><label class="field-label">Life path / interest<select name="career">${Object.entries(
+  return `<div class="eyebrow">${debug ? "DEBUG CHARACTER CREATOR" : "PRO CHARACTER CREATOR"}</div><h2>Create your next life.</h2><p>${debug ? "Customize a sandbox life. Age, cash and skills are Debug controls." : "Choose your identity and family. Your life still starts at birth; skills and qualifications must be earned."} This replaces your current life; export it first to keep both.</p><form id="character-form">${profileFields(s, u, true)}<div class="everyday-grid">${debug ? selectField("city", "Home city", [...new Set([...WORLD_CITIES, s.city])], s.city, e) : ""}${selectField("trait", "Your personality", ["Ambitious", "Social", "Analytical", "Athletic"], s.trait, e)}<label class="field-label">Family background<select name="familyBackground"><option value="modest">Modest household</option><option value="comfortable" selected>Comfortable household</option><option value="wealthy">Wealthy household</option></select></label><label class="field-label">Life path / interest<select name="career">${Object.entries(
     {
       unemployed: "Still discovering",
       football: "Football",
@@ -147,7 +248,7 @@ export function identityScreen(s, u) {
       !g.done(s) &&
       !c.completedGoals.some((x) => x.id === g.id),
   );
-  return `${title("IDENTITY, ROOTS & PERSONAL AMBITIONS", "A life that feels like yours.", "Your identity, the people raising you and the place you call home shape your opportunities.")}<section class="panel wide-panel">${panelHeading("Your character", "Appearance and nationality do not determine ability or access to jobs.")}<div class="identity-preview">${characterPortrait(c.profile)}<div><h2>${e(s.name)}</h2><p>${e(c.profile.pronouns)} · ${e(c.profile.nationality)}<br>Born in ${e(c.profile.birthplace)} · living in ${e(s.city)}</p>${creatorAvailable(s) ? '<button class="button secondary" data-action="identity-edit-profile">Edit character profile</button>' : '<p class="muted">Character customization is available with Debug or Pro access. Ordinary lives begin with a random identity.</p>'}<button class="button secondary" data-action="new-game">${creatorAvailable(s) ? "Open character creator" : "Start a new life"}</button></div></div></section><section class="panel wide-panel">${panelHeading("Personality in practice", "Small advantages change preparation and progress; qualification and career gates always apply.")}<div class="everyday-grid">${Object.entries(
+  return `${title("IDENTITY, ROOTS & PERSONAL AMBITIONS", "A life that feels like yours.", "Your identity, the people raising you and the place you call home shape your opportunities.")}<section class="panel wide-panel">${panelHeading("Your character", "Appearance and nationality do not determine ability or access to jobs.")}<div class="identity-preview">${characterPortrait(c.profile)}<div><h2>${e(s.name)}</h2><p>${e(c.profile.pronouns)} · ${e(c.profile.nationality)}<br>Born in ${e(c.profile.birthplace)}, ${e(country(s.globalLife.birthCountry).name)}<br>Citizenship: ${s.globalLife.citizenships.map((code) => e(country(code).name)).join(", ")}<br>Living in ${e(s.city)}, ${e(country(s.globalLife.residence.country).name)}</p>${creatorAvailable(s) ? '<button class="button secondary" data-action="identity-edit-profile">Edit character profile</button>' : '<p class="muted">Character customization is available with Debug or Pro access. Ordinary lives begin with a random identity.</p>'}<button class="button secondary" data-action="new-game">${creatorAvailable(s) ? "Open character creator" : "Start a new life"}</button></div></div></section>${relocationScreen(s, u)}<section class="panel wide-panel">${panelHeading("Personality in practice", "Small advantages change preparation and progress; qualification and career gates always apply.")}<div class="everyday-grid">${Object.entries(
     PERSONALITY,
   )
     .map(

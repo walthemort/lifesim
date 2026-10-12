@@ -198,7 +198,7 @@ test("sports develop through local events, with explicit age and competition-lic
   }
   let s = fresh({ age: 14, career: "racing" });
   s.skills.driving = 100;
-  assert.throws(() => g.enrolEducation(s, "racing-license"), /age 16/);
+  assert.throws(() => g.enrolEducation(s, "racing-license"), /age 15/);
   s.startAge = 16;
   const o = sportsInvitation(s, "racing");
   assert.throws(() => g.acceptSportOffer(s, "racing", o.id), /licence/);
@@ -272,19 +272,40 @@ test("local sports remain available later in life while new professional contrac
 test("a school-age karting life can reach an F1 offer through funded licensing, development, and professional experience", () => {
   let s = fresh({ age: 14, career: "racing", trait: "Athletic" });
   // External funding pays for licensing and junior seats, without granting sporting credentials.
-  s = g.debugEdit(g.toggleDebug(s, true), { money: 500000 });
+  s = g.debugEdit(g.toggleDebug(s, true), { money: 3000000 });
   s = g.setSportTraining(s, "racing", "technical");
   const categories = new Set();
-  for (let i = 0; i < 1000 && s.employment?.jobId !== "racing-4"; i++) {
+  for (let i = 0; i < 1600 && s.employment?.jobId !== "racing-4"; i++) {
     s = clear(s);
     s = g.setActivity(
       s,
       s.energy < 35 ? "rest" : s.education.active ? "study" : "balanced",
     );
+    for (const o of s.globalLife.racing.offers.filter(
+      (o) => o.status === "offered",
+    ))
+      if (
+        s.actions &&
+        !s.sports.racing.injuryWeeks &&
+        168 -
+          g.calendarForecast(s).mandatory -
+          g.calendarForecast(s, { comingWeek: true }).appointments -
+          s.calendar.spent >=
+          2
+      )
+        s = g.acceptKartOffer(s, o.id);
     for (const o of s.sports.racing.offers.filter(
       (o) => o.status === "offered",
     ))
-      if (!s.sports.racing.injuryWeeks && s.actions) {
+      if (
+        !s.sports.racing.injuryWeeks &&
+        s.actions &&
+        168 -
+          g.calendarForecast(s).mandatory -
+          g.calendarForecast(s, { comingWeek: true }).appointments -
+          s.calendar.spent >=
+          3
+      ) {
         s = g.acceptSportOffer(s, "racing", o.id);
         if (o.jobId) categories.add(o.jobId);
       }
@@ -307,6 +328,12 @@ test("a school-age karting life can reach an F1 offer through funded licensing, 
     [...categories],
     ["racing-1", "racing-2", "racing-3", "racing-4"],
   );
+  for (const tier of ["kart3", "kart2", "kart1"])
+    assert.ok(
+      s.globalLife.racing.history.some(
+        (h) => h.tier === tier && h.position <= 3,
+      ),
+    );
   assert.equal(s.employment.jobId, "racing-4");
   assert.ok(s.education.completed.includes("super-license"));
   assert.ok(s.progress.racing.weeks >= 312);

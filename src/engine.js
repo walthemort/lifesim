@@ -1,4 +1,22 @@
 import {
+  COUNTRIES,
+  CITY_CATALOGUE,
+  placeCountry,
+  knownCity,
+  validPlace,
+  country as countryDefinition,
+} from "./geography.js";
+import { industry, INDUSTRIES } from "./expansion-data.js";
+import {
+  initializeExpansion,
+  advanceExpansion,
+  validateExpansion,
+  advanceCustody,
+} from "./expansion.js";
+export * from "./expansion.js";
+export * from "./expansion-data.js";
+export * from "./geography.js";
+import {
   initializePressure,
   advancePressure,
   validatePressure,
@@ -103,7 +121,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 12;
+export const VERSION = 13;
 import {
   initializeBanking,
   validateBanking,
@@ -162,6 +180,7 @@ export * from "./calendar.js";
 export * from "./careers.js";
 export * from "./connections.js";
 import {
+  RENTALS,
   initializeEveryday,
   advanceEveryday,
   validateEveryday,
@@ -602,23 +621,25 @@ const clone = (s) => structuredClone(s);
 export const age = (s) => s.startAge + Math.floor(s.week / 52);
 export const careerLevel = (s) => s.progress[s.career].level;
 export const salary = (s) =>
-  age(s) < 18 && !s.employment && s.career !== "business"
-    ? childhoodAllowance(s)
-    : s.employment
-      ? employmentIncome(s)
-      : s.career === "business" && s.company
-        ? Math.round(
-            Math.min(
-              Math.max(0, s.company.cash),
-              Math.max(0, s.company.profit) *
-                (s.company.strategy === "reinvest"
-                  ? 0
-                  : s.company.strategy === "dividends"
-                    ? 0.5
-                    : 0.25),
-            ) * 100,
-          ) / 100
-        : 0;
+  s.globalLife?.crime.prison
+    ? 0
+    : age(s) < 18 && !s.employment && s.career !== "business"
+      ? childhoodAllowance(s)
+      : s.employment
+        ? employmentIncome(s)
+        : s.career === "business" && s.company
+          ? Math.round(
+              Math.min(
+                Math.max(0, s.company.cash),
+                Math.max(0, s.company.profit) *
+                  (s.company.strategy === "reinvest"
+                    ? 0
+                    : s.company.strategy === "dividends"
+                      ? 0.5
+                      : 0.25),
+              ) * 100,
+            ) / 100
+          : 0;
 export const expenses = (
   s,
   { education = true, sports = true, properties = true, banking = true } = {},
@@ -678,6 +699,7 @@ export function createGame({
   age: startAge = 0,
   footballPosition = "Midfielder",
   city = "London",
+  country: countryCode = null,
   trait = "Ambitious",
   career = "unemployed",
   education = "school",
@@ -694,13 +716,16 @@ export function createGame({
     throw new Error(
       "A completed degree background requires a starting age of at least 21.",
     );
+  if (countryCode && !countryDefinition(countryCode))
+    throw new Error("Choose a valid country.");
   const s = {
     version: VERSION,
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
     startAge: Number(startAge),
-    city: ["London", "Copenhagen", "New York", "Monaco"].includes(city)
-      ? city
-      : "London",
+    city:
+      knownCity(city) && (!countryCode || validPlace(countryCode, city))
+        ? city
+        : "London",
     trait: ["Ambitious", "Social", "Analytical", "Athletic"].includes(trait)
       ? trait
       : "Ambitious",
@@ -804,6 +829,7 @@ export function createGame({
   initializeIdentity(s);
   initializeOwnershipPlay(s);
   initializePressure(s);
+  initializeExpansion(s, { countryCode });
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -812,6 +838,8 @@ export function createGame({
   return s;
 }
 function writable(s) {
+  if (s.globalLife?.crime.prison)
+    throw new Error("This activity is unavailable in custody.");
   if (s.ended)
     throw new Error("This life is complete. Start a new life to keep playing.");
 }
@@ -825,13 +853,44 @@ export function configureCompany(state, { name, sector, strategy }) {
   writable(state);
   if (!state.company) throw new Error("Found a company before configuring it.");
   if (
-    !["Technology", "Consumer goods", "Clean energy"].includes(sector) ||
+    !industry(sector) ||
     !["balanced", "reinvest", "dividends"].includes(strategy)
   )
     throw new Error("Choose an available sector and strategy.");
   if (typeof name !== "string" || !name.trim() || name.trim().length > 40)
     throw new Error("Give your company a name (1–40 characters).");
   const s = clone(state);
+  if (sector !== s.company.sector) {
+    const definition = industry(sector),
+      previous = industry(s.company.sector);
+    const transition = Math.max(
+      500,
+      Math.round(
+        definition.capital * 0.1 +
+          Math.max(0, definition.capital - previous.capital),
+      ),
+    );
+    if (s.company.cash < transition)
+      throw new Error(
+        `Changing industry needs $${transition.toLocaleString()} in company cash for retooling and capital requirements.`,
+      );
+    if (!s.actions || s.event)
+      throw new Error(
+        "An industry pivot needs an action and no pending life choice.",
+      );
+    spendTime(s, 4, "Industry pivot planning");
+    s.actions--;
+    s.company.cash -= transition;
+    s.company.revenue = definition.revenue;
+    s.company.costs = definition.costs;
+    s.company.profit = definition.revenue - definition.costs;
+    s.globalLife.companyPlan.quality = 40;
+    s.globalLife.companyPlan.customers = 0;
+    addLog(
+      s,
+      `Industry pivot paid $${transition.toLocaleString()} from company cash. Existing customer relationships must be rebuilt.`,
+    );
+  }
   s.company = { ...s.company, name: name.trim(), sector, strategy };
   addLog(s, `Set a new direction for ${s.company.name}.`);
   return s;
@@ -1519,6 +1578,22 @@ export function resolveEvent(state, index) {
   return s;
 }
 export function advanceWeek(state) {
+  if (state.globalLife?.crime.prison && !state.ended) {
+    const s = advanceCustody(clone(state), MARKETS);
+    startBankingWeek(s);
+    s.money -=
+      SHOP.filter(
+        (i) => s.inventory.includes(i.id) && i.category !== "Ownership",
+      ).reduce((n, i) => n + i.upkeep, 0) +
+      propertyCosts(s) +
+      (RENTALS.find((r) => r.id === s.housing.rental)?.rent || 0);
+    advanceBanking(s, 0);
+    for (const r of s.relationships) r.bond = clamp(r.bond - 0.1);
+    if (s.health <= 0) s.ended = true;
+    s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
+    s.history = s.history.slice(-52);
+    return s;
+  }
   writable(state);
   if (state.event)
     throw new Error("Make your pending life choice before advancing.");
@@ -1703,6 +1778,7 @@ export function advanceWeek(state) {
   advanceBanking(s, employmentPay);
   advanceIdentity(s);
   advancePressure(s);
+  advanceExpansion(s, MARKETS);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1724,7 +1800,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1742,6 +1818,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsExpansion = s.version < 13;
   const needsPressure = s.version < 12;
   const needsIdentity = s.version < 11;
   const needsDepth = s.version < 10;
@@ -1822,9 +1899,7 @@ export function restoreGame(raw) {
     (typeof s.company.name !== "string" ||
       !s.company.name.trim() ||
       s.company.name.length > 40 ||
-      !["Technology", "Consumer goods", "Clean energy"].includes(
-        s.company.sector,
-      ) ||
+      !industry(s.company.sector) ||
       !["balanced", "reinvest", "dividends"].includes(s.company.strategy) ||
       !number(s.company.value, 500, 1e12) ||
       !number(s.company.employees, 1, 100000))
@@ -1936,6 +2011,11 @@ export function restoreGame(raw) {
     initializePressure(s);
     s.version = VERSION;
   }
+  if (needsExpansion) {
+    initializeExpansion(s, { legacy: true });
+    s.version = VERSION;
+  }
+  validateExpansion(s);
   validateOwnershipPlay(s);
   validatePressure(s);
   validateIdentity(s);
@@ -2022,6 +2102,8 @@ export function createCustomCharacter(current, options = {}) {
     );
   let s = createGame({
     ...options,
+    city: isDebug ? options.city : options.birthplace || options.city,
+    country: isDebug ? null : options.country,
     age: isDebug ? Number(options.age || 0) : 0,
     education: "none",
   });
@@ -2039,11 +2121,43 @@ export function createCustomCharacter(current, options = {}) {
       "hairstyle",
       "eyes",
       "outfit",
+      "face",
+      "eyebrows",
+      "facialHair",
+      "garment",
     ]
       .filter((k) => options[k] !== undefined)
       .map((k) => [k, options[k]]),
   );
+  if (!isDebug) {
+    delete profile.nationality;
+    delete profile.birthplace;
+  }
   s = editCharacterProfile(s, profile);
+  if (options.birthplace) {
+    if (!knownCity(options.birthplace))
+      throw new Error("Choose a known birthplace.");
+    s.characterLife.profile.birthplace = options.birthplace;
+  }
+  const birthCountry =
+    options.country || placeCountry(s.characterLife.profile.birthplace);
+  if (!validPlace(birthCountry, s.characterLife.profile.birthplace))
+    throw new Error("Birthplace must be in the selected country.");
+  s.globalLife.birthCountry = birthCountry;
+  if (!isDebug) {
+    s.city = s.characterLife.profile.birthplace;
+    s.globalLife.residence = {
+      country: birthCountry,
+      city: s.city,
+      sinceWeek: 0,
+    };
+    s.globalLife.citizenships = [birthCountry];
+    s.characterLife.profile.nationality =
+      countryDefinition(birthCountry).nationality;
+  } else if (options.nationality) {
+    const match = COUNTRIES.find((c) => c.nationality === options.nationality);
+    if (match) s.globalLife.citizenships = [match.code];
+  }
   if (options.personality !== undefined) {
     if (
       !options.personality ||
@@ -2096,7 +2210,11 @@ export function createRandomCharacter(seed = Date.now() >>> 0) {
   const s = createGame({
     seed,
     name: `${pick(["Alex", "Riley", "Jamie", "Robin", "Morgan", "Casey", "Taylor", "Jordan"])} ${pick(["Andersen", "Morgan", "Chen", "Silva", "Rossi", "Taylor", "Patel", "Martin"])}`,
-    city: pick(["London", "Copenhagen", "New York", "Monaco"]),
+    city: pick(
+      COUNTRIES.map((c) => CITY_CATALOGUE[c.code]?.[0] || c.capital).filter(
+        knownCity,
+      ),
+    ),
     trait: pick(["Ambitious", "Social", "Analytical", "Athletic"]),
     familyBackground: pick(["modest", "comfortable", "comfortable", "wealthy"]),
     age: 0,

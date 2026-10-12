@@ -151,6 +151,8 @@ export function calendarForecast(s, { comingWeek = false } = {}) {
   };
 }
 export function spendTime(s, hours = 3, label = "Free-time activity") {
+  if (s.globalLife?.crime.prison)
+    throw new Error("This activity is unavailable in custody.");
   if (!s.calendar) return;
   if (age(s) < 5)
     throw new Error("Use supervised childhood activities before age five.");

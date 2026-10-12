@@ -108,22 +108,27 @@ test("an academy trial takes two weeks, then a separate invitation must be accep
   expect(s.employment).toBeNull();
   expect(s.school.enrolled).toBe(true);
 });
-test("karting development produces an offered Formula 4 seat only after licensing and development", async ({
+test("a Formula 4 seat follows a complete top-tier karting championship and licensing", async ({
   page,
 }) => {
   let initial;
-  for (let seed = 1; seed < 80; seed++) {
-    const s = g.createGame({ seed, age: 16, career: "racing" });
-    s.money = 10000; // Fund the junior seat as well as the competition licence.
-    s.sports.racing.stage = "academy";
-    s.sports.racing.club = "Apex driver development";
-    s.sports.racing.experience = 104;
-    s.sports.racing.ability = 75;
-    s.sports.racing.nextScoutWeek = 1;
-    s.skills.driving = 75;
+  for (let seed = 1; seed < 10; seed++) {
+    let s = g.createGame({ seed, age: 16, career: "racing" });
+    s.money = 100000;
+    s.globalLife.racing.tier = "kart1";
+    s.sports.racing.club = "Junior Karting Series 1";
+    s.sports.racing.ability = 95;
+    s.sports.racing.discipline = 95;
+    s.skills.driving = 95;
     s.education.completed = ["racing-license"];
-    const r = next(s);
-    if (r.sports.racing.offers.some((o) => o.kind === "contract")) {
+    for (let i = 0; i < 45; i++) s = next(s);
+    if (
+      g
+        .advanceWeek(
+          s.event ? g.resolveEvent(s, s.event.options.length - 1) : s,
+        )
+        .sports.racing.offers.some((o) => o.id.startsWith("racing:ladder:"))
+    ) {
       initial = s;
       break;
     }
@@ -133,9 +138,6 @@ test("karting development produces an offered Formula 4 seat only after licensin
   await page
     .getByRole("button", { name: "Sport & development", exact: true })
     .click();
-  await expect(page.locator('[data-sport-card="racing"]')).toContainText(
-    "Local karting",
-  );
   await week(page);
   await page
     .locator('[data-sport-card="racing"]')
@@ -145,14 +147,19 @@ test("karting development produces an offered Formula 4 seat only after licensin
   const s = await saved(page);
   expect(s.employment.jobId).toBe("racing-1");
   expect(s.sports.racing.stage).toBe("junior");
-  expect(s.sports.racing.contract.expiresWeek).toBe(105);
+  expect(s.sports.racing.contract.expiresWeek).toBe(s.week + 104);
+  expect(s.globalLife.racing.history.at(-1).starts).toBeGreaterThanOrEqual(12);
 });
+
 test("shopping filters find equipment and publishing content produces delayed audience results", async ({
   page,
 }) => {
   await load(page);
   await page
     .getByRole("button", { name: "Lifestyle & shopping", exact: true })
+    .click();
+  await page
+    .locator('[data-action="retail-store"][data-id="Electronics"]')
     .click();
   await page.getByLabel("Shopping category").selectOption("Essentials");
   await page.getByLabel("Search shopping").fill("smartphone");
@@ -222,18 +229,27 @@ test("a rapper practises, records, and releases a track over four weeks", async 
   await page.getByLabel("Music role").selectOption("rapper");
   await page.getByLabel("Music genre").selectOption("Hip-hop");
   await expect(
-    page.getByRole("button", { name: "Record a release" }),
+    page.getByRole("button", { name: "Open track workshop" }),
   ).toBeDisabled();
   while ((await saved(page)).music.sessions < 8) {
     if (!(await saved(page)).actions) await week(page);
     await page.getByRole("button", { name: "Practise your craft" }).click();
   }
-  await page.getByRole("button", { name: "Record a release" }).click();
-  await page.getByLabel("Release title").fill("First chorus");
-  await page.getByRole("button", { name: "Start recording" }).click();
-  await expect(page.locator("main")).toContainText("releases in 4 weeks");
+  await page.getByRole("button", { name: "Open track workshop" }).click();
+  await page.getByLabel("Track title").fill("First chorus");
+  await page.getByLabel("Beat source").selectOption("lease");
+  await page.getByLabel("Production ambition").selectOption("lean");
+  await page.getByRole("button", { name: "Start track workshop" }).click();
+  if (!(await saved(page)).actions) await week(page);
+  await page.getByRole("button", { name: "Write & revise lyrics" }).click();
+  if (!(await saved(page)).actions) await week(page);
+  await page.getByRole("button", { name: "Record performance" }).click();
+  await expect(page.locator("main")).toContainText("Mixing expected");
   expect((await saved(page)).music.releases).toHaveLength(0);
   for (let i = 0; i < 4; i++) await week(page);
+  expect((await saved(page)).music.releases).toHaveLength(0);
+  await page.getByRole("button", { name: "Release single" }).click();
+  await week(page);
   const s = await saved(page);
   expect(s.music.releases[0].title).toBe("First chorus");
   expect(s.music.releases[0].role).toBe("rapper");
@@ -252,6 +268,9 @@ test("repeatable experiences spend cash and an action then enforce their cooldow
   await load(page, initial);
   await page
     .getByRole("button", { name: "Lifestyle & shopping", exact: true })
+    .click();
+  await page
+    .locator('[data-action="retail-store"][data-id="Experiences"]')
     .click();
   await page.locator('[data-action="experience"][data-id="dinner"]').click();
   await page.getByRole("button", { name: "Confirm experience" }).click();
@@ -290,7 +309,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v12.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v13.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

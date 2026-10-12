@@ -84,7 +84,10 @@ export function musicWorldScreen(s, u) {
         `<article class="everyday-card"><h3>${e(o.artist)} · ${o.kind === "client" ? "Production commission" : "Collaboration"}</h3><p>${o.kind === "client" ? `${money(o.clientPay)} gross delivery fee · quality ${o.minimumQuality}+ · deadline week ${o.deadline}. The client owns royalties.` : `${money(o.fee)} collaborator fee plus $150 recording · ${Math.round((1 - o.royalty) * 100)}% of master receipts belong to you, before label/manager terms.`}</p><p>${e(o.status)}${o.status === "offered" ? ` · expires in ${o.expiresWeek - s.week} weeks` : ""}${o.negotiation ? ` · negotiation ${e(o.negotiation.status)}` : ""}</p>${o.status === "offered" && o.expiresWeek > s.week ? `<div class="inline-actions"><button class="button secondary" data-action="world-collab-negotiate" data-id="${o.id}" ${!s.actions || s.event || o.negotiation ? "disabled" : ""}>Discuss terms</button><button class="button secondary" data-action="world-collab-record" data-id="${o.id}" ${!s.actions || s.event || o.negotiation?.status === "pending" ? "disabled" : ""}>Record project</button></div>` : ""}</article>`,
     )
     .join("");
-  const album = `<form id="world-album-form"><label class="field-label">Album title<input name="title" maxlength="60" required placeholder="Your next chapter"></label><div class="everyday-grid">${s.music.releases
+  const album = `<form id="world-album-form"><label class="field-label">Album title<input name="title" maxlength="60" required placeholder="Your next chapter"></label><div class="everyday-grid">${[
+    ...s.music.releases,
+    ...s.music.projects.filter((p) => p.status === "ready"),
+  ]
     .filter(
       (r) =>
         musicReleaseShare(s, r.id) > 0 &&

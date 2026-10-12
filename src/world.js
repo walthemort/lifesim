@@ -1,3 +1,4 @@
+import { industry } from "./expansion-data.js";
 import { ownerOperatingAdjustment } from "./ownership-play.js";
 import { publicHiringPenalty } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
@@ -82,7 +83,7 @@ export const PROGRAMS = [
     skill: "driving",
     gain: 6,
     minimumSkill: 25,
-    minAge: 16,
+    minAge: 15,
   },
   {
     id: "international-license",
@@ -631,6 +632,8 @@ function log(s, text, kind = "info") {
   s.log = s.log.slice(0, 40);
 }
 function writable(s) {
+  if (s.globalLife?.crime.prison)
+    throw new Error("This activity is unavailable in custody.");
   if (s.ended)
     throw new Error("This life is complete. Start a new life to keep playing.");
 }
@@ -831,6 +834,12 @@ export function jobEligibility(s, vacancy) {
   const j = jobDefinition(vacancy.jobId),
     missing = [];
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
+  if (s.globalLife?.crime.prison) missing.push("release from custody");
+  if (
+    s.globalLife?.crime.record.some((r) => r.severity >= 3) &&
+    ["finance", "investor", "medical", "law"].includes(j.track)
+  )
+    missing.push("a clean serious-conviction record for this regulated role");
   if (isSportingJob(j))
     missing.push("Sporting contracts come through development and scouting");
   if (s.startAge + Math.floor(s.week / 52) < 18)
@@ -1025,40 +1034,67 @@ export function withdrawEducation(state) {
   s.education.active = null;
   return s;
 }
-export function foundCompany(state, { name, sector }) {
+export function foundCompany(
+  state,
+  { name, sector, model = "service", price = "standard" },
+) {
   writable(state);
   if (state.startAge + Math.floor(state.week / 52) < 18)
     throw new Error("Founding a company independently requires age 18+.");
   if (state.company) throw new Error("You already have a founded company.");
   if (state.skills.business < 30)
     throw new Error("Develop 30 business skill before launching a company.");
-  if (availableCash(state) < 5000)
-    throw new Error("You need $5,000 in available cash for startup capital.");
+  const definition = industry(sector);
+  if (!definition) throw new Error("Choose a supported industry.");
+  if (
+    ![
+      "service",
+      "retail",
+      "subscription",
+      "manufacturing",
+      "licensing",
+    ].includes(model) ||
+    !["budget", "standard", "premium"].includes(price)
+  )
+    throw new Error("Choose a business model and price policy.");
+  if (availableCash(state) < definition.capital)
+    throw new Error(
+      `You need $${definition.capital.toLocaleString()} startup capital.`,
+    );
   if (
     typeof name !== "string" ||
     !name.trim() ||
     name.trim().length > 40 ||
-    !["Technology", "Consumer goods", "Clean energy"].includes(sector)
+    !industry(sector)
   )
     throw new Error("Choose a company name and supported industry.");
   const s = clone(state);
-  s.money -= 5000;
+  s.money -= definition.capital;
   s.company = {
     name: name.trim(),
     sector,
     strategy: "balanced",
-    value: 5000,
+    value: definition.capital,
     employees: 1,
-    cash: 5000,
-    revenue: 400,
-    costs: 380,
-    profit: 20,
+    cash: definition.capital,
+    revenue: definition.revenue,
+    costs: definition.costs,
+    profit: definition.revenue - definition.costs,
     periodProfit: 0,
   };
+  if (s.globalLife)
+    s.globalLife.companyPlan = {
+      model,
+      price,
+      quality: 50,
+      customers: 10,
+      research: 0,
+      lastAction: null,
+    };
   if (!s.employment) s.career = "business";
   log(
     s,
-    `Founded ${s.company.name} with $5,000 startup capital. Earnings now depend on trading profit.`,
+    `Founded ${s.company.name} with $${definition.capital.toLocaleString()} startup capital. Earnings now depend on trading profit.`,
     "milestone",
   );
   return s;
@@ -1564,14 +1600,19 @@ function businessesTick(s) {
     const c = s.company,
       key = s.skills.business,
       active = s.career === "business";
-    const volatility =
-      c.sector === "Technology"
-        ? 0.012
-        : c.sector === "Consumer goods"
-          ? 0.008
-          : 0.01;
+    const volatility = industry(c.sector)?.volatility || 0.01;
     const growth =
       0.0005 +
+      (s.globalLife?.companyPlan?.research || 0) * 0.00001 +
+      ((s.globalLife?.companyPlan?.quality || 50) - 50) * 0.000005 +
+      (s.globalLife?.companyPlan?.model === "subscription" ? 0.0002 : 0) +
+      (s.globalLife?.companyPlan?.price === "premium"
+        ? s.globalLife.companyPlan.quality >= 65
+          ? 0.0003
+          : -0.0005
+        : s.globalLife?.companyPlan?.price === "budget"
+          ? 0.0001
+          : 0) +
       key * 0.000025 +
       (active && s.activity === "focus" ? 0.003 : 0) +
       (c.strategy === "reinvest"

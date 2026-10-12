@@ -1,3 +1,9 @@
+import {
+  COUNTRIES,
+  placeCountry,
+  knownCity,
+  townTemplate,
+} from "./geography.js";
 import { availableCash, rng, TRACK_SKILLS, jobDefinition } from "./world.js";
 import { spendTime, calendarForecast } from "./calendar.js";
 import { relativeAlive } from "./life-course.js";
@@ -8,7 +14,7 @@ import {
 } from "./personality.js";
 export { PERSONALITY } from "./personality.js";
 
-export const HOMETOWNS = {
+const ORIGINAL_TOWNS = {
   London: {
     scale: 1,
     school: "Riverside School",
@@ -42,8 +48,19 @@ export const HOMETOWNS = {
     neighbourhood: "Marina district",
   },
 };
+export const HOMETOWNS = new Proxy(ORIGINAL_TOWNS, {
+  get: (target, key) =>
+    target[key] ||
+    (typeof key === "string" && knownCity(key) ? townTemplate(key) : undefined),
+  getOwnPropertyDescriptor: (target, key) =>
+    Object.getOwnPropertyDescriptor(target, key) ||
+    (typeof key === "string" && knownCity(key)
+      ? { configurable: true, enumerable: true, value: townTemplate(key) }
+      : undefined),
+});
 export const PROFILE_OPTIONS = {
   nationality: [
+    ...new Set(COUNTRIES.map((c) => c.nationality)),
     "British",
     "Danish",
     "American",
@@ -57,11 +74,39 @@ export const PROFILE_OPTIONS = {
     "Other / unspecified",
   ],
   pronouns: ["They / them", "She / her", "He / him"],
-  skin: ["Light", "Medium", "Deep"],
+  skin: ["Porcelain", "Light", "Olive", "Medium", "Tan", "Deep", "Rich deep"],
   hair: ["Black", "Brown", "Blonde", "Red", "Grey"],
-  hairstyle: ["Short", "Long", "Curly", "Shaved"],
+  hairstyle: [
+    "Short",
+    "Long",
+    "Curly",
+    "Shaved",
+    "Buzz cut",
+    "Fade",
+    "Side part",
+    "Ponytail",
+    "Bob",
+    "Braids",
+    "Dreadlocks",
+    "Afro",
+    "Space buns",
+    "Wolf cut",
+    "Pompadour",
+  ],
   eyes: ["Brown", "Blue", "Green", "Grey"],
-  outfit: ["Green", "Blue", "Purple", "Orange"],
+  outfit: ["Green", "Blue", "Purple", "Orange", "Black"],
+  face: ["Oval", "Round", "Angular"],
+  eyebrows: ["Natural", "Arched", "Thick"],
+  facialHair: ["None", "Stubble", "Beard", "Moustache"],
+  garment: [
+    "T-shirt",
+    "Hoodie",
+    "Jacket",
+    "Shirt",
+    "Suit",
+    "Knitwear",
+    "Formal",
+  ],
 };
 export const LIFE_PATHS = {
   football: {
@@ -257,6 +302,10 @@ export function initializeIdentity(s, { legacy = false } = {}) {
       hairstyle: "Short",
       eyes: "Brown",
       outfit: "Green",
+      face: "Oval",
+      eyebrows: "Natural",
+      facialHair: "None",
+      garment: "T-shirt",
     },
     personality,
     proPreview: false,
@@ -334,10 +383,20 @@ export function editCharacterProfile(state, fields) {
   )
     throw new Error("Choose valid character profile fields.");
   validateProfile(fields);
+  if (
+    !state.debug.enabled &&
+    (Object.hasOwn(fields, "nationality") ||
+      Object.hasOwn(fields, "birthplace"))
+  )
+    throw new Error(
+      "Birthplace is history; citizenship changes through naturalisation. Debug can override history.",
+    );
   const s = structuredClone(state);
   for (const [key, value] of Object.entries(fields))
     if (key === "name") s.name = value.trim();
     else s.characterLife.profile[key] = value;
+  if (s.globalLife && fields.birthplace)
+    s.globalLife.birthCountry = placeCountry(fields.birthplace);
   return s;
 }
 export function routineAvailable(s, path) {
@@ -826,7 +885,11 @@ export function validateIdentity(s) {
   }
   if (
     Object.entries(PROFILE_OPTIONS).some(
-      ([k, opts]) => !opts.includes(c.profile[k]),
+      ([k, opts]) =>
+        !(
+          ["face", "eyebrows", "facialHair", "garment"].includes(k) &&
+          c.profile[k] === undefined
+        ) && !opts.includes(c.profile[k]),
     ) ||
     !Object.hasOwn(HOMETOWNS, c.profile.birthplace) ||
     Object.keys(PERSONALITY).some((k) => !n(c.personality[k], 0, 100))

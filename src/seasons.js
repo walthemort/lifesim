@@ -145,7 +145,12 @@ function createSchedule(s, id, path, advancing = false) {
     for: 0,
     against: 0,
     points: 0,
-    rating: clamp(42 + path.level * 9 + ((i * 17 + year * 3) % 20)),
+    rating: clamp(
+      (id === "racing" && !p.contract
+        ? ({ kart3: 20, kart2: 30, kart1: 40 }[s.globalLife?.racing.tier] ?? 20)
+        : 42 + path.level * 9) +
+        ((i * 17 + year * 3) % 20),
+    ),
   }));
   if (id === "football" || id === "basketball") {
     const rounds = pairings(count, id === "football" ? 2 : 4);

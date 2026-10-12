@@ -299,7 +299,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
     if (key !== "version") expect(r[key]).toEqual(value);
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v12`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v13`)),
       KEY,
     ),
   ).toEqual(old);
@@ -307,7 +307,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe("lifesim-before-v12.json");
+  expect(file.suggestedFilename()).toBe("lifesim-before-v13.json");
   expect(JSON.parse(fs.readFileSync(await file.path(), "utf8"))).toEqual(old);
 });
 test("expanded sport and music panels fit a phone and load without browser errors", async ({

@@ -153,7 +153,12 @@ export function startMusicProject(state, { title }) {
     status: "recording",
     releaseWeek: s.week + 4,
   });
-  m.projects = m.projects.slice(-20);
+  if (m.projects.length > 20) {
+    const removable = m.projects.findIndex((p) => p.status === "released");
+    if (removable >= 0) m.projects.splice(removable, 1);
+    else
+      throw new Error("Release completed recordings before starting another.");
+  }
   log(
     s,
     `Started recording “${title.trim()}”. Release is in four weeks; $150 production and distribution cost paid.`,
@@ -239,6 +244,14 @@ export function advanceMusic(s) {
   }
   for (const p of m.projects)
     if (p.status === "recording" && p.releaseWeek <= s.week) {
+      if (p.manualRelease) {
+        p.status = "ready";
+        log(
+          s,
+          `Finished mixing “${p.title}”. It is in your unreleased library.`,
+        );
+        continue;
+      }
       p.status = "released";
       const fans = Object.values(s.social.profiles).reduce(
         (n, a) => n + a.followers,
@@ -260,6 +273,7 @@ export function advanceMusic(s) {
       m.releases.push({
         id: p.id,
         title: p.title,
+        artist: s.globalLife?.artistName || s.name,
         role: p.role,
         genre: p.genre,
         quality: p.quality,
@@ -434,7 +448,9 @@ export function validateMusic(s) {
         !Object.hasOwn(MUSIC_ROLES, p.role) ||
         !n(p.quality, 0, 100) ||
         !integer(p.releaseWeek) ||
-        !["recording", "released"].includes(p.status),
+        (p.manualRelease !== undefined &&
+          typeof p.manualRelease !== "boolean") ||
+        !["recording", "ready", "released"].includes(p.status),
     ) ||
     m.releases.some(
       (r) =>

@@ -1,3 +1,4 @@
+import { gameDate } from "../../src/dates.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -121,7 +122,7 @@ for (const [path, name] of [
     expect(["delivered", "missed"]).toContain(
       (await saved(page)).nextChapter.plans[path].status,
     );
-    await expect(panel).toContainText("Week");
+    await expect(panel).toContainText(gameDate(fixture.week));
   });
 }
 test("inbox reminders can be read and archived without spending cash or accepting offers", async ({
@@ -228,7 +229,7 @@ test("public replies create explicit promises and a community session delivers o
   await week(page);
   expect((await saved(page)).nextChapter.promises[0].status).toBe("delivered");
 });
-test("v11 imports preserve all prior fields and export an exact pre-v12 backup", async ({
+test("v11 imports preserve all prior fields and export an exact pre-v13 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -241,12 +242,12 @@ test("v11 imports preserve all prior fields and export an exact pre-v12 backup",
   const s = await saved(page);
   for (const [key, value] of Object.entries(old))
     if (key !== "version") expect(s[key]).toEqual(value);
-  expect(s.version).toBe(12);
+  expect(s.version).toBe(g.VERSION);
   await nav(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v12.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v13.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("ownership standings and inbox fit a phone without browser errors", async ({
