@@ -1,4 +1,18 @@
 import {
+  reviewContract,
+  contractProposal,
+  allSportExitCosts,
+  sportExitCost,
+  musicBuyoutCost,
+  buyOutMusicAgreement,
+  acceptEndorsement,
+  bookEndorsementAppearance,
+  cancelEndorsement,
+} from "./contracts.js";
+import { CAREER_CHALLENGES, bookCareerChallenge } from "./career-milestones.js";
+import { contactAction, bookContactTraining } from "./living-world.js";
+import { contractTermsFragment, livingWorldScreen } from "./depth-screens.js";
+import {
   requestSportMove,
   signSportMove,
   hireSportStaff,
@@ -282,12 +296,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 9,
+  migrationVersion = 10,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v10`) ||
     localStorage.getItem(`${STORAGE}-before-v9`) ||
     localStorage.getItem(`${STORAGE}-before-v8`) ||
     localStorage.getItem(`${STORAGE}-before-v7`) ||
@@ -297,30 +312,32 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v9`)
-    ? 9
-    : localStorage.getItem(`${STORAGE}-before-v8`)
-      ? 8
-      : localStorage.getItem(`${STORAGE}-before-v7`)
-        ? 7
-        : localStorage.getItem(`${STORAGE}-before-v6`)
-          ? 6
-          : localStorage.getItem(`${STORAGE}-before-v5`)
-            ? 5
-            : localStorage.getItem(`${STORAGE}-before-v4`)
-              ? 4
-              : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v10`)
+    ? 10
+    : localStorage.getItem(`${STORAGE}-before-v9`)
+      ? 9
+      : localStorage.getItem(`${STORAGE}-before-v8`)
+        ? 8
+        : localStorage.getItem(`${STORAGE}-before-v7`)
+          ? 7
+          : localStorage.getItem(`${STORAGE}-before-v6`)
+            ? 6
+            : localStorage.getItem(`${STORAGE}-before-v5`)
+              ? 5
+              : localStorage.getItem(`${STORAGE}-before-v4`)
+                ? 4
+                : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createGame();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v9`)
+      !localStorage.getItem(`${STORAGE}-before-v10`)
     ) {
       migrationSave = saved;
-      migrationVersion = 9;
-      localStorage.setItem(`${STORAGE}-before-v9`, saved);
+      migrationVersion = 10;
+      localStorage.setItem(`${STORAGE}-before-v10`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -521,7 +538,7 @@ function careerView() {
   return workScreen(state, ui());
 }
 function relationshipsView() {
-  return connectionsScreen(state, ui());
+  return connectionsScreen(state, ui()) + livingWorldScreen(state, ui());
 }
 function investmentsView() {
   const holdings = portfolioValue(state);
@@ -628,7 +645,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.9 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.10 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
   );
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
@@ -885,6 +902,61 @@ document.addEventListener("click", (event) => {
         if (state.event) eventDialog();
       }
       break;
+    case "depth-contact-action":
+      update((s) => contactAction(s, id, button.dataset.kind));
+      break;
+    case "depth-contact-training":
+      update((s) => bookContactTraining(s, id));
+      break;
+    case "depth-challenge-book": {
+      const path = button.dataset.path;
+      const o = state.careerMilestones.paths[path].opportunities.find(
+        (o) => o.id === id,
+      );
+      const d = CAREER_CHALLENGES.find((d) => d.id === o?.kind);
+      if (d)
+        dialog(
+          `<h2>${e(d.title)}</h2><p>Costs ${money(d.cost)} now, one action and three preparation hours. The assessment reserves ${d.hours} hours in week ${state.week + d.delay}; it replaces a regular sporting fixture in that week. Cup and playoff winners can advance through three rounds. Results are uncertain, and higher-tier recruitment still requires the right qualifications and experience.</p><button class="button primary" data-action="depth-challenge-confirm" data-path="${path}" data-id="${e(id)}">Enter career opportunity</button>`,
+        );
+      break;
+    }
+    case "depth-challenge-confirm":
+      if (update((s) => bookCareerChallenge(s, button.dataset.path, id)))
+        modal.close();
+      break;
+    case "depth-label-buyout":
+      dialog(
+        `<h2>Buy out your label?</h2><p>Repay the remaining advance and agreed exit fee: ${money(musicBuyoutCost(state))}. Your recording exclusivity ends; previous royalties and recording expenses remain in your accounts. Uses one action and two hours.</p><button class="button primary" data-action="depth-label-buyout-confirm">Pay label buyout</button>`,
+      );
+      break;
+    case "depth-label-buyout-confirm":
+      if (update(buyOutMusicAgreement)) modal.close();
+      break;
+    case "depth-endorsement-review": {
+      const o = state.contracts.offers.find((o) => o.id === id);
+      if (o)
+        dialog(
+          `<h2>${e(o.brand)} endorsement</h2><p>${money(o.fee)} gross fee: half upfront and half after two public appearances in six weeks. This reserves ${e(o.category)} exclusivity for thirteen weeks, including after delivery. Appearances need an action, two preparation hours and three hours next week, public privacy and sufficient energy. Missing delivery or cancelling repays the full ${money(o.fee / 2)} gross advance. Any active athlete agreement takes its image-rights share from all personal endorsements; agent or music management fees and income tax further reduce cash.</p><button class="button primary" data-action="depth-endorsement-confirm" data-id="${e(id)}">Sign endorsement</button>`,
+        );
+      break;
+    }
+    case "depth-endorsement-confirm":
+      if (update((s) => acceptEndorsement(s, id))) modal.close();
+      break;
+    case "depth-endorsement-book":
+      update((s) => bookEndorsementAppearance(s, id));
+      break;
+    case "depth-endorsement-cancel": {
+      const d = state.contracts.endorsements.find((d) => d.id === id);
+      if (d)
+        dialog(
+          `<h2>Cancel this campaign?</h2><p>Repay ${money(d.advance)} gross upfront pay. Representation and image-rights costs remain spent; the remaining balance is not earned.</p><button class="button primary" data-action="depth-endorsement-cancel-confirm" data-id="${e(id)}">Repay and cancel campaign</button>`,
+        );
+      break;
+    }
+    case "depth-endorsement-cancel-confirm":
+      if (update((s) => cancelEndorsement(s, id))) modal.close();
+      break;
     case "world-staff-hire":
       update((s) => hireSportStaff(s, button.dataset.sport, id));
       break;
@@ -1065,7 +1137,7 @@ document.addEventListener("click", (event) => {
         break;
       }
       dialog(
-        `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A ${o.terms?.weeks || o.duration || 104}-week sporting contract offers ${money(o.pay)}/week gross base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p>${o.kind === "contract" && o.terms ? `<p>Role: ${e(o.terms.role)}. Appearance bonus ${money(o.terms.appearanceBonus)}; win bonus ${money(o.terms.winBonus)}. Annual driver funding: ${money(o.terms.annualFunding)}.</p><p class="muted">Income tax and any agent commission reduce spendable pay. Racing needs thirteen weeks of uncovered funding in cash reserves before signing.</p>${o.terms?.negotiation ? `<p>${o.terms?.negotiation.status === "pending" ? `Your counteroffer is being considered until week ${o.terms?.negotiation.decisionWeek}.` : `Negotiation: ${e(o.terms?.negotiation.status)}.`}</p>` : `<form id="sport-negotiation-form" data-sport="${sport}" data-id="${e(id)}"><label class="field-label">Contract approach<select name="approach"><option value="security">Security: 156 weeks, 5% less pay</option><option value="balanced">Balanced: 104 weeks, 8% more pay</option><option value="ambitious">Ambitious: 52 weeks, 20% more pay, starter role</option></select></label><p class="muted">One action and three hours. The club may refuse, and an ambitious counter can cost you the invitation. You can negotiate once.</p><button class="button secondary full-width" type="submit">Send counteroffer</button></form>`}` : ""}<button class="button primary full-width" ${o.terms?.negotiation?.status === "pending" ? "disabled" : ""} data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
+        `<div class="eyebrow">SPORTING INVITATION</div><h2>${e(o.club)}</h2><p>${o.kind === "contract" ? `A ${o.terms?.weeks || o.duration || 104}-week sporting contract offers ${money(o.pay)}/week gross base income. Signing ends your current paid job or sporting contract.` : o.kind === "academy" ? `An academy place offers coached development while you continue school. It gives no professional salary or guarantee of a senior place.` : `A two-week trial assesses your ability, discipline, and fitness. A successful trial can lead to an academy or development offer; it can also end without a place.`}</p>${o.kind === "contract" && o.terms ? `<p>Role: ${e(o.terms.role)}. Appearance bonus ${money(o.terms.appearanceBonus)}; win bonus ${money(o.terms.winBonus)}. Annual driver funding: ${money(o.terms.annualFunding)}.</p><p class="muted">Income tax and any agent commission reduce spendable pay. Racing needs thirteen weeks of uncovered funding in cash reserves before signing.</p>${o.terms?.negotiation ? `<p>${o.terms?.negotiation.status === "pending" ? `Your counteroffer is being considered until week ${o.terms?.negotiation.decisionWeek}.` : `Negotiation: ${e(o.terms?.negotiation.status)}.`}</p>` : `<form id="sport-negotiation-form" data-sport="${sport}" data-id="${e(id)}"><label class="field-label">Contract approach<select name="approach"><option value="security">Security: 156 weeks, 5% less pay</option><option value="balanced">Balanced: 104 weeks, 8% more pay</option><option value="ambitious">Ambitious: 52 weeks, 20% more pay, starter role</option></select></label><p class="muted">One action and three hours. The club may refuse, and an ambitious counter can cost you the invitation. You can negotiate once.</p><button class="button secondary full-width" type="submit">Send counteroffer</button></form>`}` : ""}${o.kind === "contract" ? contractTermsFragment(state, sport, id, ui()) : ""}<button class="button primary full-width" ${o.terms?.negotiation?.status === "pending" || state.contracts.reviews.some((r) => r.sector === sport && r.offerId === id && r.status === "pending") ? "disabled" : ""} data-action="confirm-sport-offer" data-sport="${sport}" data-id="${e(id)}">Accept invitation</button>`,
       );
       break;
     }
@@ -1092,7 +1164,7 @@ document.addEventListener("click", (event) => {
       break;
     case "leave-sport":
       dialog(
-        `<h2>Step away from this sport?</h2><p>Your participation and any sporting contract will end. Local participation can be restarted later; professional recruitment still depends on development and age.</p><button class="button primary full-width" data-action="confirm-leave-sport" data-sport="${button.dataset.sport}">Confirm stepping away</button>`,
+        `<h2>Step away from this sport?</h2><p>Your participation and any sporting contract will end. Current release-clause cost: ${money(sportExitCost(state, button.dataset.sport))}. Local participation can be restarted later; professional recruitment still depends on development and age.</p><button class="button primary full-width" data-action="confirm-leave-sport" data-sport="${button.dataset.sport}">Confirm stepping away</button>`,
       );
       break;
     case "confirm-leave-sport":
@@ -1165,7 +1237,7 @@ document.addEventListener("click", (event) => {
       const o = state.music.labelOffers.find((o) => o.id === id);
       if (!o) break;
       dialog(
-        `<div class="eyebrow">RECORD LABEL TERMS</div><h2>${e(o.name)}</h2><p>A 52-week agreement pays ${money(o.advance)} upfront. The label takes 50% of royalties and markets your releases. Your remaining royalty share repays the advance before you receive further royalty cash. This is a recoupable advance, not a cash loan.</p><button class="button primary full-width" data-action="confirm-label" data-id="${e(id)}">Sign label agreement</button>`,
+        `<div class="eyebrow">RECORD LABEL TERMS</div><h2>${e(o.name)}</h2><p>A 52-week agreement pays ${money(o.advance)} upfront. The agreed artist royalty share repays the advance before you receive further royalty cash. This is a recoupable advance.</p>${contractTermsFragment(state, "music", id, ui())}<button class="button primary full-width" ${state.contracts.reviews.some((r) => r.sector === "music" && r.offerId === id && r.status === "pending") ? "disabled" : ""} data-action="confirm-label" data-id="${e(id)}">Sign label agreement</button>`,
       );
       break;
     }
@@ -1198,7 +1270,7 @@ document.addEventListener("click", (event) => {
       if (!a) break;
       const j = jobDefinition(a.jobId);
       dialog(
-        `<div class="eyebrow">EMPLOYMENT OFFER</div><h2>${e(j.title)}</h2><p>${e(j.employer)} offers ${money(a.offeredPay)}/week. Accepting ends your previous contract. Your company, investments, skills, and qualifications remain yours.</p><button class="button primary full-width" data-action="confirm-job" data-id="${e(id)}">Accept this job</button>`,
+        `<div class="eyebrow">EMPLOYMENT OFFER</div><h2>${e(j.title)}</h2><p>${e(j.employer)} offers ${money(a.offeredPay)}/week. Accepting ends your previous contract. Current sports exit costs: ${money(allSportExitCosts(state))}. Your company, investments, skills, and qualifications remain yours.</p><button class="button primary full-width" data-action="confirm-job" data-id="${e(id)}">Accept this job</button>`,
       );
       break;
     }
@@ -1211,7 +1283,7 @@ document.addEventListener("click", (event) => {
       break;
     case "resign":
       dialog(
-        `<div class="eyebrow">END YOUR CONTRACT</div><h2>Leave your current job?</h2><p>Your wages stop immediately. You keep your qualifications and experience, but a new job requires a successful application.</p><button class="button primary full-width" data-action="confirm-resign">Confirm resignation</button>`,
+        `<div class="eyebrow">END YOUR CONTRACT</div><h2>Leave your current job?</h2><p>Your wages stop immediately. Current sports exit costs: ${money(allSportExitCosts(state))}. You keep your qualifications and experience, but a new job requires a successful application.</p><button class="button primary full-width" data-action="confirm-resign">Confirm resignation</button>`,
       );
       break;
     case "confirm-resign":
@@ -1437,6 +1509,13 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
+    "legal-review": (s, data, form) =>
+      reviewContract(
+        s,
+        form.dataset.sector,
+        form.dataset.id,
+        data.get("approach"),
+      ),
     "savings-form": (s, data) =>
       transferSavings(
         s,
@@ -1528,12 +1607,15 @@ document.addEventListener("submit", (event) => {
     "debug-qualification-form": (s, data) =>
       debugEdit(s, { qualification: data.get("qualification") }),
   };
-  if (forms[event.target.id]) {
+  if (forms[event.target.dataset.form || event.target.id]) {
     event.preventDefault();
     const form = event.target,
       data = new FormData(form);
     if (
-      update((s) => forms[form.id](s, data, form), "Your plans are updated.") &&
+      update(
+        (s) => forms[form.dataset.form || form.id](s, data, form),
+        "Your plans are updated.",
+      ) &&
       modal.open
     )
       modal.close();

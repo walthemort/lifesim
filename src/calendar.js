@@ -1,3 +1,5 @@
+import { contractHours } from "./contracts.js";
+import { milestoneHours } from "./career-milestones.js";
 import { careerWorldHours } from "./career-world.js";
 import { lifeCourseHours, teenWorkHours } from "./life-course.js";
 import { recommendedSleep } from "./childhood.js";
@@ -69,7 +71,9 @@ export function requiredHours(s, week = s.week) {
     storyWeeklyHours(s) +
     careerSupportHours(s, week) +
     lifeCourseHours(s) +
-    careerWorldHours(s, week);
+    careerWorldHours(s, week) +
+    contractHours(s, week) +
+    milestoneHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,

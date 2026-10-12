@@ -1,3 +1,5 @@
+import { checkContractReview, registerMusicAgreement } from "./contracts.js";
+import { milestoneAway } from "./career-milestones.js";
 import {
   musicReleaseShare,
   musicAudienceBoost,
@@ -156,7 +158,10 @@ export function startMusicProject(state, { title }) {
 }
 export function bookMusicGig(state, id) {
   action(state);
-  if (musicTourWeek(state, state.week + 1))
+  if (
+    musicTourWeek(state, state.week + 1) ||
+    milestoneAway(state, "music", state.week + 1)
+  )
     throw new Error("Your tour already has a show booked for next week.");
   const gig = state.music.gigs.find((g) => g.id === id);
   if (!gig || gig.status !== "offered" || gig.expiresWeek <= state.week)
@@ -186,6 +191,7 @@ export function acceptLabelOffer(state, id) {
   if (state.music.label)
     throw new Error("A label agreement is already active.");
   if (age(state) < 18) throw new Error("Label contracts require age 18+.");
+  checkContractReview(state, "music", id);
   const s = structuredClone(state);
   spendTime(s, 3, "Sport, music or social activity");
   s.actions--;
@@ -197,12 +203,13 @@ export function acceptLabelOffer(state, id) {
     share: 0.5,
     expiresWeek: s.week + 52,
   };
+  registerMusicAgreement(s, o);
   const commission = musicManagerCommission(s, o.advance);
   receiveIncome(s, o.advance, "earned", { deduction: commission });
   s.money = Math.round((s.money - commission) * 100) / 100;
   log(
     s,
-    `Signed with ${o.name}: $${o.advance} advance. Your 50% royalty share repays the advance first; the agreement lasts 52 weeks.`,
+    `Signed with ${o.name}: $${o.advance} advance. Your ${Math.round(s.music.label.share * 100)}% royalty share repays the advance first; the agreement lasts 52 weeks.`,
     "milestone",
   );
   return s;

@@ -1,3 +1,8 @@
+import {
+  releaseSportAgreement,
+  prepareSportReplacement,
+  registerSportAgreement,
+} from "./contracts.js";
 import { checkCareerMoveSigning, signedCareerMove } from "./career-world.js";
 import { athleticDecline } from "./life-course.js";
 import {
@@ -127,11 +132,12 @@ export function setSportTraining(state, id, training) {
   s.sports[id].training = training;
   return s;
 }
-export function leaveSport(state, id) {
+export function leaveSport(state, id, { automatic = false } = {}) {
   writable(state);
   if (!state.sports[id]) throw new Error("Sport unavailable.");
   const s = structuredClone(state),
     p = s.sports[id];
+  releaseSportAgreement(s, id, { automatic });
   if (p.contract && s.employment?.jobId === p.contract.jobId) {
     s.employment = null;
     s.career = s.company ? "business" : "unemployed";
@@ -150,6 +156,8 @@ export function leaveSport(state, id) {
   return s;
 }
 export function clearOtherSportContracts(s, keep = null) {
+  for (const id of ["football", "racing", "basketball", "tennis"])
+    if (id !== keep) releaseSportAgreement(s, id);
   if (keep !== "football" && s.football.contract) {
     s.football.contract = null;
     s.football.stage = "community";
@@ -198,6 +206,7 @@ export function acceptSportOffer(state, sportId, id) {
         "Professional sport recruitment ends at age 42; local participation remains available.",
       );
     const j = jobDefinition(o.jobId);
+    prepareSportReplacement(s, sportId, o);
     checkCareerMoveSigning(s, sportId, o);
     const previous = {
       club: q.club,
@@ -230,6 +239,7 @@ export function acceptSportOffer(state, sportId, id) {
     };
     s.career = j.track;
     signedCareerMove(s, sportId, o, previous);
+    registerSportAgreement(s, sportId, o);
     s.progress[j.track].level = j.level;
     s.progress[j.track].unlocked = true;
     for (const a of s.applications)
@@ -303,7 +313,7 @@ export function advanceSports(s) {
       age(s) >= 42 &&
       ["academy", "junior", "professional"].includes(p.stage)
     ) {
-      Object.assign(s, leaveSport(s, d.id));
+      Object.assign(s, leaveSport(s, d.id, { automatic: true }));
       continue;
     }
     if (p.stage === "academy" && age(s) > 21) {

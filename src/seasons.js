@@ -1,3 +1,4 @@
+import { milestoneAway } from "./career-milestones.js";
 import { sportChemistryBonus, internationalDuty } from "./career-world.js";
 import {
   physicalPerformance,
@@ -304,15 +305,16 @@ export function prepareSeasons(s) {
     syncSeason(s, id, true);
     const path = s.seasons[id],
       p = actor(s, id);
-    path.blocked = internationalDuty(s, id)
-      ? "unavailable"
-      : p.injuryWeeks
-        ? "injured"
-        : p.training === "rest"
-          ? "rest"
-          : allocationRatio(s, id) < 0.5
-            ? "unavailable"
-            : "ready";
+    path.blocked =
+      internationalDuty(s, id) || milestoneAway(s, id)
+        ? "unavailable"
+        : p.injuryWeeks
+          ? "injured"
+          : p.training === "rest"
+            ? "rest"
+            : allocationRatio(s, id) < 0.5
+              ? "unavailable"
+              : "ready";
     for (const o of p.offers) {
       const n = o.terms?.negotiation;
       if (

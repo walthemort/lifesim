@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as g from "../src/engine.js";
-const fresh = (o) => g.createGame({ seed: 1, age:18, career:"office", ...o });
+const fresh = (o) => g.createGame({ seed: 1, age: 18, career: "office", ...o });
 const clear = (s) =>
   s.event ? g.resolveEvent(s, s.event.options.length - 1) : s;
 const next = (s) => g.advanceWeek(clear(s));
@@ -176,7 +176,11 @@ test("expired or injured football invitations cannot be accepted; stepping away 
   assert.throws(() => g.acceptFootballOffer(s, o.id), /expired/);
   o.expiresWeek = 4;
   s = g.acceptFootballOffer(s, o.id);
+  assert.throws(() => g.leaveFootball(s), /release clause/);
+  s.money = 100000;
+  const release = g.sportExitCost(s, "football");
   s = g.leaveFootball(s);
+  assert.equal(s.money, 100000 - release);
   assert.equal(g.salary(s), 0);
   assert.equal(s.football.stage, "retired");
   assert.equal(s.football.contract, null);
@@ -234,12 +238,17 @@ test("academy recruitment and junior competition occur without a job application
 });
 test("switching paid sporting contracts leaves other sports as local hobbies, and resignation keeps saves consistent", () => {
   let s = fresh({ age: 20, career: "football" });
+  s.money = 100000;
   s = g.acceptFootballOffer(s, footballInvitation(s).id);
+  const footballExit = g.sportExitCost(s, "football");
   s = g.acceptSportOffer(s, "basketball", sportsInvitation(s, "basketball").id);
+  assert.equal(s.money, 100000 - footballExit);
   assert.equal(s.football.contract, null);
   assert.equal(s.football.stage, "community");
   assert.equal(s.employment.jobId, "basketball-1");
+  const basketballExit = g.sportExitCost(s, "basketball");
   s = g.resignJob(s);
+  assert.equal(s.money, 100000 - footballExit - basketballExit);
   assert.equal(s.sports.basketball.contract, null);
   assert.equal(g.salary(s), 0);
   assert.deepEqual(g.restoreGame(s), s);

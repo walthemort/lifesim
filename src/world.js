@@ -1,3 +1,4 @@
+import { releaseSportAgreement } from "./contracts.js";
 import {
   schoolScholarshipRate,
   consumeScholarship,
@@ -809,6 +810,8 @@ export const isSportingJob = (j) =>
   ["football", "basketball", "tennis"].includes(j.track) ||
   (j.track === "racing" && j.level >= 1);
 function clearPlayingContracts(s) {
+  for (const id of ["football", "racing", "basketball", "tennis"])
+    releaseSportAgreement(s, id);
   if (s.football?.contract) {
     s.football.contract = null;
     s.football.stage = "community";

@@ -1,3 +1,5 @@
+import { checkMusicOutsideWork } from "./contracts.js";
+import { milestoneAway } from "./career-milestones.js";
 import {
   JOBS,
   jobDefinition,
@@ -339,6 +341,8 @@ export function bookSportInvitation(state, id, invitationId) {
     o.expiresWeek <= state.week
   )
     throw new Error("Choose a current professional invitation.");
+  if (milestoneAway(state, id, state.week + 1))
+    throw new Error("A career assessment already reserves your next week.");
   const s = action(state, 2, "Prepare an international appearance");
   const q = s.careerWorld.sports[id].invitations.find(
     (x) => x.id === invitationId,
@@ -614,7 +618,10 @@ export function validateCareerWorld(s) {
       (o) =>
         !str(o.id) ||
         !["client", "collaboration"].includes(o.kind) ||
-        !COLLABORATORS.some((a) => a.name === o.artist) ||
+        !(
+          COLLABORATORS.some((a) => a.name === o.artist) ||
+          s.relationships.some((r) => r.name === o.artist)
+        ) ||
         !n(o.skill, 0, 100) ||
         !n(o.fee) ||
         !n(o.royalty, 0, 1) ||
@@ -927,6 +934,7 @@ export function acceptMusicOpportunity(state, id, title) {
     throw new Error("Client production work requires a producer.");
   if (availableCash(state) < 150 + o.fee)
     throw new Error("You need the recording budget and collaborator fee.");
+  checkMusicOutsideWork(state);
   const s = startMusicProject(state, { title });
   s.money -= o.fee;
   const q = s.careerWorld.music.offers.find((o) => o.id === id);
@@ -1023,6 +1031,12 @@ export function startMusicTour(state, { route, crew }) {
     state.music.fans < r.fans ||
     m.activeTour ||
     state.music.gigs.some((g) => g.status === "booked") ||
+    (state.careerMilestones?.paths.music.opportunities || []).some(
+      (o) =>
+        o.status === "booked" &&
+        o.performanceWeek >= state.week + 2 &&
+        o.performanceWeek <= state.week + r.shows + 1,
+    ) ||
     (r.id !== "local" && state.employment)
   )
     throw new Error(

@@ -1,3 +1,4 @@
+import { contractTermsFragment } from "./depth-screens.js";
 import {
   WORLD_SPORTS,
   SPORT_DESTINATIONS,
@@ -111,12 +112,16 @@ export function careerMoveDialog(s, id, offerId, u) {
     o = p.offers.find((o) => o.id === offerId),
     meta = s.careerWorld.sports[id].moves[offerId];
   if (!o || o.status !== "offered" || !meta) return "";
-  const pending = o.terms?.negotiation?.status === "pending";
+  const pending =
+    o.terms?.negotiation?.status === "pending" ||
+    s.contracts.reviews.some(
+      (r) => r.sector === id && r.offerId === offerId && r.status === "pending",
+    );
   const negotiation =
     meta.kind === "loan"
       ? ""
       : o.terms?.negotiation
         ? `<p>Contract negotiation: ${e(o.terms.negotiation.status)}${pending ? ` · review at week ${o.terms.negotiation.decisionWeek}` : ""}.</p>`
         : `<form id="sport-negotiation-form" data-sport="${id}" data-id="${e(offerId)}"><label class="field-label">Contract approach<select name="approach"><option value="security">Security · 156 weeks, 5% less pay</option><option value="balanced">Balanced · 104 weeks, 8% more pay</option><option value="ambitious">Ambitious · 52 weeks, 20% more pay, starter role</option></select></label><p class="muted">A counteroffer uses an action and three hours and takes two weeks. Agents help negotiations; the destination can refuse. You must still sign during an open market window.</p><button class="button secondary" type="submit">Send counteroffer</button></form>`;
-  return `<h2>${e(o.club)}</h2><p>${e(meta.kind)} · ${o.terms?.weeks || o.duration} weeks · ${money(o.pay)}/week gross pay · ${e(o.terms?.role || "rotation")} role. Appearance bonus ${money(o.terms?.appearanceBonus || 0)}; win bonus ${money(o.terms?.winBonus || 0)}. Racing funding ${money(o.terms?.annualFunding || 0)}/year requires a thirteen-week uncovered cash buffer.</p>${negotiation}<form id="world-move-sign-form" data-sport="${id}" data-id="${e(offerId)}"><label class="field-label">Household plan<select name="familyPlan"><option value="travel">Keep home base and travel · extra three hours/week where needed</option><option value="move">Move household · $1,500 · age 18+ and partner agreement</option></select></label><p class="muted">Relocating can interrupt a partner’s wages while they seek work and unsettle children. A loan returns to the original remaining contract after twenty-six weeks. Roles help selection but cannot guarantee appearances. Your current contract continues until you sign.</p><button class="button primary full-width" type="submit" ${pending ? "disabled" : ""}>Sign career move</button></form>`;
+  return `<h2>${e(o.club)}</h2><p>${e(meta.kind)} · ${o.terms?.weeks || o.duration} weeks · ${money(o.pay)}/week gross pay · ${e(o.terms?.role || "rotation")} role. Appearance bonus ${money(o.terms?.appearanceBonus || 0)}; win bonus ${money(o.terms?.winBonus || 0)}. Racing funding ${money(o.terms?.annualFunding || 0)}/year requires a thirteen-week uncovered cash buffer.</p>${negotiation}${contractTermsFragment(s, id, offerId, u)}<form id="world-move-sign-form" data-sport="${id}" data-id="${e(offerId)}"><label class="field-label">Household plan<select name="familyPlan"><option value="travel">Keep home base and travel · extra three hours/week where needed</option><option value="move">Move household · $1,500 · age 18+ and partner agreement</option></select></label><p class="muted">Relocating can interrupt a partner’s wages while they seek work and unsettle children. A loan returns to the original remaining contract after twenty-six weeks. Roles help selection but cannot guarantee appearances. Your current contract continues until you sign.</p><button class="button primary full-width" type="submit" ${pending ? "disabled" : ""}>Sign career move</button></form>`;
 }

@@ -1,4 +1,22 @@
 import {
+  initializeContracts,
+  advanceContracts,
+  validateContracts,
+} from "./contracts.js";
+export * from "./contracts.js";
+import {
+  initializeMilestones,
+  advanceMilestones,
+  validateMilestones,
+} from "./career-milestones.js";
+export * from "./career-milestones.js";
+import {
+  initializeLivingWorld,
+  advanceLivingWorld,
+  validateLivingWorld,
+} from "./living-world.js";
+export * from "./living-world.js";
+import {
   initializeCareerWorld,
   prepareCareerWorld,
   advanceSportWorld,
@@ -61,7 +79,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 9;
+export const VERSION = 10;
 import {
   initializeBanking,
   validateBanking,
@@ -749,6 +767,9 @@ export function createGame({
   initializeBanking(s);
   initializeSeasons(s);
   initializeStories(s);
+  initializeContracts(s);
+  initializeMilestones(s);
+  initializeLivingWorld(s);
   if (s.startAge < 12) {
     s.money = 0;
     for (const k of Object.keys(s.skills))
@@ -1594,6 +1615,8 @@ export function advanceWeek(state) {
   advanceSeasons(s);
   advanceSportWorld(s);
   advanceMusicWorld(s);
+  advanceContracts(s);
+  advanceMilestones(s);
   for (const m of MARKETS) {
     s.marketHistory[m.id].push(s.market[m.id]);
     s.marketHistory[m.id] = s.marketHistory[m.id].slice(-24);
@@ -1640,6 +1663,7 @@ export function advanceWeek(state) {
   advanceEveryday(s);
   advanceWorkLife(s);
   advanceConnections(s);
+  advanceLivingWorld(s);
   guardianSupport(s);
   advanceStories(s);
   advanceCareerSupport(s);
@@ -1665,7 +1689,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1683,6 +1707,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsDepth = s.version < 10;
   const needsCareerWorld = s.version < 9;
   const needsLifeCourse = s.version < 8;
   const needsChildhood = s.version < 7;
@@ -1859,6 +1884,15 @@ export function restoreGame(raw) {
     initializeCareerWorld(s);
     s.version = VERSION;
   }
+  if (needsDepth) {
+    initializeContracts(s);
+    initializeMilestones(s);
+    initializeLivingWorld(s);
+    s.version = VERSION;
+  }
+  validateContracts(s);
+  validateMilestones(s);
+  validateLivingWorld(s);
   validateCareerWorld(s);
   validateLifeCourse(s);
   validateChildhood(s);

@@ -290,7 +290,7 @@ test("existing professional players retain their wages and can export a pre-upgr
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v9.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v10.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

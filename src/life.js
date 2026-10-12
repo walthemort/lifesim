@@ -1,3 +1,8 @@
+import {
+  releaseSportAgreement,
+  prepareSportReplacement,
+  registerSportAgreement,
+} from "./contracts.js";
 import { checkCareerMoveSigning, signedCareerMove } from "./career-world.js";
 import { athleticDecline } from "./life-course.js";
 import { footballRecruitmentChance } from "./career-support.js";
@@ -195,10 +200,11 @@ export function configureFootball(state, { position, training }) {
   s.football.training = training;
   return s;
 }
-export function leaveFootball(state) {
+export function leaveFootball(state, { automatic = false } = {}) {
   writable(state);
   const s = structuredClone(state),
     f = s.football;
+  releaseSportAgreement(s, "football", { automatic });
   if (s.employment && jobDefinition(s.employment.jobId).track === "football") {
     s.employment = null;
     s.career = s.company ? "business" : "unemployed";
@@ -256,6 +262,7 @@ export function acceptFootballOffer(state, id) {
         "Professional football recruitment ends at age 40; local football remains available.",
       );
     const j = jobDefinition(o.jobId);
+    prepareSportReplacement(s, "football", o);
     checkCareerMoveSigning(s, "football", o);
     const previous = {
       club: f.club,
@@ -282,6 +289,7 @@ export function acceptFootballOffer(state, id) {
     };
     s.career = "football";
     signedCareerMove(s, "football", o, previous);
+    registerSportAgreement(s, "football", o);
     s.progress.football.level = j.level;
     s.progress.football.unlocked = true;
     for (const a of s.applications)
@@ -354,7 +362,7 @@ function footballTick(s) {
     age(s) >= 40 &&
     ["academy", "reserve", "professional"].includes(f.stage)
   ) {
-    const next = leaveFootball(s);
+    const next = leaveFootball(s, { automatic: true });
     Object.assign(s, next);
     log(
       s,
