@@ -11,13 +11,14 @@ import {
 } from "./career-world.js";
 const actor = (s, id) => (id === "football" ? s.football : s.sports[id]),
   age = (s) => s.startAge + Math.floor(s.week / 52);
-export function sportWorldScreen(s, u) {
+export function sportWorldScreen(s, u, sport = null) {
   const { panelHeading, e, money, tag } = u;
-  return WORLD_SPORTS.filter(
-    (id) =>
-      !["none", "retired"].includes(actor(s, id).stage) ||
-      s.careerWorld.sports[id].staff.length,
-  )
+  return WORLD_SPORTS.filter((id) => !sport || id === sport)
+    .filter(
+      (id) =>
+        !["none", "retired"].includes(actor(s, id).stage) ||
+        s.careerWorld.sports[id].staff.length,
+    )
     .map((id) => {
       const p = actor(s, id),
         c = s.careerWorld.sports[id],

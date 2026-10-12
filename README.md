@@ -2,6 +2,8 @@
 
 A single-player life simulation with a Football Manager-inspired dashboard. Start at birth, grow through childhood and school, then build a life through sport, music, content creation, entrepreneurship, investing, or regular employment.
 
+Sport & development puts your current sporting career or chosen life interest first, keeping its development, equipment, opportunities, contracts and season together. Use the sticky sport bar to bring another sport to the top; browsing never changes your career. Your selection stays while playing and visiting other categories; reloading opens your current career or life interest again. Other long category pages have sticky section shortcuts, with horizontal scrolling on smaller screens.
+
 ## Run locally
 
 Use Node.js 22.12+ (Node 24 is verified) and npm.

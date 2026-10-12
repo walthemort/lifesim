@@ -446,6 +446,45 @@ main {
   margin: auto;
   padding: 32px 34px;
 }
+.category-sections {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 0 24px;
+  padding: 12px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+.section-shortcut {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.section-shortcut:hover,
+.section-shortcut.active {
+  color: var(--green);
+  border-color: var(--green);
+}
+.sport-section,
+.panel-heading h2 {
+  scroll-margin-top: 92px;
+}
+.sport-section {
+  display: flow-root;
+}
 .page-title {
   display: flex;
   align-items: center;

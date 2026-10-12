@@ -47,7 +47,6 @@ import { buyCareerEquipment } from "./career-equipment.js";
 import { childhoodScreen } from "./childhood-screens.js";
 import {
   bankingScreen,
-  seasonScreen,
   storyScreen,
   fixtureCalendar,
 } from "./finance-season-screens.js";
@@ -292,6 +291,7 @@ const initials = (name) =>
 const STORAGE = "lifesim-save-v1";
 let state,
   view = "overview",
+  focusedSport = null,
   storageWarning = "",
   recoverySave = "",
   migrationSave = "",
@@ -580,7 +580,7 @@ const pages = {
   investments: investmentsView,
   banking: () => bankingScreen(state, ui()),
   lifestyle: lifestyleView,
-  sports: () => sportsScreen(state, ui()) + seasonScreen(state, ui()),
+  sports: () => sportsScreen(state, ui(), focusedSport),
   music: () => musicScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
@@ -615,6 +615,29 @@ for (const id of [
 }
 function render() {
   app.innerHTML = `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`;
+  addSectionNavigation();
+}
+function addSectionNavigation() {
+  const main = document.querySelector("#main");
+  if (main.querySelector(".category-sections")) return;
+  const headings = [...main.querySelectorAll(".panel-heading > div > h2")];
+  if (headings.length < 2) return;
+  const bar = document.createElement("nav");
+  bar.className = "category-sections";
+  bar.setAttribute(
+    "aria-label",
+    `${nav.find(([id]) => id === view)?.[2] || "Debug"} sections`,
+  );
+  bar.innerHTML = headings
+    .map((heading, index) => {
+      heading.id = `page-section-${view}-${index}`;
+      heading.tabIndex = -1;
+      return `<a class="section-shortcut" href="#${heading.id}" data-action="jump-section" data-id="${heading.id}">${e(heading.textContent)}</a>`;
+    })
+    .join("");
+  const title = main.querySelector(".page-title");
+  if (title) title.after(bar);
+  else main.prepend(bar);
 }
 function characterDialog() {
   dialog(
@@ -713,6 +736,29 @@ document.addEventListener("click", (event) => {
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "focus-sport":
+      if (!["football", ...SPORTS.map((sport) => sport.id)].includes(id)) break;
+      focusedSport = id;
+      render();
+      document
+        .querySelector(`[data-action="focus-sport"][data-id="${id}"]`)
+        .focus({ preventScroll: true });
+      window.scrollTo({ top: 0 });
+      break;
+    case "jump-section": {
+      event.preventDefault();
+      const heading = document.getElementById(id);
+      if (!heading) break;
+      heading.scrollIntoView({ block: "start" });
+      heading.focus({ preventScroll: true });
+      document.querySelectorAll(".section-shortcut").forEach((shortcut) => {
+        shortcut.classList.toggle("active", shortcut === button);
+        if (shortcut === button)
+          shortcut.setAttribute("aria-current", "location");
+        else shortcut.removeAttribute("aria-current");
+      });
+      break;
+    }
     case "close-modal":
       modal.close();
       break;
@@ -1658,6 +1704,7 @@ document.addEventListener("submit", (event) => {
       return;
     }
     view = "overview";
+    focusedSport = null;
     save();
     render();
     modal.close();
@@ -1844,6 +1891,7 @@ document.addEventListener("change", async (event) => {
       document.querySelector("#confirm-import").onclick = () => {
         state = imported;
         view = "overview";
+        focusedSport = null;
         save();
         render();
         modal.close();

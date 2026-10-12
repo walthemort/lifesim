@@ -37,10 +37,12 @@ export function bankingScreen(s, u) {
       .join("") || '<p class="muted">Your first transfer starts the record.</p>'
   }</div></section>`;
 }
-export function seasonScreen(s, u) {
+export function seasonScreen(s, u, sport = null) {
   const { panelHeading, e, tag, money } = u,
-    paths = SEASON_SPORTS.filter((id) => active(s, id));
-  return `<section class="panel wide-panel">${panelHeading("Seasons, selection & representation", "Fixtures happen on their scheduled week. Training, fitness and team selection determine your appearances.")}<div class="everyday-actions">${paths.map((id) => `<a class="button secondary" href="#season-${id}">${e(id[0].toUpperCase() + id.slice(1))}</a>`).join("")}</div>${paths.length ? "" : '<p class="muted">Join a sport to start a fixture calendar. Professional offers still come through development and scouting.</p>'}</section>${paths
+    paths = SEASON_SPORTS.filter(
+      (id) => (!sport || id === sport) && active(s, id),
+    );
+  return `${sport ? "" : `<section class="panel wide-panel">${panelHeading("Seasons, selection & representation", "Fixtures happen on their scheduled week. Training, fitness and team selection determine your appearances.")}<div class="everyday-actions">${paths.map((id) => `<a class="button secondary" href="#season-${id}">${e(id[0].toUpperCase() + id.slice(1))}</a>`).join("")}</div>${paths.length ? "" : '<p class="muted">Join a sport to start a fixture calendar. Professional offers still come through development and scouting.</p>'}</section>`}${paths
     .map((id) => {
       const path = s.seasons[id],
         p = actor(s, id),

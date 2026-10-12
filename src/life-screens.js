@@ -1,3 +1,4 @@
+import { seasonScreen } from "./finance-season-screens.js";
 import { contractsScreen, milestonesScreen } from "./depth-screens.js";
 import { sportWorldScreen, musicWorldScreen } from "./career-world-screens.js";
 import { careerSupportScreen } from "./career-support.js";
@@ -22,7 +23,7 @@ import {
   sportCosts,
 } from "./engine.js";
 const count = (n) => Math.round(n).toLocaleString("en-US");
-export function sportsScreen(s, u) {
+export function sportsScreen(s, u, focusedSport = null) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
     f = s.football;
   const invitations = (offers, sport) =>
@@ -33,7 +34,9 @@ export function sportsScreen(s, u) {
           `<div class="application-row"><div><strong>${e(o.club)}</strong><small>${e(o.kind.replaceAll("-", " "))}${o.kind === "contract" ? ` · ${money(o.pay)}/wk gross base income · ${o.terms?.weeks || o.duration || 104} weeks` : ""} · respond in ${o.expiresWeek - s.week} weeks</small></div><div class="inline-actions"><button class="button primary" data-action="sport-offer" data-sport="${sport}" data-id="${e(o.id)}">Review invitation</button><button class="text-button" data-action="decline-sport" data-sport="${sport}" data-id="${e(o.id)}">Decline</button></div></div>`,
       )
       .join("");
-  return `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `${age(s) < 12 ? "Primary" : "Secondary"} school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. ${age(s) < 12 ? "Your family covers basic needs and local sports fees; your allowance starts at six." : "Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly."}` : "You can continue local sport alongside work or study. Youth academy places have age limits; a professional offer is never guaranteed."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div><section class="panel sport-panel" data-sport-card="football">${panelHeading("Football", f.club || "Start with school or your local club.", tag(f.stage, "green"))}<div class="sport-summary"><span class="feature-icon green">${icon("football")}</span><div><h2>${e(f.club || "The football path")}</h2><p>${e(f.position)} · ${f.matches} matches · ${f.goals} goals</p></div></div><div class="life-metrics"><div><span>Football ability</span><strong>${Math.round(f.ability)} / 100</strong>${meter(f.ability, "green")}</div><div><span>Coach trust</span><strong>${Math.round(f.coachTrust)} / 100</strong>${meter(f.coachTrust, "blue")}</div><div><span>Sport reputation</span><strong>${Math.round(f.reputation)} / 100</strong>${meter(f.reputation, "purple")}</div></div><div class="path-steps">${["School / local", "Academy", "Development squad", "Professional contract"].map((x) => `<span>${x}</span>`).join("")}</div>${
+  const introduction = `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `${age(s) < 12 ? "Primary" : "Secondary"} school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. ${age(s) < 12 ? "Your family covers basic needs and local sports fees; your allowance starts at six." : "Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly."}` : "You can continue local sport alongside work or study. Youth academy places have age limits; a professional offer is never guaranteed."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div>`;
+  const cards = {};
+  cards.football = `<section class="panel sport-panel" data-sport-card="football">${panelHeading("Football", f.club || "Start with school or your local club.", tag(f.stage, "green"))}<div class="sport-summary"><span class="feature-icon green">${icon("football")}</span><div><h2>${e(f.club || "The football path")}</h2><p>${e(f.position)} · ${f.matches} matches · ${f.goals} goals</p></div></div><div class="life-metrics"><div><span>Football ability</span><strong>${Math.round(f.ability)} / 100</strong>${meter(f.ability, "green")}</div><div><span>Coach trust</span><strong>${Math.round(f.coachTrust)} / 100</strong>${meter(f.coachTrust, "blue")}</div><div><span>Sport reputation</span><strong>${Math.round(f.reputation)} / 100</strong>${meter(f.reputation, "purple")}</div></div><div class="path-steps">${["School / local", "Academy", "Development squad", "Professional contract"].map((x) => `<span>${x}</span>`).join("")}</div>${
     f.stage === "none" || f.stage === "retired"
       ? `<p class="muted">Young players begin through school. Adults can join grassroots football; late professional recruitment is uncommon.</p><button class="button primary" data-action="join-football">${age(s) < 18 ? "Join school football" : "Join local football"}</button>`
       : `<div class="form-row"><label class="field-label">Playing position<select id="football-position">${FOOTBALL_POSITIONS.map((p) => `<option ${p === f.position ? "selected" : ""}>${p}</option>`).join("")}</select></label><label class="field-label">Football training<select id="football-training">${Object.entries(
@@ -46,25 +49,52 @@ export function sportsScreen(s, u) {
           .join(
             "",
           )}</select></label></div><p class="muted">${f.injuryWeeks ? `Injured: ${f.injuryWeeks} recovery weeks remain.` : f.lastMatch ? `Last match: ${f.lastMatch.rating}/100 performance; ${f.lastMatch.goals} goal(s).` : "League matches follow the thirty-eight-round fixture calendar."} ${f.contract?.expiresWeek ? `Contract ends in ${f.contract.expiresWeek - s.week} weeks.` : ""}</p><p class="muted">${f.stage === "academy" ? `${f.academyWeeks} academy development weeks.` : `${f.schoolWeeks + f.grassrootsWeeks} school / grassroots development weeks.`} Scouts review sustained development every 13 weeks. Trials take two weeks and can end without a place. Injury, age, discipline, ability, and time in competition all matter.</p>${f.trial ? `<div class="info-banner">Assessment at ${e(f.trial.club)} · decision in ${Math.max(0, f.trial.decisionWeek - s.week)} weeks</div>` : ""}<div class="application-list">${invitations(f.offers, "football") || '<p class="muted">No open football invitations. Keep playing and developing.</p>'}</div><button class="text-button" data-action="leave-sport" data-sport="football">Step away from football</button>`
-  }</section><div class="career-grid two-columns">${SPORTS.map((d) => {
+  }</section>`;
+  for (const d of SPORTS) {
     const p = s.sports[d.id];
-    return `<section class="panel sport-panel" data-sport-card="${d.id}">${panelHeading(d.name, p.club || d.start, tag(p.stage, "orange"))}<div class="life-metrics"><div><span>Sport ability</span><strong>${Math.round(p.ability)} / 100</strong>${meter(p.ability, "orange")}</div><div><span>Results</span><strong>${p.wins} / ${p.events}</strong><small>Wins / outings</small></div><div><span>Development</span><strong>${p.experience} weeks</strong><small>${Math.round(p.reputation)} sport reputation</small></div></div><p class="muted">${d.id === "racing" ? "Local karting → driver development → F4 → F3 → F2 → F1. National, international, and top-level licences gate competition; driver seats arrive as offers." : d.id === "basketball" ? "School / local basketball → academy → development squad → professional leagues. Team invitations depend on skill and sustained competition." : "Local tennis → academy → junior circuit → professional tour. Sponsorship supplies base income; tournament results can earn additional prizes."}</p>${
-      ["none", "retired"].includes(p.stage)
-        ? `<button class="button primary" data-action="join-sport" data-id="${d.id}">Start ${d.name.toLowerCase()}</button>`
-        : `<label class="field-label">${d.name} training<select data-sport-training="${d.id}">${Object.entries(
-            FOOTBALL_TRAINING,
-          )
-            .map(
-              ([id, name]) =>
-                `<option value="${id}" ${id === p.training ? "selected" : ""}>${name}</option>`,
+    cards[d.id] =
+      `<section class="panel sport-panel" data-sport-card="${d.id}">${panelHeading(d.name, p.club || d.start, tag(p.stage, "orange"))}<div class="life-metrics"><div><span>Sport ability</span><strong>${Math.round(p.ability)} / 100</strong>${meter(p.ability, "orange")}</div><div><span>Results</span><strong>${p.wins} / ${p.events}</strong><small>Wins / outings</small></div><div><span>Development</span><strong>${p.experience} weeks</strong><small>${Math.round(p.reputation)} sport reputation</small></div></div><p class="muted">${d.id === "racing" ? "Local karting → driver development → F4 → F3 → F2 → F1. National, international, and top-level licences gate competition; driver seats arrive as offers." : d.id === "basketball" ? "School / local basketball → academy → development squad → professional leagues. Team invitations depend on skill and sustained competition." : "Local tennis → academy → junior circuit → professional tour. Sponsorship supplies base income; tournament results can earn additional prizes."}</p>${
+        ["none", "retired"].includes(p.stage)
+          ? `<button class="button primary" data-action="join-sport" data-id="${d.id}">Start ${d.name.toLowerCase()}</button>`
+          : `<label class="field-label">${d.name} training<select data-sport-training="${d.id}">${Object.entries(
+              FOOTBALL_TRAINING,
             )
-            .join(
-              "",
-            )}</select></label><p class="muted">${p.injuryWeeks ? `${p.injuryWeeks} injury recovery weeks remain.` : p.lastResult ? `Last outing: ${p.lastResult.score}/100 · ${p.lastResult.won ? "win" : "no win"}.` : "Events run during the active season."} ${p.contract?.expiresWeek ? `Contract: ${p.contract.expiresWeek - s.week} weeks remaining.` : ""}</p>${p.trial ? `<p class="opportunity-note">Development assessment: ${p.trial.decisionWeek - s.week} weeks until the decision.</p>` : ""}<div class="application-list">${invitations(p.offers, d.id) || '<p class="muted">No open invitations. Development takes time.</p>'}</div><button class="text-button" data-action="leave-sport" data-sport="${d.id}">Step away from ${d.name.toLowerCase()}</button>`
-    }</section>`;
-  }).join(
-    "",
-  )}</div>${careerSupportScreen(s, u, "football", false)}${careerEquipmentScreen(s, u, "football")}${careerEquipmentScreen(s, u, "racing")}${sportWorldScreen(s, u)}${contractsScreen(s, u, "sports")}${milestonesScreen(s, u, "sports")}`;
+              .map(
+                ([id, name]) =>
+                  `<option value="${id}" ${id === p.training ? "selected" : ""}>${name}</option>`,
+              )
+              .join(
+                "",
+              )}</select></label><p class="muted">${p.injuryWeeks ? `${p.injuryWeeks} injury recovery weeks remain.` : p.lastResult ? `Last outing: ${p.lastResult.score}/100 · ${p.lastResult.won ? "win" : "no win"}.` : "Events run during the active season."} ${p.contract?.expiresWeek ? `Contract: ${p.contract.expiresWeek - s.week} weeks remaining.` : ""}</p>${p.trial ? `<p class="opportunity-note">Development assessment: ${p.trial.decisionWeek - s.week} weeks until the decision.</p>` : ""}<div class="application-list">${invitations(p.offers, d.id) || '<p class="muted">No open invitations. Development takes time.</p>'}</div><button class="text-button" data-action="leave-sport" data-sport="${d.id}">Step away from ${d.name.toLowerCase()}</button>`
+      }</section>`;
+  }
+  const sports = [{ id: "football", name: "Football" }, ...SPORTS];
+  const preferred =
+    [focusedSport, s.career, s.aspiration].find((id) =>
+      sports.some((sport) => sport.id === id),
+    ) ||
+    sports.find(
+      ({ id }) =>
+        !["none", "retired"].includes(
+          (id === "football" ? s.football : s.sports[id]).stage,
+        ),
+    )?.id ||
+    "football";
+  const navigation = `<nav class="category-sections" aria-label="Sport & development sections">${sports.map(({ id, name }) => `<button class="section-shortcut ${id === preferred ? "active" : ""}" data-action="focus-sport" data-id="${id}" aria-controls="sport-section-${id}" ${id === preferred ? 'aria-current="true"' : ""}>${e(name)}</button>`).join("")}</nav>`;
+  const ordered = [
+    sports.find(({ id }) => id === preferred),
+    ...sports.filter(({ id }) => id !== preferred),
+  ];
+  return (
+    introduction +
+    navigation +
+    ordered
+      .map(
+        ({ id, name }) =>
+          `<div class="sport-section" id="sport-section-${id}" role="region" aria-label="${e(name)} development">${cards[id]}${id === "football" ? careerSupportScreen(s, u, "football", false) : ""}${careerEquipmentScreen(s, u, id)}${sportWorldScreen(s, u, id)}${contractsScreen(s, u, id)}${milestonesScreen(s, u, id)}${seasonScreen(s, u, id)}</div>`,
+      )
+      .join("")
+  );
 }
 export function socialScreen(s, u) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
