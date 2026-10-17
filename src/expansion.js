@@ -1,3 +1,6 @@
+import { recordTrackRights } from "./realism.js";
+import { canRecruit, bindRivalOffer } from "./rivals.js";
+import { localPrice } from "./economy.js";
 import {
   COUNTRIES,
   country,
@@ -302,10 +305,10 @@ export function buyClothing(state, id) {
   const item = CLOTHING.find((i) => i.id === id);
   if (!item || state.globalLife.wardrobe.includes(id))
     throw new Error("Choose clothing you do not already own.");
-  if (availableCash(state) < item.price)
+  if (availableCash(state) < localPrice(state, item.price))
     throw new Error("Not enough cash for this outfit.");
   const s = acting(state, 1);
-  s.money -= item.price;
+  s.money -= localPrice(state, item.price);
   s.globalLife.wardrobe.push(id);
   return wearClothing(s, id);
 }
@@ -480,6 +483,8 @@ export function startTrack(
   state,
   { title, beat = "produce", theme = "Personal", ambition = "standard" },
 ) {
+  if (state.realWorld?.retiredMusic)
+    throw new Error("Resume new music work first.");
   if (
     !["produce", "lease", "exclusive"].includes(beat) ||
     ![
@@ -595,6 +600,7 @@ export function workTrack(state, id) {
     p = s.globalLife.tracks.find((t) => t.id === id);
     const project = s.music.projects.at(-1);
     project.manualRelease = true;
+    recordTrackRights(s, p, project);
     project.quality = Math.round(
       clamp(
         (p.beatQuality + p.lyricQuality + p.vocalQuality + project.quality) / 4,
@@ -813,6 +819,17 @@ function racingAdvance(s) {
       status: "offered",
       expiresWeek: s.week + 8,
     };
+    if (
+      s.realWorld &&
+      !canRecruit(s, "racing", Number(target.job.slice(-1)), o.club)
+    ) {
+      note(
+        s,
+        "No suitable driver vacancy is open. Your championship results remain on record.",
+      );
+      return;
+    }
+    bindRivalOffer(s, "racing", o, Number(target.job.slice(-1)));
     enhanceSportOffer(s, "racing", o);
     p.offers.push(o);
     p.offers = p.offers.slice(-12);

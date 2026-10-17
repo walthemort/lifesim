@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -61,7 +62,7 @@ test("all screens load without browser errors and instant career switching is go
     page.getByRole("heading", { name: "Looking for work" }),
   ).toBeVisible();
   for (const name of nav) {
-    await page.getByRole("button", { name, exact: true }).click();
+    await tap(page, name);
     await expect(page.locator("main h1")).toBeVisible();
   }
   expect(await page.locator('[data-action="join-career"]').count()).toBe(0);
@@ -77,7 +78,7 @@ test("new characters start at birth with deferred interests and no qualification
   await page
     .getByRole("button", { name: "Enable debug mode", exact: true })
     .click();
-  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  await tap(page, "Overview");
   await page
     .getByRole("button", { name: "Your character", exact: true })
     .click();
@@ -109,9 +110,7 @@ test("application decisions, offer acceptance, and actual contract wages work in
   page,
 }) => {
   await load(page);
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
+  await tap(page, "Work & education");
   await page.locator('[data-action="apply-job"][data-id="office-0:0"]').click();
   await expect(page.locator(".application-list")).toContainText(
     "Decision in 2 weeks",
@@ -156,9 +155,7 @@ test("finishing education unlocks a vacancy, while an incomplete credential bloc
     },
   ];
   await load(page, s);
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
+  await tap(page, "Work & education");
   await expect(page.locator('[data-action="apply-job"]')).toBeDisabled();
   await expect(page.locator(".vacancy-card")).toContainText("Still needed");
   await week(page);
@@ -170,9 +167,7 @@ test("enrolment costs, part-time progress, and withdrawal are visible and persis
   page,
 }) => {
   await load(page);
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
+  await tap(page, "Work & education");
   await page.locator('[data-action="enrol"][data-id="business-cert"]').click();
   await page.getByRole("button", { name: "Enrol in programme" }).click();
   await week(page);
@@ -191,9 +186,7 @@ test("salary discussions can raise pay without changing jobs and then disable re
   s.employment.performance = 100;
   s.skills.charisma = 100;
   await load(page, s);
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
+  await tap(page, "Work & education");
   await page.getByRole("button", { name: "Discuss a raise" }).click();
   const r = await saved(page);
   expect(r.employment.jobId).toBe("office-0");
@@ -206,7 +199,7 @@ test("fractional crypto and company shares trade, while shopping and relationshi
   page,
 }) => {
   await load(page);
-  await page.getByRole("button", { name: "Investments", exact: true }).click();
+  await tap(page, "Investments");
   await page.locator('[data-action="trade"][data-id="crypto"]').click();
   await page.getByLabel("Number of units").fill("0.1");
   await page.getByRole("button", { name: "Confirm trade" }).click();
@@ -220,9 +213,7 @@ test("fractional crypto and company shares trade, while shopping and relationshi
   await expect(
     page.locator(".market-row").filter({ hasText: "Horizon Technologies" }),
   ).toContainText("0.000010% owned");
-  await page
-    .getByRole("button", { name: "Lifestyle & shopping", exact: true })
-    .click();
+  await tap(page, "Lifestyle & shopping");
   await page
     .locator('[data-action="retail-store"][data-id="Home & hobbies"]')
     .click();
@@ -231,9 +222,7 @@ test("fractional crypto and company shares trade, while shopping and relationshi
   await expect(
     page.locator(".shop-card").filter({ hasText: "The everyday watch" }),
   ).toContainText("Owned");
-  await page
-    .getByRole("button", { name: "Relationships", exact: true })
-    .click();
+  await tap(page, "Relationships");
   await page.getByRole("button", { name: "Meet someone" }).click();
   await page.locator('[data-action="connect"][data-id="sam"]').click();
   expect((await saved(page)).actions).toBe(1);
@@ -256,9 +245,7 @@ test("a real owner introduction, premium bid, acceptance, and closing acquire a 
   }
   expect(candidate).toBeTruthy();
   await load(page, candidate);
-  await page
-    .getByRole("button", { name: "Businesses & clubs", exact: true })
-    .click();
+  await tap(page, "Businesses & clubs");
   await page.locator('[data-action="approach"][data-id="cafe"]').click();
   await page
     .getByRole("button", { name: "Pay for introduction request" })
@@ -299,9 +286,7 @@ test("football club sale windows transfer ownership and expose per-business mana
     },
   ];
   await load(page, s);
-  await page
-    .getByRole("button", { name: "Businesses & clubs", exact: true })
-    .click();
+  await tap(page, "Businesses & clubs");
   await page.getByRole("button", { name: "Review sale" }).click();
   await page.getByRole("button", { name: "Acquire offered stake" }).click();
   await page
@@ -323,7 +308,7 @@ test("collectible auctions can leave high-reserve lots unsold", async ({
     { id: "card:0", collectibleId: "rookie-card", price: 850, expiresWeek: 8 },
   ];
   await load(page, s);
-  await page.getByRole("button", { name: "Investments", exact: true }).click();
+  await tap(page, "Investments");
   await page.locator('[data-action="collectible"][data-id="card:0"]').click();
   await page.getByRole("button", { name: "Purchase collectible" }).click();
   await page.locator('[data-action="consign"][data-id="rookie-card"]').click();
@@ -349,9 +334,7 @@ test("a side company can be founded, configured, and developed while retaining a
   const s = hired();
   s.skills.business = 35;
   await load(page, s);
-  await page
-    .getByRole("button", { name: "Start & run a company", exact: true })
-    .click();
+  await tap(page, "Start & run a company");
   await page.getByRole("button", { name: "Plan a company" }).click();
   await page.getByLabel("Company name").fill("Northstar Labs");
   await page.getByRole("button", { name: "Launch company" }).click();
@@ -384,7 +367,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
   expect((await downloaded).suggestedFilename()).toBe(
-    "lifesim-before-v13.json",
+    "lifesim-before-v14.json",
   );
 });
 test("export/import and unreadable-save recovery remain usable", async ({
@@ -432,7 +415,7 @@ test("all screens fit on a phone, including large balances and controlled compan
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   for (const name of nav) {
-    await page.getByRole("button", { name, exact: true }).click();
+    await tap(page, name);
     const sizes = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       width: window.innerWidth,

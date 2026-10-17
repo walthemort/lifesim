@@ -1,3 +1,5 @@
+import { localProfile } from "./economy.js";
+import { productTrading, onParentalLeave } from "./realism.js";
 import { industry } from "./expansion-data.js";
 import { ownerOperatingAdjustment } from "./ownership-play.js";
 import { publicHiringPenalty } from "./pressure-effects.js";
@@ -1312,7 +1314,7 @@ export function consignCollectible(state, id, reserve) {
   return s;
 }
 function employmentTick(s) {
-  if (s.employment) {
+  if (s.employment && !onParentalLeave(s)) {
     const p = s.employment,
       j = jobDefinition(p.jobId),
       skill = s.skills[TRACK_SKILLS[j.track]];
@@ -1372,7 +1374,11 @@ function employmentTick(s) {
       );
       if (rng(s) < Math.max(0.05, chance - publicHiringPenalty(s))) {
         a.status = "offer";
-        a.offeredPay = Math.round(j.pay * (1 + rng(s) * 0.06));
+        a.offeredPay = Math.round(
+          j.pay *
+            (1 + rng(s) * 0.06) *
+            (s.realWorld ? localProfile(s).wage : 1),
+        );
         a.expiresWeek = s.week + 4;
         log(
           s,
@@ -1629,7 +1635,10 @@ function businessesTick(s) {
       c.revenue,
       c.costs,
     );
-    c.profit = round(operations.revenue - operations.costs);
+    const product = productTrading(s);
+    c.profit = round(
+      operations.revenue + product.revenue - operations.costs - product.costs,
+    );
     c.cash += c.profit;
     c.periodProfit += c.profit;
     c.value = Math.max(

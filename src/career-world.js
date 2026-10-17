@@ -1,3 +1,4 @@
+import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { placeCountry, immigrationRule } from "./geography.js";
 import { checkMusicOutsideWork } from "./contracts.js";
 import { milestoneAway } from "./career-milestones.js";
@@ -215,6 +216,8 @@ export function sportMoveEligibility(s, id, kind, destination) {
     )
   )
     missing.push("a championship podium at your current racing tier");
+  if (j && !canRecruit(s, id, j.level, destination))
+    missing.push("a genuine vacancy at the destination");
   if (!j) missing.push("an available career level");
   else {
     if (s.skills[TRACK_SKILLS[id]] < j.skill || p.ability < j.skill)
@@ -825,6 +828,7 @@ export function advanceSportWorld(s) {
             status: "offered",
             expiresWeek: s.week + 4,
           };
+          bindRivalOffer(s, id, o, jobDefinition(o.jobId).level);
           enhanceSportOffer(s, id, o);
           o.terms.role = r.role;
           if (r.kind === "loan") {

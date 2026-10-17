@@ -1,0 +1,12 @@
+{
+  "appId": "com.walthemort.lifesim",
+  "appName": "Lifesim",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c1119",
+    "preferredContentMode": "mobile",
+    "scrollEnabled": true
+  },
+  "plugins": { "CapacitorHttp": { "enabled": false } }
+}

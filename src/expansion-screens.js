@@ -1,3 +1,4 @@
+import { localPrice } from "./economy.js";
 import {
   COUNTRIES,
   CITY_CATALOGUE,
@@ -61,12 +62,12 @@ export function retailScreen(s, u, selected = null) {
   const navigation = `<nav class="retail-navigation" aria-label="Shopping districts">${RETAIL_STORES.map(([id, label, glyph]) => `<button class="store-tile ${selected === id ? "active" : ""}" data-action="retail-store" data-id="${e(id)}">${icon(glyph)}<strong>${e(id)}</strong><small>${e(label)}</small></button>`).join("")}</nav>`;
   let body = "";
   if (CLOTHING.some((i) => i.store === selected)) {
-    body = `<section class="panel wide-panel">${panelHeading(selected, "Try on clothes before buying. Previewing costs nothing.")}<div class="boutique-layout"><div class="dressing-room" data-dressing-room>${characterPortrait(s.characterLife.profile)}<h3>${e(s.name)}</h3><p data-outfit-name>Your current look</p><button class="button secondary" data-action="retail-reset">Reset preview</button></div><div class="everyday-grid">${CLOTHING.filter(
+    body = `<section class="panel wide-panel">${panelHeading(selected, "Try on clothes before buying. Previewing costs nothing.")}<div class="boutique-layout"><div class="dressing-room" data-dressing-room>${characterPortrait({ ...s.characterLife.profile, visualAge: age(s), condition: s.health })}<h3>${e(s.name)}</h3><p data-outfit-name>Your current look</p><button class="button secondary" data-action="retail-reset">Reset preview</button></div><div class="everyday-grid">${CLOTHING.filter(
       (i) => i.store === selected,
     )
       .map(
         (i) =>
-          `<article class="everyday-card"><div class="fabric-swatch" style="--fabric:${{ Blue: "#5378a5", Green: "#52977e", Orange: "#b77b58", Purple: "#8073a9", Black: "#262834" }[i.outfit]}"></div><h3>${e(i.name)}</h3><p>${money(i.price)} · ${e(i.garment)} · no recurring fees</p><div class="inline-actions"><button class="button secondary" data-action="outfit-preview" data-id="${i.id}">Try on</button><button class="button primary" data-action="${s.globalLife.wardrobe.includes(i.id) ? "outfit-wear" : "outfit-buy"}" data-id="${i.id}" ${disabled(s)}>${s.globalLife.wardrobe.includes(i.id) ? "Wear outfit" : "Buy outfit"}</button></div></article>`,
+          `<article class="everyday-card"><div class="fabric-swatch" style="--fabric:${{ Blue: "#5378a5", Green: "#52977e", Orange: "#b77b58", Purple: "#8073a9", Black: "#262834" }[i.outfit]}"></div><h3>${e(i.name)}</h3><p>${money(localPrice(s, i.price))} · ${e(i.garment)} · no recurring fees</p><div class="inline-actions"><button class="button secondary" data-action="outfit-preview" data-id="${i.id}">Try on</button><button class="button primary" data-action="${s.globalLife.wardrobe.includes(i.id) ? "outfit-wear" : "outfit-buy"}" data-id="${i.id}" ${disabled(s)}>${s.globalLife.wardrobe.includes(i.id) ? "Wear outfit" : "Buy outfit"}</button></div></article>`,
       )
       .join("")}</div></div></section>`;
   } else if (selected === "Barbers") {
@@ -82,7 +83,7 @@ export function retailScreen(s, u, selected = null) {
       "Bob",
       ...(creatorAvailable(s) ? PRO_HAIRSTYLES : []),
     ];
-    body = `<section class="panel wide-panel">${panelHeading("Barbers & salons", "Appointments take one action and two hours. Preview your cut first.")}<form id="barber-form"><div class="identity-preview">${characterPortrait(s.characterLife.profile)}<div><h3>Find your next look.</h3><p>Premium styles unlock with Pro or Debug. All haircuts are cosmetic.</p></div></div><div class="everyday-grid"><label class="field-label">Barber<select name="tier" aria-label="Barber"><option value="local">Neighbourhood barber · $20</option><option value="salon">City salon · $75</option><option value="atelier">Private stylist · $250</option></select></label><label class="field-label">Hair style<select name="hairstyle">${options.map((v) => `<option ${v === s.characterLife.profile.hairstyle ? "selected" : ""}>${e(v)}</option>`).join("")}</select></label><label class="field-label">Hair colour<select name="hair">${["Black", "Brown", "Blonde", "Red", "Grey"].map((v) => `<option ${v === s.characterLife.profile.hair ? "selected" : ""}>${v}</option>`).join("")}</select></label></div><button class="button primary" ${disabled(s)}>Book haircut</button></form></section>`;
+    body = `<section class="panel wide-panel">${panelHeading("Barbers & salons", "Appointments take one action and two hours. Preview your cut first.")}<form id="barber-form"><div class="identity-preview">${characterPortrait({ ...s.characterLife.profile, visualAge: age(s), condition: s.health })}<div><h3>Find your next look.</h3><p>Premium styles unlock with Pro or Debug. All haircuts are cosmetic.</p></div></div><div class="everyday-grid"><label class="field-label">Barber<select name="tier" aria-label="Barber"><option value="local">Neighbourhood barber · $20</option><option value="salon">City salon · $75</option><option value="atelier">Private stylist · $250</option></select></label><label class="field-label">Hair style<select name="hairstyle">${options.map((v) => `<option ${v === s.characterLife.profile.hairstyle ? "selected" : ""}>${e(v)}</option>`).join("")}</select></label><label class="field-label">Hair colour<select name="hair">${["Black", "Brown", "Blonde", "Red", "Grey"].map((v) => `<option ${v === s.characterLife.profile.hair ? "selected" : ""}>${v}</option>`).join("")}</select></label></div><button class="button primary" ${disabled(s)}>Book haircut</button></form></section>`;
   }
   const wardrobe = s.globalLife.wardrobe.length
     ? `<section class="panel"><h3>Your wardrobe</h3><div class="inline-actions">${s.globalLife.wardrobe

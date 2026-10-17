@@ -1,9 +1,33 @@
 # Lifesim
 
-A single-player life simulation with a Football Manager-inspired dashboard. Start at birth, grow through childhood and school, then build a life through sport, music, content creation, entrepreneurship, investing, or regular employment.
+An iPhone-only, portrait life simulation with a Football Manager-inspired dashboard. Start at birth, grow through childhood and school, then build a life through sport, music, content creation, entrepreneurship, investing, or regular employment.
 
 Sport & development puts your current sporting career or chosen life interest first, keeping its development, equipment, opportunities, contracts and season together. Use the sticky sport bar to bring another sport to the top; browsing never changes your career. Your selection stays while playing and visiting other categories; reloading opens your current career or life interest again. Other long category pages have sticky section shortcuts, with horizontal scrolling on smaller screens.
 
+## v0.14: iPhone edition and a living world
+
+- **Mobile-only interface:** five bottom tabs (Home, Career, Sport, Inbox, World), a category grid, touch-sized controls, sticky section shortcuts, safe-area spacing and bottom-sheet dialogs. All career paths stay available through World. A desktop browser shows the same phone layout for development.
+- **Native iOS project:** Capacitor 8, iPhone portrait, iOS 16+, bundled offline assets, custom icon/launch artwork, native Preferences saves, system-share JSON backups and optional haptic feedback. This repository prepares an iOS app; it does not publish it to Apple's store. A macOS CI workflow compiles an unsigned simulator build. See [the iPhone build and release guide](docs/IOS_RELEASE.md) for Xcode, signing, TestFlight, privacy and release steps.
+- **Regional economies:** local cash equivalents, simulated quarterly exchange quotes, country-specific salary/retail/housing indices and simplified tax policies. Twelve economies have individual profiles; others use regional assumptions. The accounting ledger and form inputs remain USD. Existing agreed pay and rental deposits stay fixed; sales use the item's actual purchase basis. Imported current-year tax terms remain in place for that country, without applying a second allowance. Losses carry forward.
+- **Persistent sporting rivals:** football, racing, basketball and tennis have ageing competitors with contracts, form, injury and retirement. New offers depend on available places; expired and retired incumbents open vacancies that other athletes may fill. Racing/tennis fields reuse competitor names and form. This remains an abstract roster model, not a complete licensed simulation of real leagues or teams.
+- **Family finances:** consenting cohabiting partners can contribute their actual wealth to a joint account. Withdrawals and separation settlements follow recorded contributions. Custody changes care time/costs, income-based support continues until adulthood, and unpaid outgoing support remains debt. Ordinary employees can request reduced-pay parental leave after welcoming a child, with work reviews paused. These are game rules, not a model of every country's family law.
+- **Products and recovery:** founded companies can develop, price, launch and withdraw products with actual budgets, customer demand, delivery costs and reviews. Poor launches, long injuries and lost agreements can trigger recovery plans; rebuilding confidence does not restore a contract or erase a review.
+- **Catalogue rights:** workshop tracks record owned/exclusive/non-exclusive beat rights and producer splits. Leases have a distribution term and stream cap; renewal costs real in-game cash. Retired musicians retain catalogue royalties under their existing rights, label and management agreements. Portrait ageing is derived from age rather than changing saved cosmetic choices.
+
+Version 13 saves upgrade additively to version 14. An exact pre-v0.14 backup is available in Save & settings; earlier backups remain available. Pro continues as a free local preview, without purchases or subscriptions. Paid Pro needs StoreKit and verified entitlements before sale.
+
+### Run the iPhone app on a Mac
+
+Use Node 22.12+ and a current Xcode compatible with Capacitor 8:
+
+```sh
+npm ci
+npm run ios:sync
+npm run ios:check
+npm run ios:open
+```
+
+In Xcode select your Apple Developer team and an iPhone simulator or connected iPhone, then press Run. Re-run `ios:sync` after game changes. See [docs/IOS_RELEASE.md](docs/IOS_RELEASE.md) before TestFlight or App Store submission. Native compilation and signing require macOS; Linux supports gameplay development, phone-layout tests and packaging checks.
 
 ## v0.13: identity, borders and deeper careers
 
@@ -19,7 +43,7 @@ Sport & development puts your current sporting career or chosen life interest fi
 
 Existing saves migrate additively to version 13. The browser keeps an exact original copy under `lifesim-save-v1-before-v13`, downloadable in Save & settings. Historical citizenship and residence are inferred from existing identity/home data; earlier immigration cases, convictions and racing results are not invented. Pro remains the existing local preview mode; this update does not add payment or account infrastructure.
 
-## Run locally
+## Develop the phone UI locally
 
 Use Node.js 22.12+ (Node 24 is verified) and npm.
 
@@ -28,7 +52,7 @@ npm ci
 npm run dev
 ```
 
-Vite uses port 5173 by default. The game runs entirely in the browser: no database, account, API keys, or paid services are required. Fonts are served locally. `npm run build` produces the static site in `dist/`; `npm run preview` serves that build for validation.
+Vite uses port 5173 by default. The development preview runs in a browser and uses the same phone UI as the iOS app; no database, account, API keys, or paid services are required. Fonts are served locally. `npm run build` produces the static site in `dist/`; `npm run preview` serves that build for validation.
 
 ## Play
 
@@ -143,7 +167,7 @@ Vite uses port 5173 by default. The game runs entirely in the browser: no databa
 
 ## Saves
 
-Progress automatically saves in this browser's local storage. **Save & settings** can export a JSON backup or import one on another device. Imports are validated and require confirmation before replacing the current life. If a stored save cannot be read, its original contents are preserved as an exportable recovery copy. Browser data deletion clears local progress, so export backups regularly. The game has no cloud sync.
+Progress automatically saves on-device, mirrored to native Preferences in the installed iPhone app and browser local storage in development. **Save & settings** can export a JSON backup or import one on another device. Imports are validated and require confirmation before replacing the current life. If a stored save cannot be read, its original contents are preserved as an exportable recovery copy. Browser data deletion clears local progress, so export backups regularly. The game has no cloud sync.
 
 Version 0.1 through 0.9 saves upgrade automatically, preserving contract pay, cash, investments, founded companies, and owned clubs. Existing professional players and drivers keep their contracts; outstanding athlete job applications are retired in favour of development and scouting. The browser keeps an exportable **pre-update save** before automatic conversion. Its storage key stays unchanged so existing lives are found. Existing version 0.4 households, mortgages, children, pets, projects and debug records stay intact. Version 0.4 and earlier saves gain automatic calendar planning, empty pensions, and profiles for existing contacts and children. Version 0.5 and 0.6 calendars, pensions and developed households remain intact. Version 0.6 banking, tax histories, sporting seasons and ongoing commitments also remain intact; new career support starts without a manager or campaign. Version 0.7 managers, studios and childhood records remain intact; new family, school and ageing records begin at migration rather than inventing a past. New bank accounts start with zero savings and no personal loans; taxes begin at migration, with current market prices establishing the cost basis of existing holdings. No previous earnings are taxed retrospectively. For saves older than 0.4, housing, family and debug systems initialize with no loans, children or debug changes; existing partners remain and their partnership-duration clock starts at migration.
 

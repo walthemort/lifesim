@@ -1,3 +1,11 @@
+import {
+  countryIncomeTax,
+  residenceCode,
+  localProfile,
+  rememberTax,
+  taxBucket,
+  regionalTaxDue,
+} from "./economy.js";
 import { agentCommission } from "./seasons.js";
 import { availableCash } from "./world.js";
 import { salary, expenses, MARKETS, age } from "./engine.js";
@@ -78,8 +86,13 @@ export function receiveIncome(
     kind === "exempt"
       ? 0
       : kind === "investment"
-        ? round(taxable * 0.15)
-        : round(annualIncomeTax(taxable * 52) / 52);
+        ? round(taxable * (s.realWorld ? localProfile(s).investment : 0.15))
+        : round(
+            (s.realWorld
+              ? countryIncomeTax(taxable * 52, residenceCode(s))
+              : annualIncomeTax(taxable * 52)) / 52,
+          );
+  rememberTax(s, gross, kind, deduction, tax);
   if (kind === "earned") t.earned = round(t.earned + taxable);
   if (kind === "investment") t.investment = round(t.investment + taxable);
   t.withheld = round(t.withheld + tax);
@@ -96,8 +109,9 @@ export function estimatedPayTax(s) {
   if (!s.banking || (age(s) < 18 && !s.employment && s.career !== "business"))
     return 0;
   return round(
-    annualIncomeTax(
+    (s.realWorld ? countryIncomeTax : annualIncomeTax)(
       Math.max(0, salary(s) - pensionDue(s) - agentCommission(s)) * 52,
+      residenceCode(s),
     ) / 52,
   );
 }
@@ -109,10 +123,16 @@ export function takeHomePay(s) {
 export function recordCapitalGain(s, gain) {
   if (!s.banking) return;
   const t = s.banking.tax,
-    prior = Math.max(0, t.capitalNet);
+    b = s.realWorld ? taxBucket(s) : null;
+  const prior = Math.max(0, b ? b.capital : t.capitalNet);
+  if (b) b.capital = round(b.capital + gain);
   t.capitalNet = round(t.capitalNet + gain);
-  const tax = round(Math.max(0, Math.max(0, t.capitalNet) - prior) * 0.15);
+  const tax = round(
+    Math.max(0, Math.max(0, b ? b.capital : t.capitalNet) - prior) *
+      (b && !b.legacy ? localProfile(s).investment : 0.15),
+  );
   s.money = round(s.money - tax);
+  if (b) b.withheld = round(b.withheld + tax);
   t.withheld = round(t.withheld + tax);
   t.paid = round(t.paid + tax);
   t.lastWeekly = round(t.lastWeekly + tax);
@@ -315,10 +335,12 @@ export function repayLoan(state, id, amount) {
 }
 function closeTaxYear(s) {
   const t = s.banking.tax,
-    due = round(
-      annualIncomeTax(t.earned) +
-        0.15 * (t.investment + Math.max(0, t.capitalNet)),
-    ),
+    due =
+      regionalTaxDue(s) ??
+      round(
+        annualIncomeTax(t.earned) +
+          0.15 * (t.investment + Math.max(0, t.capitalNet)),
+      ),
     adjustment = round(due - t.withheld);
   s.money = round(s.money - adjustment);
   t.paid = round(t.paid + adjustment);

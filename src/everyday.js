@@ -1,3 +1,5 @@
+import { localPrice, rentTerms } from "./economy.js";
+import { settleSeparation, custodyFactor } from "./realism.js";
 import { receiveIncome, recordCapitalGain } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, BUSINESSES, stakePercent } from "./world.js";
@@ -488,7 +490,10 @@ export function propertyListings(s) {
   const quarter = Math.floor(s.week / 13);
   return HOMES.map((h, i) => ({
     ...h,
-    asking: Math.round(h.price * (1 + Math.sin(quarter * 1.7 + i) * 0.06)),
+    asking: Math.round(
+      localPrice(s, h.price, "housing") *
+        (1 + Math.sin(quarter * 1.7 + i) * 0.06),
+    ),
     expiresWeek: (quarter + 1) * 13,
   }));
 }
@@ -517,13 +522,16 @@ export function personalLivingCosts(s, legacyHome) {
   const rent = s.housing.residence
     ? 0
     : s.housing.rental
-      ? RENTALS.find((r) => r.id === s.housing.rental).rent
+      ? rentTerms(
+          s,
+          RENTALS.find((r) => r.id === s.housing.rental),
+        ).rent
       : legacyHome
         ? 50
-        : 220;
+        : localPrice(s, 220, "housing");
   const routine = s.pastimes.routine;
   return (
-    60 +
+    localPrice(s, 60, "living") +
     rent +
     (routine === "frugal"
       ? -15
@@ -539,13 +547,14 @@ export const householdCosts = (s) =>
     const years = Math.floor((s.week - c.bornWeek) / 52);
     return (
       sum +
-      (years >= 18
-        ? 0
-        : years < 5
-          ? 45 + (s.employment ? 45 : 0)
-          : years < 13
-            ? 65
-            : 90)
+      custodyFactor(s, c.id) *
+        (years >= 18
+          ? 0
+          : years < 5
+            ? 45 + (s.employment ? 45 : 0)
+            : years < 13
+              ? 65
+              : 90)
     );
   }, 0) +
   s.family.pets.reduce((sum, p) => sum + (p.kind === "dog" ? 14 : 10), 0);
@@ -562,7 +571,8 @@ export const housingEquity = (s) =>
     0,
   );
 export function rentHome(state, id) {
-  const r = RENTALS.find((r) => r.id === id);
+  const original = RENTALS.find((r) => r.id === id);
+  const r = original ? { ...original, ...rentTerms(state, original) } : null;
   if (!r || age(state) < 18) throw new Error("Renting requires age 18.");
   if (state.housing.rental === id && !state.housing.residence)
     throw new Error("You already live here.");
@@ -575,6 +585,13 @@ export function rentHome(state, id) {
   const s = action(state, Math.max(0, difference) + 100);
   if (difference < 0) s.money -= difference;
   s.housing.deposit = r.deposit;
+  if (s.realWorld)
+    s.realWorld.economy.rentalTerms = {
+      id: r.id,
+      rent: r.rent,
+      deposit: r.deposit,
+      country: s.globalLife.residence.country,
+    };
   s.housing.rental = id;
   s.housing.residence = null;
   log(
@@ -893,6 +910,10 @@ export function familyAction(state, mode, options = {}) {
         "You cannot separate during a pending family arrival in this prototype.",
       );
     const s = action(state);
+    settleSeparation(s, partner.id, {
+      custody: options.custody || "shared",
+      spouse: partner.role === "Spouse",
+    });
     s.relationships.find((r) => r.id === partner.id).role = "Former partner";
     s.family.partnerId = null;
     s.family.livingTogether = false;
@@ -1278,7 +1299,10 @@ export function validateEveryday(s) {
     !h ||
     !(h.rental === null || RENTALS.some((r) => r.id === h.rental)) ||
     !n(h.deposit) ||
-    h.deposit !== (RENTALS.find((r) => r.id === h.rental)?.deposit || 0) ||
+    h.deposit !==
+      (s.realWorld?.economy.rentalTerms?.id === h.rental
+        ? s.realWorld.economy.rentalTerms.deposit
+        : RENTALS.find((r) => r.id === h.rental)?.deposit || 0) ||
     !n(h.weeklyIncome) ||
     !n(h.totalIncome) ||
     !list(h.properties, 6) ||

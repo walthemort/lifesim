@@ -1,11 +1,11 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
 const KEY = "lifesim-save-v1";
 const saved = (page) =>
   page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY);
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 async function load(page, state = g.createGame({ seed: 1, age: 18 })) {
   await page.addInitScript(
     ({ key, state }) => {
@@ -205,7 +205,7 @@ test("personal goals can be chosen and personal development uses actual actions"
     page.getByRole("button", { name: "Reflect & listen", exact: true }),
   ).toBeDisabled();
 });
-test("v10 import preserves the original life and exports an exact pre-v13 backup", async ({
+test("v10 import preserves the original life and exports an exact pre-v14 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -224,7 +224,7 @@ test("v10 import preserves the original life and exports an exact pre-v13 backup
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const download = await pending;
-  expect(download.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await download.path(), "utf8"))).toEqual(
     old,
   );

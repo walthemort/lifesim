@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -14,8 +15,7 @@ async function load(page, state = g.createGame({ seed: 1 })) {
 }
 const saved = (page) =>
   page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY);
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 function musician() {
   let s = g.buy(
     g.createGame({ seed: 1, age: 23, career: "music" }),
@@ -220,7 +220,7 @@ test("authentic v6 migration keeps old lives and downloads an exact backup", asy
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("birth and expanded career panels fit phones without browser errors", async ({

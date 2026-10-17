@@ -272,6 +272,7 @@ test("children need an established partnership and enough housing, arrive after 
   assert.equal(s.family.children[0].name, "Robin");
   assert.equal(s.family.pending, null);
   assert.equal(g.householdCosts(s), 45);
+  assert.equal(g.custodyFactor(s, s.family.children[0].id), 1);
   const c = s.family.children[0],
     bond = c.bond;
   s = g.familyAction(clear(s), "child-time", { id: c.id });
@@ -309,7 +310,8 @@ test("parenting improves connections or education and separation preserves child
   s = g.familyAction(clear(s), "breakup");
   assert.equal(s.family.partnerId, null);
   assert.equal(s.family.children.length, 1);
-  assert.equal(g.householdCosts(s), 45);
+  assert.equal(g.householdCosts(s), 22.5);
+  assert.equal(g.custodyFactor(s, s.family.children[0].id), 0.5);
   assert.deepEqual(g.restoreGame(s), s);
 });
 test("pets have adoption costs, recurring support, care actions and scheduled vet bills", () => {

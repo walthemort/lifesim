@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -5,8 +6,7 @@ import { gameDate } from "../../src/dates.js";
 const KEY = "lifesim-save-v1";
 const saved = (page) =>
   page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY);
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 async function load(page, s = g.createGame({ seed: 1, age: 18 })) {
   await page.addInitScript(
     ({ s, key }) => {
@@ -303,12 +303,12 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
   );
   await load(page, old);
   const r = await saved(page);
-  expect(r.version).toBe(13);
+  expect(r.version).toBe(g.VERSION);
   for (const [k, v] of Object.entries(old))
     if (k !== "version") expect(r[k]).toEqual(v);
   expect(
     await page.evaluate(
-      (key) => localStorage.getItem(key + "-before-v13"),
+      (key) => localStorage.getItem(key + "-before-v14"),
       KEY,
     ),
   ).toBe(JSON.stringify(old));
@@ -317,7 +317,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     page.waitForEvent("download"),
     nav(page, "Export pre-update save"),
   ]);
-  expect(download.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v14.json");
 });
 test("expanded character, retail, company and career interfaces fit a phone without browser errors", async ({
   page,

@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -15,7 +16,7 @@ async function load(page, state = g.createGame({ seed: 8, age: 23 })) {
   await page.goto("/");
 }
 async function navigate(page, name) {
-  await page.getByRole("button", { name, exact: true }).click();
+  await tap(page, name);
 }
 async function week(page) {
   await page
@@ -299,10 +300,10 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   await navigate(page, "Save & settings");
   const download = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await download).suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect((await download).suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v13`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
       KEY,
     ),
   ).toEqual(old);

@@ -6,7 +6,7 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: "http://127.0.0.1:5173",
-    viewport: { width: 1440, height: 1000 },
+    viewport: { width: 390, height: 844 },
     launchOptions: process.env.CHROMIUM_PATH
       ? { executablePath: process.env.CHROMIUM_PATH }
       : {},

@@ -1,3 +1,4 @@
+import { onParentalLeave, leavePayFactor } from "./realism.js";
 import { personalityModifier } from "./personality.js";
 import {
   JOBS,
@@ -195,7 +196,9 @@ export function employmentIncome(s) {
   return (
     Math.round(
       p.weeklyPay *
-        (s.workLife?.arrangement === "overtime" &&
+        leavePayFactor(s) *
+        (!onParentalLeave(s) &&
+        s.workLife?.arrangement === "overtime" &&
         ["nursing", "trades", "hospitality"].includes(s.career)
           ? 1 + (8 / (p.weeklyHours || 40)) * 1.25
           : 1) *
@@ -238,7 +241,11 @@ export function advanceWorkLife(s) {
   if (w.jobId !== s.employment.jobId) beginEmployment(s);
   const p = s.employment,
     j = jobDefinition(p.jobId);
-  if (["football", "racing", "basketball", "tennis"].includes(j.track)) return;
+  if (
+    ["football", "racing", "basketball", "tennis"].includes(j.track) ||
+    onParentalLeave(s)
+  )
+    return;
   p.performance = clamp(
     Math.round(
       p.performance -

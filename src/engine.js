@@ -1,4 +1,15 @@
 import {
+  initializeRealism,
+  prepareRealism,
+  advanceRealism,
+  validateRealism,
+  jointShare,
+} from "./realism.js";
+import { localPrice, resalePrice, rentTerms } from "./economy.js";
+export * from "./realism.js";
+export * from "./economy.js";
+export * from "./rivals.js";
+import {
   COUNTRIES,
   CITY_CATALOGUE,
   placeCountry,
@@ -121,7 +132,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 13;
+export const VERSION = 14;
 import {
   initializeBanking,
   validateBanking,
@@ -672,6 +683,8 @@ export const portfolioValue = (s) =>
   MARKETS.reduce((n, m) => n + s.holdings[m.id] * s.market[m.id], 0);
 export const netWorth = (s) =>
   s.money +
+  jointShare(s) -
+  (s.realWorld?.household.support.reduce((n, a) => n + a.arrears, 0) || 0) +
   housingEquity(s) +
   bankNetWorth(s) +
   (s.workLife?.pension || 0) +
@@ -681,7 +694,7 @@ export const netWorth = (s) =>
   collectibleValue(s) +
   SHOP.filter(
     (i) => i.category !== "Ownership" && s.inventory.includes(i.id),
-  ).reduce((n, i) => n + i.price * 0.8, 0);
+  ).reduce((n, i) => n + resalePrice(s, i), 0);
 function random(s) {
   s.seed = (Math.imul(s.seed, 1664525) + 1013904223) >>> 0;
   return s.seed / 4294967296;
@@ -830,6 +843,7 @@ export function createGame({
   initializeOwnershipPlay(s);
   initializePressure(s);
   initializeExpansion(s, { countryCode });
+  initializeRealism(s);
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -970,10 +984,12 @@ export function buy(state, id) {
       (["Garage", "Property", "Travel"].includes(item.category) ? 18 : 12))
   )
     throw new Error("This purchase requires an older character.");
-  if (availableCash(state) < item.price)
+  const purchasePrice = localPrice(state, item.price);
+  if (availableCash(state) < purchasePrice)
     throw new Error("Not enough available cash.");
   const s = clone(state);
-  s.money -= item.price;
+  s.money -= purchasePrice;
+  if (s.realWorld) s.realWorld.economy.purchaseBasis[id] = purchasePrice;
   s.inventory.push(id);
   changeStats(s, { happiness: item.happiness });
   addLog(s, `Purchased ${item.name.toLowerCase()}.`, "milestone");
@@ -985,7 +1001,7 @@ export function sellItem(state, id) {
   if (!item || !state.inventory.includes(id))
     throw new Error("You do not own this item.");
   const s = clone(state);
-  s.money += item.price * 0.8;
+  s.money += resalePrice(state, item);
   s.inventory = s.inventory.filter((i) => i !== id);
   addLog(s, `Sold ${item.name.toLowerCase()} for 80% of its purchase price.`);
   return s;
@@ -1581,13 +1597,20 @@ export function advanceWeek(state) {
   if (state.globalLife?.crime.prison && !state.ended) {
     const s = advanceCustody(clone(state), MARKETS);
     startBankingWeek(s);
+    prepareRealism(s);
     s.money -=
       SHOP.filter(
         (i) => s.inventory.includes(i.id) && i.category !== "Ownership",
       ).reduce((n, i) => n + i.upkeep, 0) +
       propertyCosts(s) +
-      (RENTALS.find((r) => r.id === s.housing.rental)?.rent || 0);
+      (s.housing.rental
+        ? rentTerms(
+            s,
+            RENTALS.find((r) => r.id === s.housing.rental),
+          ).rent
+        : 0);
     advanceBanking(s, 0);
+    advanceRealism(s);
     for (const r of s.relationships) r.bond = clamp(r.bond - 0.1);
     if (s.health <= 0) s.ended = true;
     s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1602,6 +1625,7 @@ export function advanceWeek(state) {
     p = s.progress[s.career];
   s.week++;
   startBankingWeek(s);
+  prepareRealism(s);
   prepareChildhood(s);
   prepareLifeCourse(s);
   prepareCareerWorld(s);
@@ -1779,6 +1803,7 @@ export function advanceWeek(state) {
   advanceIdentity(s);
   advancePressure(s);
   advanceExpansion(s, MARKETS);
+  advanceRealism(s);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1800,7 +1825,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, VERSION].includes(s.version) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1818,6 +1843,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsRealism = s.version < 14;
   const needsExpansion = s.version < 13;
   const needsPressure = s.version < 12;
   const needsIdentity = s.version < 11;
@@ -2015,6 +2041,11 @@ export function restoreGame(raw) {
     initializeExpansion(s, { legacy: true });
     s.version = VERSION;
   }
+  if (needsRealism) {
+    initializeRealism(s, { legacy: true });
+    s.version = VERSION;
+  }
+  validateRealism(s);
   validateExpansion(s);
   validateOwnershipPlay(s);
   validatePressure(s);

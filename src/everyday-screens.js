@@ -1,3 +1,4 @@
+import { rentTerms } from "./economy.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
 import {
   age,
@@ -27,7 +28,16 @@ export function housingScreen(s, u) {
         : s.inventory.some((id) => Object.hasOwn(LEGACY_BEDROOMS, id))
           ? "Your owned home"
           : "Your current rental");
-  return `${title("ROOTS & REAL ESTATE", "Find somewhere to call home.", "Rent, buy a first home, or build a property portfolio. Loans and vacant homes keep costing money.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">YOUR RESIDENCE</span><h2>${e(homeName)}</h2><p>${homeBedrooms(s)} bedroom(s) · ${money(h.deposit)} refundable rental deposit</p></section><section class="panel"><span class="eyebrow">RENTAL INCOME LAST WEEK</span><h2>${money(h.weeklyIncome, 2)}</h2><p>${money(h.totalIncome, 2)} total · after 10% management fees, before upkeep and loans</p></section><section class="panel"><span class="eyebrow">ALL WEEKLY COMMITMENTS</span><h2>${money(expenses(s), 2)}</h2><p>Living costs, household, property payments, equipment and tuition</p></section></div><section class="panel">${panelHeading("Rental homes", "Four weeks of refundable rent deposit plus $100 moving cost. Children need at least two bedrooms.")}<div class="everyday-grid">${RENTALS.map((r) => `<article class="everyday-card"><h3>${e(r.name)}</h3><p>${money(r.rent)} weekly rent · ${r.bedrooms} bedrooms<br>${money(r.deposit)} deposit</p><button class="button secondary" data-action="rent-home" data-id="${r.id}" ${age(s) < 18 || (h.rental === r.id && !h.residence) ? "disabled" : ""}>Review rental</button></article>`).join("")}</div></section><section class="panel">${panelHeading("Property market", `Asking prices refresh every 13 weeks. This market closes in ${propertyListings(s)[0].expiresWeek - s.week} weeks.`, tag(`${h.properties.length} / 6 owned`, "blue"))}<div class="everyday-grid">${propertyListings(
+  return `${title("ROOTS & REAL ESTATE", "Find somewhere to call home.", "Rent, buy a first home, or build a property portfolio. Loans and vacant homes keep costing money.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">YOUR RESIDENCE</span><h2>${e(homeName)}</h2><p>${homeBedrooms(s)} bedroom(s) · ${money(h.deposit)} refundable rental deposit</p></section><section class="panel"><span class="eyebrow">RENTAL INCOME LAST WEEK</span><h2>${money(h.weeklyIncome, 2)}</h2><p>${money(h.totalIncome, 2)} total · after 10% management fees, before upkeep and loans</p></section><section class="panel"><span class="eyebrow">ALL WEEKLY COMMITMENTS</span><h2>${money(expenses(s), 2)}</h2><p>Living costs, household, property payments, equipment and tuition</p></section></div><section class="panel">${panelHeading("Rental homes", "Four weeks of refundable rent deposit plus $100 moving cost. Children need at least two bedrooms.")}<div class="everyday-grid">${RENTALS.map(
+    (original) => ({ ...original, ...rentTerms(s, original) }),
+  )
+    .map(
+      (r) =>
+        `<article class="everyday-card"><h3>${e(r.name)}</h3><p>${money(r.rent)} weekly rent · ${r.bedrooms} bedrooms<br>${money(r.deposit)} deposit</p><button class="button secondary" data-action="rent-home" data-id="${r.id}" ${age(s) < 18 || (h.rental === r.id && !h.residence) ? "disabled" : ""}>Review rental</button></article>`,
+    )
+    .join(
+      "",
+    )}</div></section><section class="panel">${panelHeading("Property market", `Asking prices refresh every 13 weeks. This market closes in ${propertyListings(s)[0].expiresWeek - s.week} weeks.`, tag(`${h.properties.length} / 6 owned`, "blue"))}<div class="everyday-grid">${propertyListings(
     s,
   )
     .map(

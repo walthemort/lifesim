@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -14,8 +15,7 @@ async function load(page, s) {
   );
   await page.goto("/");
 }
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 async function week(page) {
   await page
     .getByRole("button", { name: /^(Next week|Make a choice)$/ })
@@ -238,7 +238,7 @@ test("authentic v7 saves preserve managers and finances with an exact downloadab
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("expanded school, family and health screens fit phones without browser errors", async ({

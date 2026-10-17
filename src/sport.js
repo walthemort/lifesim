@@ -1,3 +1,4 @@
+import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { personalityModifier } from "./personality.js";
 import {
   releaseSportAgreement,
@@ -266,6 +267,16 @@ export function declineSportOffer(state, sportId, id) {
   return s;
 }
 function offer(s, d, kind, jobId = null) {
+  if (
+    kind === "contract" &&
+    !canRecruit(
+      s,
+      d.id,
+      jobDefinition(jobId).level,
+      jobDefinition(jobId).employer,
+    )
+  )
+    return;
   const p = s.sports[d.id];
   const invitation = {
     id: `${d.id}:${kind}:${s.week}`,
@@ -276,6 +287,8 @@ function offer(s, d, kind, jobId = null) {
     status: "offered",
     expiresWeek: s.week + 4,
   };
+  if (kind === "contract")
+    bindRivalOffer(s, d.id, invitation, jobDefinition(jobId).level);
   enhanceSportOffer(s, d.id, invitation);
   p.offers.push(invitation);
   p.offers = p.offers.slice(-12);

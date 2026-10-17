@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -14,8 +15,7 @@ async function load(page, state) {
   );
   await page.goto("/");
 }
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 const clear = (s) =>
   s.event ? g.resolveEvent(s, s.event.options.length - 1) : s;
 const next = (s) => clear(g.advanceWeek(clear(s)));
@@ -250,10 +250,10 @@ test("authentic v5 saves upgrade with an unchanged pre-v9 download and preserved
   await nav(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v13`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
       KEY,
     ),
   ).toEqual(raw);

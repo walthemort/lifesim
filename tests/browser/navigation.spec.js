@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import * as g from "../../src/engine.js";
 import { professional } from "../career-world-fixtures.js";
@@ -13,8 +14,7 @@ async function load(page, state) {
   );
   await page.goto("/");
 }
-const navigate = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const navigate = (page, name) => tap(page, name);
 
 for (const [id, name] of [
   ["football", "Football"],

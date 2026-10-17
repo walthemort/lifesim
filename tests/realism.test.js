@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as g from "../src/engine.js";
-const fresh = (options) => g.createGame({ seed: 1, age:18, career:"office", ...options });
+const fresh = (options) =>
+  g.createGame({ seed: 1, age: 18, career: "office", ...options });
 function next(s) {
   if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
   return g.advanceWeek(s);
@@ -78,7 +79,7 @@ test("a career interest does not give a new character a contract or free qualifi
   );
   const original = structuredClone(s),
     result = next(s);
-  assert.equal(result.money, 12210);
+  assert.equal(result.money, original.money - g.expenses(original));
   assert.equal(result.progress.racing.weeks, 0);
   assert.deepEqual(s, original);
 });

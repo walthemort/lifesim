@@ -1,0 +1,318 @@
+/* Lifesim is an iPhone app. Wide browser windows display the same phone layout. */
+html {
+  background: #060a10;
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+  min-height: 100dvh;
+}
+.workspace {
+  margin-left: 0 !important;
+  min-height: 100dvh;
+}
+.sidebar {
+  display: none !important;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: auto !important;
+  min-height: 0;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 12px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  background: #0c1119f5;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.phone-appbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+.phone-appbar .brand-mark {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+.phone-heading {
+  min-width: 0;
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.phone-heading small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 3px;
+}
+.phone-appbar .icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.time-controls {
+  display: grid !important;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  width: 100%;
+}
+.game-date {
+  font-size: 12px;
+  min-width: 0;
+  gap: 6px;
+}
+.game-date .icon {
+  display: none;
+}
+.game-date small {
+  font-size: 10px;
+  letter-spacing: 0.2px;
+}
+.next-week,
+.age-up {
+  padding: 10px 12px !important;
+  min-height: 44px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+#main {
+  padding: 22px 16px calc(104px + env(safe-area-inset-bottom, 0px)) !important;
+}
+h1 {
+  font-size: 26px !important;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
+}
+.page-title {
+  margin-bottom: 22px !important;
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  gap: 14px;
+}
+.page-title p {
+  font-size: 13px !important;
+  line-height: 1.65;
+}
+.panel {
+  padding: 20px 16px !important;
+  min-width: 0;
+}
+.phone-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  background: #101722f5;
+  backdrop-filter: blur(20px);
+}
+.phone-tab {
+  background: none;
+  border: 0;
+  border-radius: 12px;
+  min-height: 52px;
+  color: #8695aa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 10px;
+  position: relative;
+}
+.phone-tab.active {
+  color: var(--green);
+  background: #65dda70f;
+}
+.phone-tab .icon {
+  width: 21px;
+  height: 21px;
+}
+.world-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.world-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  min-height: 108px;
+  padding: 16px 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.world-card .icon {
+  color: var(--green);
+  width: 23px;
+  height: 23px;
+}
+.dashboard-grid,
+.dashboard-main,
+.dashboard-aside,
+.career-grid,
+.two-columns,
+.finance-summary,
+.finance-grid,
+.shop-grid,
+.education-grid,
+.everyday-grid,
+.family-grid,
+.industry-grid,
+.stats-grid,
+.life-metrics,
+.company-numbers {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.stats-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+.stat-card {
+  padding: 14px !important;
+  min-width: 0;
+}
+.form-row,
+.sport-summary,
+.panel-heading {
+  flex-wrap: wrap;
+}
+.form-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+input,
+select,
+textarea {
+  font-size: 16px !important;
+  min-height: 44px;
+  max-width: 100%;
+}
+.button,
+.text-button,
+.section-shortcut,
+.icon-button {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+button,
+article,
+section,
+form {
+  overflow-wrap: anywhere;
+}
+.category-sections {
+  top: var(--appbar-height, 123px);
+  max-width: 100%;
+}
+.sport-section,
+.category-section,
+.panel-heading h2 {
+  scroll-margin-top: calc(var(--appbar-height, 123px) + 80px);
+}
+.section-shortcut {
+  font-size: 11px;
+}
+.cockpit-grid,
+.boutique-layout {
+  grid-template-columns: 1fr !important;
+}
+.dressing-room {
+  position: static;
+}
+.career-cockpit {
+  padding: 20px 16px;
+}
+.retail-navigation {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.character-portrait {
+  max-width: 160px !important;
+}
+.identity-preview {
+  flex-wrap: wrap;
+}
+.standings-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+dialog {
+  position: fixed;
+  inset: auto 0 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 14px);
+  border-radius: 22px 22px 0 0;
+  padding: 30px 20px calc(30px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+dialog.creator-modal {
+  width: 100%;
+  max-width: 480px;
+}
+dialog::backdrop {
+  background: #03070cbb;
+  backdrop-filter: blur(4px);
+}
+#toast {
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  max-width: calc(min(480px, 100vw) - 32px);
+}
+footer {
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 10px;
+}
+.chapter-hero {
+  min-height: 260px;
+}
+.hero-copy {
+  padding: 22px !important;
+}
+.hero-copy h2 {
+  font-size: 28px !important;
+}
+.circuit-map,
+.pitch-map {
+  max-width: 240px;
+}
+.phone-privacy p {
+  margin: 12px 0;
+  font-size: 13px;
+}
+@media (min-width: 481px) {
+  body {
+    box-shadow: 0 0 80px #0008;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}

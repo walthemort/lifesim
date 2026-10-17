@@ -1,3 +1,4 @@
+import { localPrice, resalePrice } from "./economy.js";
 import { careerCockpit } from "./expansion-screens.js";
 import {
   performanceScreen,
@@ -209,7 +210,11 @@ export function shoppingScreen(
   { category = "All", query = "", sort = "catalogue", owned = false } = {},
 ) {
   const { title, panelHeading, tag, icon, money, e } = u;
-  const catalogue = SHOP.filter((i) => i.category !== "Ownership"),
+  const catalogue = SHOP.filter((i) => i.category !== "Ownership").map((i) => ({
+      ...i,
+      resale: resalePrice(s, i),
+      price: localPrice(s, i.price),
+    })),
     categories = ["All", ...new Set(catalogue.map((i) => i.category))];
   let products = catalogue.filter(
     (i) =>
@@ -230,7 +235,7 @@ export function shoppingScreen(
             (["Garage", "Property", "Travel"].includes(i.category) ? 18 : 12),
           young = age(s) < min,
           requirements = equipmentRequirements(s, i.id);
-        return `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${e(i.category.toUpperCase())}</span>${held ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${e(i.category)}</span><h2>${e(i.name)}</h2><p>${e(i.description)}</p>${!held && requirements.length ? `<p class="muted">Requires: ${e(requirements.join(", "))}</p>` : ""}<div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${held ? "secondary" : "primary"} full-width" data-action="${held ? "sell-item" : "buy"}" data-id="${i.id}" ${!held && (young || requirements.length || availableCash(s) < i.price) ? "disabled" : ""}>${held ? `Sell for ${money(i.price * 0.8)}` : young ? `Available at age ${min}` : requirements.length ? "Requirements not met" : availableCash(s) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(held ? "arrow" : "bag")}</button></div></section>`;
+        return `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${e(i.category.toUpperCase())}</span>${held ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${e(i.category)}</span><h2>${e(i.name)}</h2><p>${e(i.description)}</p>${!held && requirements.length ? `<p class="muted">Requires: ${e(requirements.join(", "))}</p>` : ""}<div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${held ? "secondary" : "primary"} full-width" data-action="${held ? "sell-item" : "buy"}" data-id="${i.id}" ${!held && (young || requirements.length || availableCash(s) < i.price) ? "disabled" : ""}>${held ? `Sell for ${money(i.resale)}` : young ? `Available at age ${min}` : requirements.length ? "Requirements not met" : availableCash(s) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(held ? "arrow" : "bag")}</button></div></section>`;
       })
       .join("") || '<p class="muted">No possessions match these filters.</p>'
   }</div><section class="panel experiences-panel">${panelHeading("Spend time, make memories", "Repeatable experiences use cash and one free-time action.")}<div class="education-grid">${EXPERIENCES.map(

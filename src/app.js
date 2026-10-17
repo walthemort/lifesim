@@ -1,3 +1,38 @@
+import { localProfile } from "./economy.js";
+import {
+  isNativeApp,
+  hydrateNativeSave,
+  persistNativeSave,
+  resumeNativeSaving,
+  nativeFeedback,
+  shareNativeSave,
+} from "./native.js";
+import {
+  realismScreen,
+  rivalsScreen,
+  productsScreen,
+  rightsScreen,
+  separationDialog,
+} from "./realism-screens.js";
+import {
+  openJointAccount,
+  jointTransfer,
+  takeParentalLeave,
+  startBusinessProduct,
+  developProduct,
+  setProductPrice,
+  stopProduct,
+  renewBeatLicence,
+  retireMusic,
+  resumeMusic,
+  workOnSetback,
+} from "./engine.js";
+import {
+  localCurrency,
+  rentTerms,
+  localPrice,
+  resalePrice,
+} from "./economy.js";
 import {
   retailScreen,
   relocationDialog,
@@ -134,6 +169,7 @@ import {
 import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./style.css";
+import "./mobile.css";
 import {
   loanQuote,
   takeLoan,
@@ -367,6 +403,7 @@ const initials = (name) =>
     .join("")
     .toUpperCase();
 const STORAGE = "lifesim-save-v1";
+const nativeSaveWarning = await hydrateNativeSave();
 let state,
   view = "overview",
   retailStore = null,
@@ -377,12 +414,13 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 13,
+  migrationVersion = 14,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
   migrationSave =
+    localStorage.getItem(`${STORAGE}-before-v14`) ||
     localStorage.getItem(`${STORAGE}-before-v13`) ||
     localStorage.getItem(`${STORAGE}-before-v12`) ||
     localStorage.getItem(`${STORAGE}-before-v11`) ||
@@ -396,38 +434,40 @@ try {
     localStorage.getItem(`${STORAGE}-before-v3`) ||
     localStorage.getItem(`${STORAGE}-before-v2`) ||
     "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v13`)
-    ? 13
-    : localStorage.getItem(`${STORAGE}-before-v12`)
-      ? 12
-      : localStorage.getItem(`${STORAGE}-before-v11`)
-        ? 11
-        : localStorage.getItem(`${STORAGE}-before-v10`)
-          ? 10
-          : localStorage.getItem(`${STORAGE}-before-v9`)
-            ? 9
-            : localStorage.getItem(`${STORAGE}-before-v8`)
-              ? 8
-              : localStorage.getItem(`${STORAGE}-before-v7`)
-                ? 7
-                : localStorage.getItem(`${STORAGE}-before-v6`)
-                  ? 6
-                  : localStorage.getItem(`${STORAGE}-before-v5`)
-                    ? 5
-                    : localStorage.getItem(`${STORAGE}-before-v4`)
-                      ? 4
-                      : 3;
+  migrationVersion = localStorage.getItem(`${STORAGE}-before-v14`)
+    ? 14
+    : localStorage.getItem(`${STORAGE}-before-v13`)
+      ? 13
+      : localStorage.getItem(`${STORAGE}-before-v12`)
+        ? 12
+        : localStorage.getItem(`${STORAGE}-before-v11`)
+          ? 11
+          : localStorage.getItem(`${STORAGE}-before-v10`)
+            ? 10
+            : localStorage.getItem(`${STORAGE}-before-v9`)
+              ? 9
+              : localStorage.getItem(`${STORAGE}-before-v8`)
+                ? 8
+                : localStorage.getItem(`${STORAGE}-before-v7`)
+                  ? 7
+                  : localStorage.getItem(`${STORAGE}-before-v6`)
+                    ? 6
+                    : localStorage.getItem(`${STORAGE}-before-v5`)
+                      ? 5
+                      : localStorage.getItem(`${STORAGE}-before-v4`)
+                        ? 4
+                        : 3;
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createRandomCharacter();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v13`)
+      !localStorage.getItem(`${STORAGE}-before-v14`)
     ) {
       migrationSave = saved;
-      migrationVersion = 13;
-      localStorage.setItem(`${STORAGE}-before-v13`, saved);
+      migrationVersion = 14;
+      localStorage.setItem(`${STORAGE}-before-v14`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -441,11 +481,17 @@ try {
   storageWarning =
     "Browser storage is unavailable. Export your save before leaving.";
 }
+if (nativeSaveWarning) storageWarning = nativeSaveWarning;
 const app = document.querySelector("#app"),
   modal = document.querySelector("#modal");
 function save() {
   try {
     localStorage.setItem(STORAGE, JSON.stringify(state));
+    void persistNativeSave().catch(() => {
+      storageWarning =
+        "Native storage could not be updated. Export a backup before closing the app.";
+      notify(storageWarning);
+    });
   } catch {
     storageWarning =
       "Browser storage is unavailable. Export your save before leaving.";
@@ -509,6 +555,7 @@ function sparkline(values, color = "#62dda6", filled = false) {
 }
 const nav = [
   ["overview", "grid", "Overview"],
+  ["realism", "chart", "Living world & finances"],
   ["inbox", "mail", "Messages & decisions"],
   ["childhood", "heart", "Childhood & school"],
   ["identity", "spark", "Character & hometown"],
@@ -530,11 +577,23 @@ const nav = [
   ["teams", "trophy", "Businesses & clubs"],
 ];
 function sidebar() {
-  return `<aside class="sidebar"><a class="brand" href="#overview" aria-label="Lifesim overview"><span class="brand-mark">l<span>.</span></span><span>lifesim<span class="brand-dot">.</span></span></a><div class="save-label"><span class="live-dot"></span> YOUR LIFE, IN PLAY</div><div class="nav-label">YOUR WORLD</div><nav aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="nav-item ${view === id ? "active" : ""}" data-view="${id}" aria-label="${e(label)}" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span>${id === "inbox" ? `<span class="inbox-count">${state.nextChapter.messages.filter((m) => !m.read && !m.archived && m.status === "open").length}</span>` : ""}${id === "overview" ? '<span class="nav-active-dot"></span>' : ""}</button>`).join("")}</nav><div class="sidebar-bottom"><div class="chapter-box">${icon("spark")}<strong>One life. Endless possibilities.</strong><p>There’s no right way to live.<br>Find yours.</p></div><button class="nav-item" data-action="settings" aria-label="Save & settings">${icon("settings")}<span>Save & settings</span></button><button class="profile" data-action="character" aria-label="View your character"><span class="avatar">${e(initials(state.name))}</span><span><strong>${e(state.name)}</strong><small>${age(state)} years · ${e(state.city)}</small></span>${icon("chevronDown")}</button></div></aside>`;
+  const items = [
+    ["overview", "grid", "Home"],
+    ["career", "briefcase", "Career"],
+    ["sports", "football", "Sport"],
+    ["inbox", "mail", "Inbox"],
+    ["world", "spark", "World"],
+  ];
+  return `<nav class="phone-tabs" aria-label="App tabs">${items.map(([id, glyph, label]) => `<button class="phone-tab ${view === id ? "active" : ""}" data-view="${id}" aria-label="${label} tab" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span></button>`).join("")}</nav>`;
+}
+function worldView() {
+  return `${title("YOUR LIFE, WITHIN REACH", "Your world.", "Careers, family, money and everything in between.")}<nav class="world-grid" aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="world-card" data-view="${id}" aria-label="${e(label)}">${icon(glyph)}<span>${e(label)}</span></button>`).join("")}</nav>`;
+}
+function privacyView() {
+  return `${title("PRIVATE BY DESIGN", "Your life stays on your phone.", "Privacy and support")}<section class="panel phone-privacy"><h2>On-device game data</h2><p>Lifesim stores your character, choices, progress and backup saves on this device. No account, advertising, analytics, location tracking or developer-run server is used. Choosing a birthplace does not access your real location.</p><p>Backups leave your device only when you choose a destination in the share sheet. Files you import are read to restore the game. Uninstalling the app can remove local saves; export a backup first.</p><h3>Support</h3><p>Report bugs at github.com/walthemort/lifesim/issues. Include the app version and steps to reproduce. A save file can contain character names and relationship details; share one only if you choose to.</p><h3>World data credits</h3><p>Country and currency metadata: mledoze/countries, Open Database Licence (ODbL). City catalogue: lutangar/cities.json, derived from GeoNames, CC BY 4.0. The bundled settlement database is deduplicated. Source attribution and licence copies ship with the app in the licences folder.</p><h3>Simulated content</h3><p>All money, investments, businesses, criminal scenarios and relationships are fictional gameplay. No real trades, wagering or payouts are provided. Pro access is a local preview switch; this build contains no purchases.</p><button class="button secondary" data-action="settings">Save & settings</button></section>`;
 }
 function header() {
-  const date = new Date(Date.UTC(2026, 0, 5 + state.week * 7));
-  return `<header class="topbar"><div class="breadcrumb">Your world ${icon("chevron")} <strong>${view === "debug" ? "Debug sandbox" : nav.find((n) => n[0] === view)?.[2]}</strong></div><div class="time-controls"><button class="icon-button notification-bell" data-action="notification-bell" aria-label="Notifications">${icon("bell")}<span>${notificationCount(state)}</span></button><span class="game-date">${icon("calendar")}<span>${date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}<small>AGE ${age(state)} · Space advances time</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
+  return `<header class="topbar"><div class="phone-appbar"><button class="icon-button" data-action="character" aria-label="View your character"><span class="brand-mark">l.</span></button><div class="phone-heading">${e(view === "world" ? "Your world" : view === "privacy" ? "Privacy & support" : nav.find((n) => n[0] === view)?.[2] || "Lifesim")}<small>${e(state.name)} · ${e(state.city)}</small></div><button class="icon-button notification-bell" data-action="notification-bell" aria-label="Notifications">${icon("bell")}<span>${notificationCount(state)}</span></button><button class="icon-button" data-action="settings" aria-label="Save & settings">${icon("settings")}</button></div><div class="time-controls"><span class="game-date"><span>${gameDate(state.week)}<small>Age ${age(state)}</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
 }
 function stats() {
   const cards = [
@@ -704,6 +763,9 @@ function teamsView() {
 }
 const pages = {
   overview,
+  world: worldView,
+  privacy: privacyView,
+  realism: () => realismScreen(state, ui()),
   inbox: () => inboxScreen(state, ui(), { archived: inboxArchived }),
   career: careerView,
   childhood: () => childhoodScreen(state, ui()),
@@ -717,9 +779,25 @@ const pages = {
   banking: () => bankingScreen(state, ui()),
   lifestyle: lifestyleView,
   identity: () => identityScreen(state, ui()),
-  sports: () => sportsScreen(state, ui(), focusedSport),
-  music: () => studioScreen(state, ui()) + musicScreen(state, ui()),
-  company: () => companyScreen(state, ui()),
+  sports: () =>
+    sportsScreen(state, ui(), focusedSport) +
+    rivalsScreen(
+      state,
+      ui(),
+      focusedSport ||
+        (["football", "racing", "basketball", "tennis"].includes(state.career)
+          ? state.career
+          : ["football", "racing", "basketball", "tennis"].includes(
+                state.aspiration,
+              )
+            ? state.aspiration
+            : "football"),
+    ),
+  music: () =>
+    studioScreen(state, ui()) +
+    rightsScreen(state, ui()) +
+    musicScreen(state, ui()),
+  company: () => companyScreen(state, ui()) + productsScreen(state, ui()),
   crime: () => crimeScreen(state, ui()),
   social: () => socialScreen(state, ui()),
   teams: teamsView,
@@ -759,6 +837,10 @@ function render() {
     `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
   );
   addSectionNavigation();
+  document.documentElement.style.setProperty(
+    "--appbar-height",
+    `${document.querySelector(".topbar").getBoundingClientRect().height}px`,
+  );
 }
 function addSectionNavigation() {
   const main = document.querySelector("#main");
@@ -784,7 +866,7 @@ function addSectionNavigation() {
 }
 function characterDialog() {
   dialog(
-    `<div class="eyebrow">YOUR CHARACTER</div><h2>${e(state.name)}</h2>${characterPortrait(state.characterLife.profile)}<p>${age(state)} years old · ${e(state.city)} · ${e(state.trait)}</p><div class="character-stats">${Object.entries(
+    `<div class="eyebrow">YOUR CHARACTER</div><h2>${e(state.name)}</h2>${characterPortrait({ ...state.characterLife.profile, visualAge: age(state), condition: state.health })}<p>${age(state)} years old · ${e(state.city)} · ${e(state.trait)}</p><div class="character-stats">${Object.entries(
       state.skills,
     )
       .map(
@@ -806,6 +888,7 @@ function newGameDialog() {
   );
 }
 function beginLife(next) {
+  resumeNativeSaving();
   state = next;
   view = "overview";
   focusedSport = null;
@@ -827,12 +910,21 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically in this browser. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.13 · Single-player prototype. Money is displayed in USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.14 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
   creatorSettings.innerHTML = `<h3>Character creator</h3><p>${creatorAvailable(state) ? "Character customization is unlocked." : "Enable Debug to use the creator in this prototype."}</p>${creatorAvailable(state) ? '<button class="button secondary full-width" data-action="new-game">Open character creator</button>' : ""}${state.debug.enabled ? `<p class="muted">Pro preview is a local testing switch, without accounts, billing or a paid entitlement. It keeps profile customization unlocked after Debug is disabled; age, cash and skill edits still require Debug. This life retains its sandbox marker.</p><button class="button secondary full-width" data-action="identity-pro-preview">${state.characterLife.proPreview ? "Disable" : "Enable"} local Pro preview</button>` : ""}`;
   modal.querySelector(".settings-actions").append(creatorSettings);
+  const privacyButton = document.createElement("button");
+  privacyButton.className = "button secondary full-width";
+  privacyButton.textContent = "Privacy & support";
+  privacyButton.onclick = () => {
+    modal.close();
+    view = "privacy";
+    render();
+  };
+  modal.querySelector(".settings-actions").append(privacyButton);
   if (recoverySave) {
     const recoveryButton = document.createElement("button");
     recoveryButton.className = "button secondary full-width";
@@ -844,7 +936,11 @@ function settingsDialog() {
       const link = document.createElement("a");
       link.href = url;
       link.download = "lifesim-recovery.json";
-      link.click();
+      if (isNativeApp)
+        void shareNativeSave(recoverySave, link.download).catch((error) =>
+          notify(error.message),
+        );
+      else link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
     modal.querySelector(".settings-actions").append(recoveryButton);
@@ -860,7 +956,11 @@ function settingsDialog() {
       const link = document.createElement("a");
       link.href = url;
       link.download = `lifesim-before-v${migrationVersion}.json`;
-      link.click();
+      if (isNativeApp)
+        void shareNativeSave(migrationSave, link.download).catch((error) =>
+          notify(error.message),
+        );
+      else link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
     modal.querySelector(".settings-actions").append(button);
@@ -885,7 +985,7 @@ function tradeDialog(id) {
   const m = MARKETS.find((m) => m.id === id);
   if (!m) return;
   dialog(
-    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="${m.fractional ? 0.000001 : 1}" max="${m.volume}" step="${m.fractional ? 0.000001 : 1}" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Uncommitted cash: ${money(availableCash(state), 2)}. Remaining weekly liquidity: ${(m.volume - state.tradeVolumes[id]).toLocaleString()}. Company shares represent real ownership in this simulated world. Realised gains are subject to 15% investment tax; losses offset gains at the annual tax settlement.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
+    `<div class="eyebrow">${m.symbol} · ${m.risk.toUpperCase()} RISK</div><h2>${m.name}</h2><p>${money(state.market[id], 2)} per unit · You own ${state.holdings[id]} units.</p><form id="trade-form" data-id="${id}"><label class="field-label">Buy or sell<select name="direction"><option value="buy">Buy units</option><option value="sell">Sell units</option></select></label><label class="field-label">Number of units<input type="number" name="quantity" min="${m.fractional ? 0.000001 : 1}" max="${m.volume}" step="${m.fractional ? 0.000001 : 1}" value="1" required></label><div class="trade-total">Total <strong id="trade-total">${money(state.market[id], 2)}</strong></div><p class="muted">Uncommitted cash: ${money(availableCash(state), 2)}. Remaining weekly liquidity: ${(m.volume - state.tradeVolumes[id]).toLocaleString()}. Company shares represent real ownership in this simulated world. Realised gains are subject to ${(localProfile(state).investment * 100).toFixed(0)}% investment tax under your current residence policy; losses offset gains at the annual tax settlement.</p><button class="button primary full-width" type="submit">Confirm trade ${icon("arrow")}</button></form>`,
   );
 }
 document.addEventListener("click", (event) => {
@@ -951,6 +1051,39 @@ document.addEventListener("click", (event) => {
       view = "identity";
       render();
       window.scrollTo({ top: 0 });
+      break;
+    case "joint-open":
+      update(openJointAccount, "Shared account opened.");
+      break;
+    case "parental-leave":
+      update(
+        (s) => takeParentalLeave(s, Number(id)),
+        "Leave arrangement agreed.",
+      );
+      break;
+    case "separation-review":
+      dialog(separationDialog(state, ui()));
+      break;
+    case "product-develop":
+      update((s) => developProduct(s, id), "Product work completed.");
+      break;
+    case "product-stop":
+      update((s) => stopProduct(s, id), "Product withdrawn from sale.");
+      break;
+    case "beat-renew":
+      update((s) => renewBeatLicence(s, id), "Beat permission renewed.");
+      break;
+    case "music-retire":
+      update(
+        retireMusic,
+        "Catalogue royalties continue under existing rights.",
+      );
+      break;
+    case "music-resume":
+      update(resumeMusic, "New music work resumed.");
+      break;
+    case "setback-work":
+      update((s) => workOnSetback(s, id), "Recovery plan progressed.");
       break;
     case "retail-store":
       retailStore = id;
@@ -1214,7 +1347,11 @@ document.addEventListener("click", (event) => {
       const link = document.createElement("a");
       link.href = url;
       link.download = "lifesim-before-debug.json";
-      link.click();
+      if (isNativeApp)
+        void shareNativeSave(debugBackup, link.download).catch((error) =>
+          notify(error.message),
+        );
+      else link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       break;
     }
@@ -1262,7 +1399,8 @@ document.addEventListener("click", (event) => {
       update((s) => debugAdvance(s, Number(id)), "Time simulated.");
       break;
     case "rent-home": {
-      const r = RENTALS.find((r) => r.id === id);
+      const original = RENTALS.find((r) => r.id === id);
+      const r = { ...original, ...rentTerms(state, original) };
       dialog(
         `<h2>${e(r.name)}</h2><p>${money(r.rent)} rent per week plus personal living costs. ${money(r.deposit)} refundable deposit and $100 moving costs; your old rental deposit is credited. Moving out of an owned residence keeps it in your portfolio. Uses one action.</p><button class="button primary full-width" data-action="confirm-rent" data-id="${id}">Move into rental</button>`,
       );
@@ -1491,6 +1629,7 @@ document.addEventListener("click", (event) => {
     case "next-week":
       if (state.event) eventDialog();
       else if (update(advanceWeek, "A new week begins")) {
+        void nativeFeedback();
         if (state.event) eventDialog();
       }
       break;
@@ -1953,7 +2092,12 @@ document.addEventListener("click", (event) => {
         link = document.createElement("a");
       link.href = url;
       link.download = "lifesim-save.json";
-      link.click();
+      if (isNativeApp)
+        void shareNativeSave(
+          JSON.stringify(state, null, 2),
+          link.download,
+        ).catch((error) => notify(error.message));
+      else link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       notify("Your save has been exported");
       break;
@@ -1975,6 +2119,14 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
+    "joint-transfer-form": (s, data) =>
+      jointTransfer(s, Object.fromEntries(data)),
+    "separation-form": (s, data) =>
+      familyAction(s, "breakup", { custody: data.get("custody") }),
+    "product-start-form": (s, data) =>
+      startBusinessProduct(s, Object.fromEntries(data)),
+    "product-price": (s, data, form) =>
+      setProductPrice(s, form.dataset.id, Number(data.get("price"))),
     "legal-review": (s, data, form) =>
       reviewContract(
         s,

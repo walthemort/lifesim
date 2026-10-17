@@ -1,3 +1,4 @@
+import { musicRightsShare, recordProducerRoyalty } from "./realism.js";
 import { recordingCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
 import { checkContractReview, registerMusicAgreement } from "./contracts.js";
@@ -31,6 +32,8 @@ const log = (s, text, kind = "info") => {
   s.log = s.log.slice(0, 40);
 };
 const action = (s) => {
+  if (s.realWorld?.retiredMusic)
+    throw new Error("Resume new music work first.");
   if (age(s) < 6) throw new Error("Music lessons start at age six.");
   if (s.ended) throw new Error("This life is complete.");
   if (!s.actions) throw new Error("No free-time actions left.");
@@ -65,6 +68,8 @@ export const musicLabel = (s) =>
           ? "Local artist"
           : "Bedroom hobbyist";
 export function configureMusic(state, { role, genre }) {
+  if (state.realWorld?.retiredMusic)
+    throw new Error("Resume new music work first.");
   if (age(state) < 6) throw new Error("Music lessons start at age six.");
   if (state.ended) throw new Error("This life is complete.");
   if (
@@ -226,7 +231,7 @@ export function acceptLabelOffer(state, id) {
 export function advanceMusic(s) {
   const m = s.music;
   m.weeklyIncome = 0;
-  if (!m.active) return;
+  if (!m.active && !s.realWorld?.retiredMusic) return;
   if (["focus", "study"].includes(s.activity))
     m.skills[skillKey(m.role)] = clamp(
       m.skills[skillKey(m.role)] + 0.12 * allocationRatio(s, "music", 4),
@@ -291,6 +296,10 @@ export function advanceMusic(s) {
       );
     }
   for (const r of m.releases) {
+    if (s.realWorld?.rights[r.id]?.blocked) {
+      r.weeklyStreams = 0;
+      continue;
+    }
     if (r.releasedWeek !== s.week) {
       const organic = Math.max(
         0,
@@ -303,8 +312,16 @@ export function advanceMusic(s) {
       );
       if (promoted) m.fans += Math.floor((r.weeklyStreams - organic) * 0.005);
     }
+    const licence = s.realWorld?.rights[r.id];
+    if (licence?.licence === "non-exclusive")
+      r.weeklyStreams = Math.min(
+        r.weeklyStreams,
+        Math.max(0, licence.streamLimit - r.totalStreams),
+      );
     r.totalStreams += r.weeklyStreams;
-    const gross = round(r.weeklyStreams * 0.002 * musicReleaseShare(s, r.id));
+    const baseGross = r.weeklyStreams * 0.002 * musicReleaseShare(s, r.id);
+    recordProducerRoyalty(s, r.id, baseGross);
+    const gross = round(baseGross * musicRightsShare(s, r.id));
     let earned = m.label ? round(gross * m.label.share) : gross;
     if (m.label?.unrecouped > 0) {
       const recoup = Math.min(earned, m.label.unrecouped);
@@ -313,6 +330,13 @@ export function advanceMusic(s) {
     }
     m.weeklyIncome += earned;
     r.totalRoyalties = round(r.totalRoyalties + earned);
+  }
+  if (s.realWorld?.retiredMusic) {
+    const commission = musicManagerCommission(s, m.weeklyIncome);
+    m.totalIncome = round(m.totalIncome + m.weeklyIncome);
+    receiveIncome(s, m.weeklyIncome, "earned", { deduction: commission });
+    s.money = round(s.money - commission);
+    return;
   }
   for (const g of m.gigs) {
     if (g.status === "offered" && g.expiresWeek <= s.week) g.status = "expired";

@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -15,8 +16,7 @@ async function load(page, state = fresh()) {
   );
   await page.goto("/");
 }
-const navigate = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const navigate = (page, name) => tap(page, name);
 async function next(page) {
   await page
     .getByRole("button", { name: /^(Next week|Make a choice)$/ })
@@ -186,9 +186,9 @@ test("authentic v4 lives upgrade with a downloadable unmodified pre-v9 snapshot"
   await navigate(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
   const backup = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(`${key}-before-v13`)),
+    (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
     KEY,
   );
   expect(backup).toEqual(old);

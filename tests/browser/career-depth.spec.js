@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -24,8 +25,7 @@ async function load(page, state) {
   );
   await page.goto("/");
 }
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 async function week(page) {
   await page
     .getByRole("button", { name: /^(Next week|Make a choice)$/ })
@@ -309,7 +309,7 @@ test("investor introductions disclose ordinary board fees and transfer no free e
   await expect(page.getByRole("dialog")).toContainText("premium");
   expect((await saved(page)).ownership).toEqual(s.ownership);
 });
-test("authentic v9 migration keeps the original life records and an exact pre-v13 backup", async ({
+test("authentic v9 migration keeps the original life records and an exact pre-v14 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -328,7 +328,7 @@ test("authentic v9 migration keeps the original life records and an exact pre-v1
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("contract, milestone and evolving-contact panels fit phones without browser errors", async ({

@@ -38,6 +38,18 @@ export function professional(id, seed = 1) {
     id === "football"
       ? g.acceptFootballOffer(s, o.id)
       : g.acceptSportOffer(s, id, o.id);
+  // An explicitly open transfer market keeps these existing fixtures focused on contract rules.
+  for (const destination of g.SPORT_DESTINATIONS[id])
+    for (let level = 1; level <= 4; level++) {
+      const seat = s.realWorld.rivals.athletes.find(
+        (a) =>
+          a.path === id && a.level === level && a.club === destination.name,
+      );
+      if (seat) {
+        seat.status = "free";
+        seat.availableSince = s.week;
+      }
+    }
   return next(s);
 }
 export function moveOffer(

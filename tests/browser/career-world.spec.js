@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -21,8 +22,7 @@ async function load(page, state) {
   );
   await page.goto("/");
 }
-const nav = (page, name) =>
-  page.getByRole("button", { name, exact: true }).click();
+const nav = (page, name) => tap(page, name);
 async function week(page) {
   await page
     .getByRole("button", { name: /^(Next week|Make a choice)$/ })
@@ -299,7 +299,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
     if (key !== "version") expect(r[key]).toEqual(value);
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v13`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
       KEY,
     ),
   ).toEqual(old);
@@ -307,7 +307,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(file.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await file.path(), "utf8"))).toEqual(old);
 });
 test("expanded sport and music panels fit a phone and load without browser errors", async ({

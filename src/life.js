@@ -1,3 +1,4 @@
+import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { contentCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
 import {
@@ -317,6 +318,11 @@ export function declineFootballOffer(state, id) {
   return s;
 }
 function footballOffer(s, kind, club, jobId = null) {
+  if (
+    kind === "contract" &&
+    !canRecruit(s, "football", jobDefinition(jobId).level, club)
+  )
+    return;
   const f = s.football;
   const o = {
     id: `football:${kind}:${s.week}`,
@@ -328,6 +334,8 @@ function footballOffer(s, kind, club, jobId = null) {
     pay: jobId ? Math.round(jobDefinition(jobId).pay * (1 + rng(s) * 0.12)) : 0,
     duration: 104,
   };
+  if (kind === "contract")
+    bindRivalOffer(s, "football", o, jobDefinition(jobId).level);
   enhanceSportOffer(s, "football", o);
   f.offers.push(o);
   f.offers = f.offers.slice(-12);

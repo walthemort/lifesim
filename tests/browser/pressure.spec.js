@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { gameDate } from "../../src/dates.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -7,7 +8,7 @@ import { professional, musician, weeks } from "../career-world-fixtures.js";
 const KEY = "lifesim-save-v1",
   saved = (page) =>
     page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY),
-  nav = (page, name) => page.getByRole("button", { name, exact: true }).click();
+  nav = (page, name) => tap(page, name);
 async function load(page, state) {
   await page.addInitScript(
     ({ key, state }) => {
@@ -229,7 +230,7 @@ test("public replies create explicit promises and a community session delivers o
   await week(page);
   expect((await saved(page)).nextChapter.promises[0].status).toBe("delivered");
 });
-test("v11 imports preserve all prior fields and export an exact pre-v13 backup", async ({
+test("v11 imports preserve all prior fields and export an exact pre-v14 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -247,7 +248,7 @@ test("v11 imports preserve all prior fields and export an exact pre-v13 backup",
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v14.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("ownership standings and inbox fit a phone without browser errors", async ({

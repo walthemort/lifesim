@@ -1,3 +1,4 @@
+import { claimRivalSeat, rivalField, rivalName } from "./rivals.js";
 import {
   performanceBonus,
   performanceInjuryRisk,
@@ -137,7 +138,12 @@ function createSchedule(s, id, path, advancing = false) {
   const opponents = competitors.filter((name) => name !== ownName);
   path.table = Array.from({ length: count }, (_, i) => ({
     id: i,
-    name: i === 0 ? ownName : opponents[i - 1],
+    name:
+      i === 0
+        ? ownName
+        : ["racing", "tennis"].includes(id)
+          ? rivalName(s, id, path.level, i, opponents[i - 1])
+          : opponents[i - 1],
     played: 0,
     wins: 0,
     draws: 0,
@@ -474,6 +480,7 @@ export function signedSportTerms(s, id, o) {
       annualFunding: o.terms.annualFunding,
     });
   p.contract.expiresWeek = s.week + (o.terms?.weeks || o.duration || 104);
+  claimRivalSeat(s, id, o);
   s.seasons[id].fundingMisses = 0;
 }
 export function hireAgent(state, id, agentId) {
@@ -728,7 +735,8 @@ function result(s, id, path, f) {
             ? selected
               ? score
               : -100
-            : t.rating + (rng(s) * 2 - 1) * 20,
+            : rivalField(s, id, path.level, t.id, t.rating) +
+              (rng(s) * 2 - 1) * 20,
       }))
       .sort((a, b) => b.score - a.score || a.id - b.id);
     position = selected ? field.findIndex((x) => x.id === 0) + 1 : 0;

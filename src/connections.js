@@ -1,3 +1,4 @@
+import { routePartnerContribution } from "./realism.js";
 import { relativeAlive } from "./life-course.js";
 import { availableCash, rng } from "./world.js";
 import { spendTime, requiredHours } from "./calendar.js";
@@ -641,7 +642,8 @@ export function advanceConnections(s) {
     if (s.family.livingTogether && r.id === s.family.partnerId) {
       const contribution = Math.min(150, p.weeklyPay * 0.2, p.wealth);
       p.wealth -= contribution;
-      s.money += contribution;
+      if (!routePartnerContribution(s, r.id, contribution))
+        s.money += contribution;
       s.family.weeklyContribution = contribution;
     }
   }

@@ -328,7 +328,7 @@ test("v12 migration preserves original identity and every existing field with ad
       ),
     ),
     s = g.restoreGame(old);
-  assert.equal(s.version, 13);
+  assert.equal(s.version, g.VERSION);
   for (const [k, v] of Object.entries(old))
     if (k !== "version") assert.deepEqual(s[k], v, k);
   assert.deepEqual(g.restoreGame(s), s);

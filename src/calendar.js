@@ -1,3 +1,4 @@
+import { onParentalLeave, custodyFactor } from "./realism.js";
 import { chapterHours } from "./pressure-effects.js";
 import { identityHours } from "./identity.js";
 import { contractHours } from "./contracts.js";
@@ -41,15 +42,22 @@ export function requiredHours(s, week = s.week) {
   const working =
     teenWorkHours(s) +
     (s.employment
-      ? s.employment.weeklyHours ||
-        (["football", "racing", "basketball", "tennis"].includes(s.career)
-          ? 35
-          : 40)
+      ? onParentalLeave(s, week)
+        ? 0
+        : s.employment.weeklyHours ||
+          (["football", "racing", "basketball", "tennis"].includes(s.career)
+            ? 35
+            : 40)
       : s.company
         ? 20
         : 0);
   const school = s.school.enrolled && age(s) < 18 ? 30 : 0;
-  const extra = s.workLife?.arrangement === "overtime" && s.employment ? 8 : 0;
+  const extra =
+    s.workLife?.arrangement === "overtime" &&
+    s.employment &&
+    !onParentalLeave(s, week)
+      ? 8
+      : 0;
   const care =
     s.family.children.reduce((sum, c) => {
       const years = Math.floor((s.week - c.bornWeek) / 52);
@@ -57,7 +65,7 @@ export function requiredHours(s, week = s.week) {
         years >= 18
           ? 0
           : years < 5
-            ? s.employment
+            ? s.employment && !onParentalLeave(s, week)
               ? 8
               : 18
             : years < 13
@@ -65,7 +73,7 @@ export function requiredHours(s, week = s.week) {
               : 4;
       return (
         sum +
-        base * (s.family.livingTogether ? 0.6 : 1) +
+        base * (s.family.livingTogether ? 0.6 : 1) * custodyFactor(s, c.id) +
         (c.club && c.club !== "none" && years < 16 ? 2 : 0)
       );
     }, 0) +

@@ -1,3 +1,4 @@
+import { tap } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -45,9 +46,7 @@ test("football starts through school after growing up from birth", async ({
   }
   if (s.event) s = g.resolveEvent(s, 0);
   await load(page, s);
-  await page
-    .getByRole("button", { name: "Sport & development", exact: true })
-    .click();
+  await tap(page, "Sport & development");
   await expect(page.locator('[data-sport-card="football"]')).toContainText(
     "School football team",
   );
@@ -91,9 +90,7 @@ test("an academy trial takes two weeks, then a separate invitation must be accep
   }
   expect(initial).toBeTruthy();
   await load(page, initial);
-  await page
-    .getByRole("button", { name: "Sport & development", exact: true })
-    .click();
+  await tap(page, "Sport & development");
   await page.getByRole("button", { name: "Review invitation" }).click();
   await page.getByRole("button", { name: "Accept invitation" }).click();
   await expect(page.locator('[data-sport-card="football"]')).toContainText(
@@ -135,9 +132,7 @@ test("a Formula 4 seat follows a complete top-tier karting championship and lice
   }
   expect(initial).toBeTruthy();
   await load(page, initial);
-  await page
-    .getByRole("button", { name: "Sport & development", exact: true })
-    .click();
+  await tap(page, "Sport & development");
   await week(page);
   await page
     .locator('[data-sport-card="racing"]')
@@ -155,9 +150,7 @@ test("shopping filters find equipment and publishing content produces delayed au
   page,
 }) => {
   await load(page);
-  await page
-    .getByRole("button", { name: "Lifestyle & shopping", exact: true })
-    .click();
+  await tap(page, "Lifestyle & shopping");
   await page
     .locator('[data-action="retail-store"][data-id="Electronics"]')
     .click();
@@ -167,9 +160,7 @@ test("shopping filters find equipment and publishing content produces delayed au
   await page.locator('[data-action="buy"][data-id="phone"]').click();
   await page.getByLabel("Show owned possessions only").check();
   await expect(page.locator(".shop-card")).toHaveCount(1);
-  await page
-    .getByRole("button", { name: "Social media & fame", exact: true })
-    .click();
+  await tap(page, "Social media & fame");
   await page.locator('[data-action="open-account"][data-id="lens"]').click();
   await page.locator('[data-action="post"][data-id="lens"]').click();
   await page.getByLabel("Content approach").selectOption("polished");
@@ -201,9 +192,7 @@ test("creator sponsorship pays after a labelled post is delivered rather than on
     },
   ];
   await load(page, initial);
-  await page
-    .getByRole("button", { name: "Social media & fame", exact: true })
-    .click();
+  await tap(page, "Social media & fame");
   await page.getByRole("button", { name: "Review collaboration" }).click();
   await page.getByRole("button", { name: "Accept collaboration" }).click();
   expect((await saved(page)).money).toBe(initial.money);
@@ -223,9 +212,7 @@ test("a rapper practises, records, and releases a track over four weeks", async 
     page,
     g.buy(g.createGame({ seed: 1, age: 18, career: "music" }), "phone"),
   );
-  await page
-    .getByRole("button", { name: "Music & creativity", exact: true })
-    .click();
+  await tap(page, "Music & creativity");
   await page.getByLabel("Music role").selectOption("rapper");
   await page.getByLabel("Music genre").selectOption("Hip-hop");
   await expect(
@@ -256,9 +243,7 @@ test("a rapper practises, records, and releases a track over four weeks", async 
   expect(s.music.releases[0].totalStreams).toBeGreaterThan(0);
   expect(s.music.totalIncome).toBeGreaterThan(0);
   await page.reload();
-  await page
-    .getByRole("button", { name: "Music & creativity", exact: true })
-    .click();
+  await tap(page, "Music & creativity");
   await expect(page.locator("main")).toContainText("First chorus");
 });
 test("repeatable experiences spend cash and an action then enforce their cooldown", async ({
@@ -266,9 +251,7 @@ test("repeatable experiences spend cash and an action then enforce their cooldow
 }) => {
   const initial = g.createGame({ seed: 1, age: 18, career: "office" });
   await load(page, initial);
-  await page
-    .getByRole("button", { name: "Lifestyle & shopping", exact: true })
-    .click();
+  await tap(page, "Lifestyle & shopping");
   await page
     .locator('[data-action="retail-store"][data-id="Experiences"]')
     .click();
@@ -300,16 +283,14 @@ test("existing professional players retain their wages and can export a pre-upgr
   expect(s.version).toBe(g.VERSION);
   expect(s.employment.weeklyPay).toBe(3700);
   expect(s.football.stage).toBe("professional");
-  await page
-    .getByRole("button", { name: "Work & education", exact: true })
-    .click();
+  await tap(page, "Work & education");
   await expect(
     page.getByRole("button", { name: "Discuss a raise" }),
   ).toBeDisabled();
   await page.getByRole("button", { name: "Save & settings" }).click();
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v13.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,
@@ -329,7 +310,7 @@ test("sport, music, social, and shopping screens fit a phone with established ca
     "Social media & fame",
     "Lifestyle & shopping",
   ]) {
-    await page.getByRole("button", { name, exact: true }).click();
+    await tap(page, name);
     const sizes = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       width: innerWidth,
