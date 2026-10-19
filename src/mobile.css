@@ -316,3 +316,407 @@ footer {
     scroll-behavior: auto !important;
   }
 }
+/* Focused career workspaces. Only the selected pane participates in layout. */
+[hidden] {
+  display: none !important;
+}
+body.modal-open {
+  overflow: hidden;
+}
+#main,
+.workspace,
+.sport-section,
+[role="tabpanel"],
+.panel,
+.creator-card,
+.application-list {
+  min-width: 0;
+  max-width: 100%;
+}
+#main {
+  overflow-wrap: anywhere;
+}
+.workspace-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  padding: 8px 0 12px;
+  margin: 0 0 18px;
+  background: var(--bg);
+  position: sticky;
+  top: var(--appbar-height, 123px);
+  z-index: 12;
+}
+.workspace-tabs button {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 5px;
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 11px;
+  font-weight: 650;
+}
+.workspace-tabs [aria-selected="true"] {
+  color: #092c22;
+  background: var(--green);
+}
+[role="tabpanel"] > .panel,
+[role="tabpanel"] > .career-cockpit {
+  margin-bottom: 16px;
+}
+.sport-section .workspace-tabs {
+  top: calc(var(--appbar-height, 123px) + 63px);
+}
+.category-sections[aria-label="Sport & development sections"] {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  z-index: 14;
+  padding: 8px 0;
+  margin-bottom: 0;
+}
+.category-sections[aria-label="Sport & development sections"]
+  .section-shortcut {
+  padding: 7px 3px;
+  font-size: 10px;
+  min-width: 0;
+  justify-content: center;
+}
+.dialog-feedback {
+  position: sticky;
+  top: -15px;
+  z-index: 3;
+  margin: 12px 0 18px;
+  padding: 14px;
+  border: 1px solid #e3a27a66;
+  background: #39291f;
+  border-radius: 12px;
+  color: #ffd9b5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.world-library {
+  display: block;
+}
+.world-group {
+  margin: 24px 0;
+}
+.world-group > h2 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+.world-card {
+  min-height: 90px;
+}
+.world-search input {
+  width: 100%;
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 13px 16px;
+}
+.activity-feature {
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(125deg, #213e37, #17222c);
+  margin-bottom: 20px;
+}
+.activity-feature h2 {
+  margin: 10px 0;
+}
+.activity-feature p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  color: #b1c5be;
+}
+.artist-hero {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  min-width: 0;
+  padding: 22px 18px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #284c44, #162a29 65%, #19222c);
+  margin-bottom: 18px;
+}
+.artist-hero .character-portrait {
+  width: 86px;
+  min-width: 76px;
+  border: 0;
+  flex-shrink: 0;
+}
+.artist-hero > div {
+  min-width: 0;
+}
+.artist-hero h2 {
+  font-size: 27px;
+  line-height: 1.1;
+  margin: 10px 0;
+  letter-spacing: -0.8px;
+}
+.artist-hero p {
+  font-size: 12px;
+  color: #c2d7cb;
+}
+.artist-hero > div > span:last-child {
+  font-size: 10px;
+  color: #b0c6b9;
+}
+.music-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 14px 0 22px;
+}
+.music-totals span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.music-totals strong {
+  display: block;
+  font-size: 23px;
+  letter-spacing: -0.5px;
+}
+.stream-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 18px 0 8px;
+  overflow: visible;
+}
+.record-art {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: linear-gradient(
+    145deg,
+    hsl(var(--cover-hue) 45% 51%),
+    hsl(calc(var(--cover-hue) + 40) 35% 24%)
+  );
+}
+.record-art svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.record-art > span {
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+.song-row {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.song-rank {
+  width: 16px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.song-copy {
+  min-width: 0;
+  flex: 1;
+}
+.song-copy strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.song-copy small,
+.song-copy > span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+.song-number {
+  max-width: 74px;
+  text-align: right;
+}
+.song-number strong {
+  font-size: 11px;
+  display: block;
+}
+.song-number small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.your-release {
+  background: #68dda710;
+  border-radius: 8px;
+}
+.release-detail {
+  margin: 6px 0 12px 25px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.rollout-card {
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 12px;
+}
+.rollout-card h3 {
+  margin-top: 10px;
+}
+.club-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.club-card h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+.club-card p,
+.club-card small {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.club-card > button {
+  grid-column: 2;
+  justify-self: start;
+}
+.club-crest {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 46px;
+  background: #233d4c;
+  border: 1px solid #55889b;
+  border-radius: 9px 9px 18px 18px;
+  font-size: 12px;
+  color: #c3e4f2;
+}
+.friendly-portrait {
+  border-radius: 24px;
+  overflow: hidden;
+  background: transparent;
+}
+.god-switches {
+  margin: 18px 0;
+}
+.god-switch {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.god-switch strong,
+.god-switch small {
+  display: block;
+}
+.god-switch small {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.toggle-switch {
+  width: 56px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 24px;
+  background: #354253;
+  padding: 4px;
+}
+.toggle-switch span {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ecf1f1;
+  transition: transform 0.15s;
+}
+.toggle-switch[aria-checked="true"] {
+  background: #5abf94;
+}
+.toggle-switch[aria-checked="true"] span {
+  transform: translateX(22px);
+}
+.god-skill-groups details {
+  margin: 12px 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+.god-skill-groups summary {
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  min-height: 30px;
+}
+.god-skill-groups summary span {
+  color: var(--muted);
+  float: right;
+  font-size: 11px;
+  font-weight: 400;
+}
+.god-skill-grid {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0;
+}
+.skill-adjuster {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+}
+.skill-adjuster input {
+  width: 100%;
+  padding: 9px;
+}
+.career-cockpit .cockpit-grid {
+  gap: 16px;
+}
+.career-cockpit .pitch-map,
+.career-cockpit .circuit-map {
+  max-width: 180px;
+}
+.season-columns,
+.creator-card,
+.career-grid,
+.finance-summary {
+  min-width: 0;
+}
+@media (max-width: 360px) {
+  .artist-hero {
+    gap: 10px;
+    padding: 18px 12px;
+  }
+  .artist-hero h2 {
+    font-size: 22px;
+  }
+  .song-row {
+    gap: 6px;
+  }
+  .record-art {
+    width: 34px;
+    height: 38px;
+  }
+}
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

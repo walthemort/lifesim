@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -18,9 +18,9 @@ async function load(page, s = g.createGame({ seed: 1, age: 18 })) {
   await page.goto("/");
 }
 async function week(page) {
-  await page.locator('[data-action="next-week"]').click();
+  await interact(page, page.locator('[data-action="next-week"]'), "click");
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 test("Pro creator searches global cities and previews distinct shaded hairstyles", async ({
   page,
@@ -33,12 +33,17 @@ test("Pro creator searches global cities and previews distinct shaded hairstyles
   await load(page, s);
   await nav(page, "Save & settings");
   await nav(page, "Open character creator");
-  await page.getByLabel("Birth country").selectOption("JP");
-  await page.getByLabel("Find a birthplace").fill("Tokyo");
-  await page.getByLabel("Birthplace", { exact: true }).selectOption("Tokyo");
-  await page.getByLabel("Your name").fill("Aiko Mori");
-  await page.getByLabel("Hair style").selectOption("Braids");
-  await page.getByLabel("Face shape").selectOption("Round");
+  await interact(page, page.getByLabel("Birth country"), "selectOption", "JP");
+  await interact(page, page.getByLabel("Find a birthplace"), "fill", "Tokyo");
+  await interact(
+    page,
+    page.getByLabel("Birthplace", { exact: true }),
+    "selectOption",
+    "Tokyo",
+  );
+  await interact(page, page.getByLabel("Your name"), "fill", "Aiko Mori");
+  await interact(page, page.getByLabel("Hair style"), "selectOption", "Braids");
+  await interact(page, page.getByLabel("Face shape"), "selectOption", "Round");
   await expect(
     page.locator("#character-form svg defs linearGradient"),
   ).toHaveCount(2);
@@ -63,7 +68,7 @@ test("appearance editing cannot rewrite citizenship for Pro users", async ({
   await nav(page, "Edit character profile");
   await expect(page.getByLabel("Nationality", { exact: true })).toHaveCount(0);
   await expect(page.getByLabel("Birthplace", { exact: true })).toHaveCount(0);
-  await page.getByLabel("Hair style").selectOption("Afro");
+  await interact(page, page.getByLabel("Hair style"), "selectOption", "Afro");
   await nav(page, "Save character profile");
   expect((await saved(page)).globalLife.citizenships).toEqual(["GB"]);
 });
@@ -73,16 +78,24 @@ test("shopping starts with stores and outfit previews do not spend cash until pu
   await load(page);
   await nav(page, "Lifestyle & shopping");
   await expect(page.locator(".shop-card")).toHaveCount(0);
-  await page
-    .locator('[data-action="retail-store"][data-id="Budget wardrobe"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Budget wardrobe"]'),
+    "click",
+  );
   const before = await saved(page);
-  await page
-    .locator('[data-action="outfit-preview"][data-id="hoodie"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="outfit-preview"][data-id="hoodie"]'),
+    "click",
+  );
   expect((await saved(page)).money).toBe(before.money);
   await expect(page.locator("[data-outfit-name]")).toHaveText("Campus hoodie");
-  await page.locator('[data-action="outfit-buy"][data-id="hoodie"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="outfit-buy"][data-id="hoodie"]'),
+    "click",
+  );
   const r = await saved(page);
   expect(r.money).toBe(before.money - 45);
   expect(r.characterLife.profile.garment).toBe("Hoodie");
@@ -94,12 +107,21 @@ test("barbers offer previews, real appointment fees and free-user premium gates"
 }) => {
   await load(page);
   await nav(page, "Lifestyle & shopping");
-  await page.locator('[data-action="retail-store"][data-id="Barbers"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Barbers"]'),
+    "click",
+  );
   await expect(
     page.getByLabel("Hair style").locator("option", { hasText: "Braids" }),
   ).toHaveCount(0);
-  await page.getByLabel("Hair style").selectOption("Fade");
-  await page.getByLabel("Barber", { exact: true }).selectOption("salon");
+  await interact(page, page.getByLabel("Hair style"), "selectOption", "Fade");
+  await interact(
+    page,
+    page.getByLabel("Barber", { exact: true }),
+    "selectOption",
+    "salon",
+  );
   const before = await saved(page);
   await nav(page, "Book haircut");
   const r = await saved(page);
@@ -112,9 +134,11 @@ test("car dealers show cars and keep unrelated possessions out of the selected d
 }) => {
   await load(page);
   await nav(page, "Lifestyle & shopping");
-  await page
-    .locator('[data-action="retail-store"][data-id="Car dealers"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Car dealers"]'),
+    "click",
+  );
   await expect(page.locator(".shop-card")).not.toHaveCount(0);
   await expect(
     page.locator(".shop-card").filter({ hasText: "The everyday watch" }),
@@ -129,10 +153,25 @@ test("relocation country/city search and a paid application preserve birthplace 
   await load(page, s);
   await nav(page, "Character & hometown");
   await nav(page, "Plan a move abroad");
-  await page.getByLabel("Destination country").selectOption("US");
-  await page.getByLabel("Find a city").fill("New York");
-  await page.getByLabel("Destination city").selectOption("New York");
-  await page.getByLabel("Application route").selectOption("investor");
+  await interact(
+    page,
+    page.getByLabel("Destination country"),
+    "selectOption",
+    "US",
+  );
+  await interact(page, page.getByLabel("Find a city"), "fill", "New York");
+  await interact(
+    page,
+    page.getByLabel("Destination city"),
+    "selectOption",
+    "New York",
+  );
+  await interact(
+    page,
+    page.getByLabel("Application route"),
+    "selectOption",
+    "investor",
+  );
   await nav(page, "Confirm selected step");
   const r = await saved(page);
   expect(r.money).toBe(s.money - 450);
@@ -148,8 +187,14 @@ test("criminal scenarios need confirmation and custody interrupts normal life", 
   s.globalLife.seed = 0;
   await load(page, s);
   await nav(page, "Crime & consequences");
-  await page.locator('[data-action="crime-review"][data-id="theft"]').click();
-  await expect(page.getByRole("dialog")).toContainText("custody");
+  await interact(
+    page,
+    page.locator('[data-action="crime-review"][data-id="theft"]'),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "custody",
+  );
   await nav(page, "Take the risk");
   const r = await saved(page);
   expect(r.globalLife.crime.prison).toBeTruthy();
@@ -164,17 +209,23 @@ test("Space advances a week and opens life choices; holding it and typing never 
   page,
 }) => {
   await load(page);
-  await page.locator("h1").click();
+  await interact(page, page.locator("h1"), "click");
   await page.keyboard.press("Space");
   expect((await saved(page)).week).toBe(1);
   await page.keyboard.press("Space");
   expect((await saved(page)).week).toBe(2);
-  await expect(page.getByRole("dialog")).toBeVisible();
+  await reveal(page, page.getByRole("dialog", { includeHidden: true }));
+  await expect(page.getByRole("dialog", { includeHidden: true })).toBeVisible();
   await page.keyboard.press("Space");
   expect((await saved(page)).week).toBe(2);
-  await page.locator(".event-option").last().click();
+  await interact(page, page.locator(".event-option").last(), "click");
   await nav(page, "Music & creativity");
-  await page.getByLabel("Artist name").fill("A Name With Spaces");
+  await interact(
+    page,
+    page.getByLabel("Artist name"),
+    "fill",
+    "A Name With Spaces",
+  );
   await page.keyboard.press("Space");
   expect((await saved(page)).week).toBe(2);
 });
@@ -193,7 +244,9 @@ test("the notification bell links to actual events and material changes in held 
   ];
   await load(page, s);
   await nav(page, "Notifications");
-  await expect(page.getByRole("dialog")).toContainText("HRZN ↓ 4.5%");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "HRZN ↓ 4.5%",
+  );
   await nav(page, "Review investments");
   await expect(page.locator("main h1")).toHaveText("Make your future grow.");
   expect((await saved(page)).globalLife.readAlerts).toContain("market:tech:0");
@@ -206,12 +259,17 @@ test("track workshop keeps a completed recording unreleased until its artist cho
   s.music.sessions = 8;
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page.getByLabel("Artist name").fill("Northstar");
+  await interact(page, page.getByLabel("Artist name"), "fill", "Northstar");
   await nav(page, "Save artist name");
   await nav(page, "Create a track");
-  await page.getByLabel("Track title").fill("Night train");
-  await page.getByLabel("Beat source").selectOption("lease");
-  await page.getByLabel("Production ambition").selectOption("lean");
+  await interact(page, page.getByLabel("Track title"), "fill", "Night train");
+  await interact(page, page.getByLabel("Beat source"), "selectOption", "lease");
+  await interact(
+    page,
+    page.getByLabel("Production ambition"),
+    "selectOption",
+    "lean",
+  );
   await nav(page, "Start track workshop");
   await nav(page, "Write & revise lyrics");
   await week(page);
@@ -225,9 +283,11 @@ test("track workshop keeps a completed recording unreleased until its artist cho
   r = await saved(page);
   expect(r.music.releases).toHaveLength(1);
   expect(r.globalLife.artistName).toBe("Northstar");
-  await expect(page.locator("[data-track-studio]")).toContainText(
-    "track rating",
+  await page.getByRole("tab", { name: "Catalogue", exact: true }).click();
+  await expect(page.locator("[data-music-catalogue]")).toContainText(
+    "Night train",
   );
+  await expect(page.locator("[data-music-catalogue]")).toContainText("rating");
 });
 test("company tab offers 24 industries and starts the chosen model with actual startup capital", async ({
   page,
@@ -238,13 +298,23 @@ test("company tab offers 24 industries and starts the chosen model with actual s
   await load(page, s);
   await nav(page, "Start & run a company");
   await expect(page.locator(".industry-grid article")).toHaveCount(24);
-  await page
-    .locator('[data-action="company-launch-plan"][data-id="Coffee shop"]')
-    .click();
-  await page.getByLabel("Company name").fill("Harbour Coffee");
-  await page
-    .getByLabel("Business model", { exact: true })
-    .selectOption("retail");
+  await interact(
+    page,
+    page.locator('[data-action="company-launch-plan"][data-id="Coffee shop"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Company name"),
+    "fill",
+    "Harbour Coffee",
+  );
+  await interact(
+    page,
+    page.getByLabel("Business model", { exact: true }),
+    "selectOption",
+    "retail",
+  );
   await nav(page, "Launch company");
   const r = await saved(page);
   expect(r.company.sector).toBe("Coffee shop");
@@ -308,7 +378,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     if (k !== "version") expect(r[k]).toEqual(v);
   expect(
     await page.evaluate(
-      (key) => localStorage.getItem(key + "-before-v14"),
+      (key) => localStorage.getItem(key + "-before-v15"),
       KEY,
     ),
   ).toBe(JSON.stringify(old));
@@ -317,7 +387,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     page.waitForEvent("download"),
     nav(page, "Export pre-update save"),
   ]);
-  expect(download.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v15.json");
 });
 test("expanded character, retail, company and career interfaces fit a phone without browser errors", async ({
   page,
@@ -342,9 +412,11 @@ test("expanded character, retail, company and career interfaces fit a phone with
     ).toBeTruthy();
   }
   await nav(page, "Lifestyle & shopping");
-  await page
-    .locator('[data-action="retail-store"][data-id="Designer atelier"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Designer atelier"]'),
+    "click",
+  );
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -363,7 +435,12 @@ test("founder contributions transfer cash into a real company account", async ({
   await load(page, s);
   await nav(page, "Start & run a company");
   await nav(page, "Contribute founder capital");
-  await page.getByLabel("Capital contribution").fill("1000.15");
+  await interact(
+    page,
+    page.getByLabel("Capital contribution"),
+    "fill",
+    "1000.15",
+  );
   await nav(page, "Transfer founder capital");
   const r = await saved(page);
   expect(r.money).toBeCloseTo(s.money - 1000.15, 2);

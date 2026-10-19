@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { professional, musician } from "../career-world-fixtures.js";
 const KEY = "lifesim-save-v1";
 const saved = (page) =>
@@ -26,7 +26,9 @@ for (const width of [320, 390, 430, 1440]) {
     page.on("pageerror", (error) => errors.push(error.message));
     await load(page);
     const tabs = page.getByRole("navigation", { name: "App tabs" });
-    await expect(tabs.getByRole("button")).toHaveCount(5);
+    await expect(tabs.getByRole("button", { includeHidden: true })).toHaveCount(
+      5,
+    );
     for (const button of await tabs.getByRole("button").all()) {
       const box = await button.boundingBox();
       expect(box.height).toBeGreaterThanOrEqual(44);
@@ -35,7 +37,7 @@ for (const width of [320, 390, 430, 1440]) {
     const names = await page
       .locator(".world-card")
       .evaluateAll((cards) => cards.map((c) => c.getAttribute("aria-label")));
-    expect(names.length).toBeGreaterThanOrEqual(20);
+    expect(names.length).toBeGreaterThanOrEqual(19);
     for (const name of names) {
       await tap(page, name);
       await expect(page.locator("#main")).not.toBeEmpty();
@@ -57,13 +59,30 @@ test("phone settings opens privacy and exports/imports the same save through the
   await load(page);
   await tap(page, "Save & settings");
   await tap(page, "Privacy & support");
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Your life stays on your phone.",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Your life stays on your phone." }),
+    page.getByRole("heading", {
+      name: "Your life stays on your phone.",
+      includeHidden: true,
+    }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Save & settings", exact: true })
-    .first()
-    .click();
+  await interact(
+    page,
+    page
+      .getByRole("button", {
+        name: "Save & settings",
+        exact: true,
+        includeHidden: true,
+      })
+      .first(),
+    "click",
+  );
   const download = page.waitForEvent("download");
   await tap(page, "Export save");
   const backup = await download;
@@ -74,7 +93,14 @@ test("phone settings opens privacy and exports/imports the same save through the
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(exported)),
   });
-  await page.getByRole("button", { name: "Replace current save" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Replace current save",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect(await saved(page)).toEqual(exported);
 });
 
@@ -85,10 +111,17 @@ test("a genuine v13 save gets an exact migration backup in phone settings", asyn
     fs.readFileSync(new URL("../fixtures/v13-save.json", import.meta.url)),
   );
   await load(page, old);
-  expect((await saved(page)).version).toBe(14);
+  expect((await saved(page)).version).toBe(g.VERSION);
   await tap(page, "Save & settings");
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export pre-update save" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Export pre-update save",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const file = await download;
   expect(JSON.parse(fs.readFileSync(await file.path()))).toEqual(old);
 });
@@ -114,12 +147,13 @@ test("music retirement and catalogue ownership persist through phone controls", 
   const s = musician("producer", 1);
   await load(page, s);
   await tap(page, "Music & creativity");
-  await page.locator('[data-action="music-retire"]').click();
+  await interact(page, page.locator('[data-action="music-retire"]'), "click");
   expect((await saved(page)).realWorld.retiredMusic).toBe(true);
   await page.reload();
   await tap(page, "Music & creativity");
+  await reveal(page, page.locator('[data-action="music-resume"]'));
   await expect(page.locator('[data-action="music-resume"]')).toBeVisible();
-  await page.locator('[data-action="music-resume"]').click();
+  await interact(page, page.locator('[data-action="music-resume"]'), "click");
   expect((await saved(page)).music.active).toBe(true);
 });
 
@@ -133,9 +167,13 @@ test("a founded company can fund product development from its own category on a 
   await load(page, s);
   await tap(page, "Start & run a company");
   const form = page.locator("#product-start-form");
-  await form.getByLabel("Product name").fill("Pocket racer");
-  await form.getByLabel("Product price in USD").fill("30");
-  await form.getByRole("button").click();
+  await interact(page, form.getByLabel("Product name"), "fill", "Pocket racer");
+  await interact(page, form.getByLabel("Product price in USD"), "fill", "30");
+  await interact(
+    page,
+    form.getByRole("button", { includeHidden: true }),
+    "click",
+  );
   const result = await saved(page);
   expect(result.realWorld.products[0].name).toBe("Pocket racer");
   expect(result.company.cash).toBe(

@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -58,11 +58,16 @@ function player() {
   return s;
 }
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 
 test("banking transfers preserve wealth, earn interest and persist across reloads", async ({
@@ -71,12 +76,29 @@ test("banking transfers preserve wealth, earn interest and persist across reload
   const s = employed();
   await load(page, s);
   await nav(page, "Banking & tax");
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Plan beyond the pay cheque.",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Plan beyond the pay cheque." }),
+    page.getByRole("heading", {
+      name: "Plan beyond the pay cheque.",
+      includeHidden: true,
+    }),
   ).toBeVisible();
-  await page
-    .getByRole("spinbutton", { name: "Transfer amount", exact: true })
-    .fill("1000.01");
+  await interact(
+    page,
+    page.getByRole("spinbutton", {
+      name: "Transfer amount",
+      exact: true,
+      includeHidden: true,
+    }),
+    "fill",
+    "1000.01",
+  );
   await nav(page, "Transfer savings");
   let r = await saved(page);
   expect(r.banking.savings).toBe(1000.01);
@@ -87,12 +109,25 @@ test("banking transfers preserve wealth, earn interest and persist across reload
   expect(r.banking.tax.lastWeekly).toBeGreaterThan(0);
   await page.reload();
   await nav(page, "Banking & tax");
-  await page
-    .getByRole("combobox", { name: "Transfer direction" })
-    .selectOption("withdraw");
-  await page
-    .getByRole("spinbutton", { name: "Transfer amount", exact: true })
-    .fill("500");
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Transfer direction",
+      includeHidden: true,
+    }),
+    "selectOption",
+    "withdraw",
+  );
+  await interact(
+    page,
+    page.getByRole("spinbutton", {
+      name: "Transfer amount",
+      exact: true,
+      includeHidden: true,
+    }),
+    "fill",
+    "500",
+  );
   await nav(page, "Transfer savings");
   expect((await saved(page)).banking.savings).toBeCloseTo(
     r.banking.savings - 500,
@@ -106,7 +141,9 @@ test("borrowing shows concrete terms, adds debt and supports full early repaymen
   await load(page, s);
   await nav(page, "Banking & tax");
   await nav(page, "Review borrowing terms");
-  await expect(page.getByRole("dialog")).toContainText("Origination fee: $50");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "Origination fee: $50",
+  );
   await nav(page, "Accept loan terms");
   let r = await saved(page);
   expect(r.money).toBe(s.money + 4950);
@@ -128,10 +165,17 @@ test("unqualified borrowing is explained and cannot be accepted", async ({
   await load(page, g.createGame({ seed: 8, age: 14 }));
   await nav(page, "Banking & tax");
   await nav(page, "Review borrowing terms");
-  await expect(page.getByRole("dialog")).toContainText("Not eligible");
-  await expect(page.getByRole("dialog")).toContainText("Age 18+");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "Not eligible",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "Age 18+",
+  );
   await expect(
-    page.getByRole("button", { name: "Accept loan terms" }),
+    page.getByRole("button", {
+      name: "Accept loan terms",
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   expect((await saved(page)).banking.loans).toHaveLength(0);
 });
@@ -141,19 +185,29 @@ test("sport contract negotiations persist and fixture results populate the leagu
   await load(page, player());
   await nav(page, "Sport & development");
   await nav(page, "Review invitation");
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
     "104-week sporting contract",
   );
-  await page
-    .getByRole("combobox", { name: "Contract approach" })
-    .selectOption("security");
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Contract approach",
+      includeHidden: true,
+    }),
+    "selectOption",
+    "security",
+  );
   await nav(page, "Send counteroffer");
   expect((await saved(page)).football.offers[0].terms.negotiation.status).toBe(
     "pending",
   );
   await nav(page, "Review invitation");
   await expect(
-    page.getByRole("button", { name: "Accept invitation", exact: true }),
+    page.getByRole("button", {
+      name: "Accept invitation",
+      exact: true,
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   await page.getByRole("dialog").press("Escape");
   await week(page);
@@ -171,8 +225,12 @@ test("sport contract negotiations persist and fixture results populate the leagu
   );
   await page.reload();
   await nav(page, "Weekly calendar");
+  await reveal(
+    page,
+    page.getByRole("heading", { name: "Sporting dates", includeHidden: true }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Sporting dates" }),
+    page.getByRole("heading", { name: "Sporting dates", includeHidden: true }),
   ).toBeVisible();
 });
 test("sponsor support is offered as racing funding and an appearance can be delivered", async ({
@@ -189,19 +247,25 @@ test("sponsor support is offered as racing funding and an appearance can be deli
   await load(page, s);
   await nav(page, "Sport & development");
   await nav(page, "Review sponsorship");
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
     "pays competition costs directly",
   );
   await nav(page, "Accept sponsorship");
   expect((await saved(page)).money).toBe(s.money);
   await expect(
-    page.getByRole("button", { name: "Deliver sponsor appearance" }),
+    page.getByRole("button", {
+      name: "Deliver sponsor appearance",
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   for (let i = 0; i < 9; i++) await week(page);
   await nav(page, "Deliver sponsor appearance");
   expect((await saved(page)).seasons.racing.sponsor.lastAppearanceWeek).toBe(9);
   await expect(
-    page.getByRole("button", { name: "Deliver sponsor appearance" }),
+    page.getByRole("button", {
+      name: "Deliver sponsor appearance",
+      includeHidden: true,
+    }),
   ).toBeDisabled();
 });
 test("life choice commissions become visible obligations and delivery has a real outcome", async ({
@@ -213,11 +277,21 @@ test("life choice commissions become visible obligations and delivery has a real
   );
   await load(page, s);
   await nav(page, "Make a choice");
-  await page.locator(".event-option").first().click();
+  await interact(page, page.locator(".event-option").first(), "click");
   expect((await saved(page)).money).toBe(s.money);
   await nav(page, "Weekly calendar");
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Life commitments",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Life commitments" }),
+    page.getByRole("heading", {
+      name: "Life commitments",
+      includeHidden: true,
+    }),
   ).toBeVisible();
   await nav(page, "Deliver commissioned work");
   const r = await saved(page);
@@ -250,10 +324,10 @@ test("authentic v5 saves upgrade with an unchanged pre-v9 download and preserved
   await nav(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v15`)),
       KEY,
     ),
   ).toEqual(raw);
@@ -294,7 +368,7 @@ test("new money, season and commitment screens fit a small mobile viewport witho
   await nav(page, "Review borrowing terms");
   expect(
     await page
-      .getByRole("dialog")
+      .getByRole("dialog", { includeHidden: true })
       .evaluate((el) => el.getBoundingClientRect().width),
   ).toBeLessThanOrEqual(390);
   expect(errors).toEqual([]);

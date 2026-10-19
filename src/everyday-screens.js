@@ -120,7 +120,7 @@ export function debugScreen(s, u) {
   const { title, panelHeading, e, money } = u;
   if (!s.debug.enabled)
     return `${title("SANDBOX TOOLS", "Debug mode is off.", "Enable it from Save & settings to experiment with your current life.")}<button class="button primary" data-action="settings">Open Save & settings</button>`;
-  return `${title("SANDBOX TOOLS", "Try a different possibility.", "These changes persist in this save. Your life keeps its sandbox label after debug is switched off.")}<div class="info-banner warning">${u.hasDebugBackup ? "A pre-debug backup is available in Save & settings." : "Export a backup before experimenting."} Time skips still run wages, expenses, markets, recruitment, and deadlines.</div><section class="panel">${panelHeading("Quick controls", `Current cash ${money(s.money)} · ${s.actions} actions left this week.`)}<div class="everyday-actions">${[
+  return `${title("YOUR LIFE, YOUR RULES", "God mode.", "Quick money, grouped skills and always-full wellbeing. This life keeps its sandbox label.")}<div class="info-banner warning">${u.hasDebugBackup ? "A pre-debug backup is available in Save & settings." : "Export a backup before experimenting."} Time skips still run wages, expenses, markets, recruitment, and deadlines.</div><section class="panel">${panelHeading("Quick controls", `Current cash ${money(s.money)} · ${s.actions} actions left this week.`)}<div class="everyday-actions">${[
     ["cash-small", "Add $10,000"],
     ["cash-million", "Add $1 million"],
     ["cash-billion", "Add $1 billion"],
@@ -154,7 +154,7 @@ export function debugScreen(s, u) {
     .map((k) => `<option value="career:${k}">${e(k)}</option>`)
     .join(
       "",
-    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}${DEBUG_SPECIALIST_SKILLS.map((k) => `<option value="specialist:${k.id}">${e(k.label)}</option>`).join("")}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
+    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}${DEBUG_SPECIALIST_SKILLS.filter(k=>k.id!=="social.contentSkill").map((k) => `<option value="specialist:${k.id}">${e(k.label)}</option>`).join("")}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
     s.social.profiles,
   )
     .map((id) => `<option>${id}</option>`)

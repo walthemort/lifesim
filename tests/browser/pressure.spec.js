@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { gameDate } from "../../src/dates.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -20,11 +20,16 @@ async function load(page, state) {
   await page.goto("/");
 }
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 for (const id of ["football-team", "harbor-fc", "gt-team", "f1-team"]) {
   test(`${id} owners can view real standings and next-week results`, async ({
@@ -65,6 +70,7 @@ test("minority owners get reports and standings without management controls", as
     page.getByRole("button", {
       name: "Commission facility upgrade",
       exact: true,
+      includeHidden: true,
     }),
   ).toHaveCount(0);
   await expect(page.getByLabel("Operating budget")).toHaveCount(0);
@@ -76,13 +82,30 @@ test("management uses company cash for staff, operating plans and construction",
   await load(page, s);
   await nav(page, "Businesses & clubs");
   const dashboard = page.locator("[data-ownership-dashboard]");
-  await dashboard.getByLabel("Operating budget").selectOption("ambitious");
-  await dashboard.getByLabel("Ownership goal").selectOption("development");
+  await interact(
+    page,
+    dashboard.getByLabel("Operating budget"),
+    "selectOption",
+    "ambitious",
+  );
+  await interact(
+    page,
+    dashboard.getByLabel("Ownership goal"),
+    "selectOption",
+    "development",
+  );
   await nav(page, "Review operating plan");
-  await dashboard
-    .getByRole("button", { name: "Recruit appointment", exact: true })
-    .first()
-    .click();
+  await interact(
+    page,
+    dashboard
+      .getByRole("button", {
+        name: "Recruit appointment",
+        exact: true,
+        includeHidden: true,
+      })
+      .first(),
+    "click",
+  );
   const recruited = await saved(page);
   expect(recruited.money).toBe(s.money);
   expect(recruited.ownershipPlay.management.cafe.staff).toHaveLength(1);
@@ -112,12 +135,21 @@ for (const [path, name] of [
     await load(page, s);
     await nav(page, "Sport & development");
     const panel = page.locator(`[data-performance="${path}"]`);
-    await panel
-      .getByLabel(`${name} approach`, { exact: true })
-      .selectOption("attack");
-    await panel
-      .getByRole("button", { name: "Prepare performance plan", exact: true })
-      .click();
+    await interact(
+      page,
+      panel.getByLabel(`${name} approach`, { exact: true }),
+      "selectOption",
+      "attack",
+    );
+    await interact(
+      page,
+      panel.getByRole("button", {
+        name: "Prepare performance plan",
+        exact: true,
+        includeHidden: true,
+      }),
+      "click",
+    );
     await expect(panel).toContainText("Prepared:");
     for (let i = s.week; i < fixture.week; i++) await week(page);
     expect(["delivered", "missed"]).toContain(
@@ -133,18 +165,40 @@ test("inbox reminders can be read and archived without spending cash or acceptin
   await nav(page, "Messages & decisions");
   const message = page.locator('[data-inbox-id^="performance:"]').first(),
     before = await saved(page);
-  await message.getByRole("button", { name: "Mark read", exact: true }).click();
+  await interact(
+    page,
+    message.getByRole("button", {
+      name: "Mark read",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await saved(page)).money).toBe(before.money);
   expect((await saved(page)).actions).toBe(before.actions);
-  await message
-    .getByRole("button", { name: "Open relevant category", exact: true })
-    .click();
+  await interact(
+    page,
+    message.getByRole("button", {
+      name: "Open relevant category",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(page.locator(".sport-section").first()).toHaveAttribute(
     "id",
     "sport-section-racing",
   );
   await nav(page, "Messages & decisions");
-  await message.getByRole("button", { name: "Archive", exact: true }).click();
+  await interact(
+    page,
+    message.getByRole("button", {
+      name: "Archive",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
   await nav(page, "Show archived messages");
   await expect(page.locator(".inbox-message")).toHaveCount(1);
 });
@@ -153,16 +207,27 @@ test("family discussions protect a birthday and excuse the conflicting appearanc
 }) => {
   await load(page, parent());
   await nav(page, "Messages & decisions");
-  await page
-    .locator("[data-family-conflicts] .everyday-card")
-    .filter({ hasText: "Jamie’s birthday" })
-    .getByLabel("Family compromise", { exact: true })
-    .selectOption("attend");
-  await page
-    .locator("[data-family-conflicts] .everyday-card")
-    .filter({ hasText: "Jamie’s birthday" })
-    .getByRole("button", { name: "Discuss family compromise", exact: true })
-    .click();
+  await interact(
+    page,
+    page
+      .locator("[data-family-conflicts] .everyday-card")
+      .filter({ hasText: "Jamie’s birthday" })
+      .getByLabel("Family compromise", { exact: true }),
+    "selectOption",
+    "attend",
+  );
+  await interact(
+    page,
+    page
+      .locator("[data-family-conflicts] .everyday-card")
+      .filter({ hasText: "Jamie’s birthday" })
+      .getByRole("button", {
+        name: "Discuss family compromise",
+        exact: true,
+        includeHidden: true,
+      }),
+    "click",
+  );
   expect(
     (await saved(page)).nextChapter.familyRequests.find(
       (r) => r.kind === "birthday",
@@ -177,24 +242,39 @@ test("family discussions protect a birthday and excuse the conflicting appearanc
     "unavailable",
   );
 });
-test("planned releases spend real production, guest and marketing budgets", async ({
+test("pre-release promotion funds a real unreleased recording without duplicating its project", async ({
   page,
 }) => {
-  await load(page, musician("producer"));
+  let s = musician("producer");
+  s = g.startPlannedRecording(s, {
+    title: "Owner of the moment",
+    budget: "standard",
+    guest: "session",
+    marketing: "none",
+  });
+  const before = s.money,
+    projects = s.music.projects.length;
+  await load(page, s);
   await nav(page, "Music & creativity");
-  const before = await saved(page);
-  await nav(page, "Plan a music release");
-  await page.getByLabel("Release title").fill("Owner of the moment");
-  await page.getByLabel("Production budget").selectOption("standard");
-  await page.getByLabel("Release schedule").selectOption("careful");
-  await page.getByLabel("Release marketing").selectOption("local");
-  await page.getByLabel("Guest musician").selectOption("session");
-  await nav(page, "Start planned recording");
-  const s = await saved(page);
-  expect(s.money).toBe(before.money - 700);
-  expect(s.music.projects.at(-1).releaseWeek).toBe(s.week + 6);
-  await expect(page.locator("main")).toContainText("Six-week polish");
+  await page.getByRole("tab", { name: "Promote", exact: true }).click();
+  await page
+    .locator('#music-rollout-form [name="projectId"]')
+    .selectOption(s.music.projects.at(-1).id);
+  await page
+    .locator('#music-rollout-form [name="kind"]')
+    .selectOption("focused");
+  await page
+    .getByRole("button", { name: "Plan pre-release promotion" })
+    .click();
+  const result = await saved(page);
+  expect(result.money).toBe(before - 150);
+  expect(result.experience.music.campaigns[0].cost).toBe(150);
+  expect(result.music.projects).toHaveLength(projects);
+  await expect(page.locator("[data-music-promotion]")).toContainText(
+    "Owner of the moment",
+  );
 });
+
 test("creators research and edit planned videos while retaining account limits", async ({
   page,
 }) => {
@@ -205,9 +285,24 @@ test("creators research and edit planned videos while retaining account limits",
   await load(page, s);
   await nav(page, "Social media & fame");
   await nav(page, "Plan content production");
-  await page.getByLabel("Content budget").selectOption("standard");
-  await page.getByLabel("Topic research").selectOption("true");
-  await page.getByLabel("Production topic").selectOption(g.currentTrend(s));
+  await interact(
+    page,
+    page.getByLabel("Content budget"),
+    "selectOption",
+    "standard",
+  );
+  await interact(
+    page,
+    page.getByLabel("Topic research"),
+    "selectOption",
+    "true",
+  );
+  await interact(
+    page,
+    page.getByLabel("Production topic"),
+    "selectOption",
+    g.currentTrend(s),
+  );
   await nav(page, "Produce planned content");
   const after = await saved(page);
   expect(after.money).toBe(s.money - 70);
@@ -223,14 +318,19 @@ test("public replies create explicit promises and a community session delivers o
   g.refreshInbox(s);
   await load(page, s);
   await nav(page, "Messages & decisions");
-  await page.getByLabel("Public response").selectOption("promise");
+  await interact(
+    page,
+    page.getByLabel("Public response"),
+    "selectOption",
+    "promise",
+  );
   await nav(page, "Send public response");
   expect((await saved(page)).nextChapter.promises).toHaveLength(1);
   await nav(page, "Host community session · $50 / three hours");
   await week(page);
   expect((await saved(page)).nextChapter.promises[0].status).toBe("delivered");
 });
-test("v11 imports preserve all prior fields and export an exact pre-v14 backup", async ({
+test("v11 imports preserve all prior fields and export an exact pre-v15 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -248,7 +348,7 @@ test("v11 imports preserve all prior fields and export an exact pre-v14 backup",
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("ownership standings and inbox fit a phone without browser errors", async ({

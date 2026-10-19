@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -27,11 +27,16 @@ async function load(page, state) {
 }
 const nav = (page, name) => tap(page, name);
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 for (const id of g.CONTRACT_SPORTS) {
   test(`${id}: lawyer advice, pending signing and negotiated image rights work in the sport screen`, async ({
@@ -42,33 +47,52 @@ for (const id of g.CONTRACT_SPORTS) {
     s.contracts.seed = 1;
     await load(page, s);
     await nav(page, "Sport & development");
-    await page
-      .locator(`[data-action="sport-offer"][data-id="${o.id}"]`)
-      .click();
-    await expect(page.getByRole("dialog")).toContainText("4 weeks");
-    await page
-      .getByRole("combobox", { name: "Lawyer approach" })
-      .selectOption("rights");
+    await interact(
+      page,
+      page.locator(`[data-action="sport-offer"][data-id="${o.id}"]`),
+      "click",
+    );
+    await expect(
+      page.getByRole("dialog", { includeHidden: true }),
+    ).toContainText("4 weeks");
+    await interact(
+      page,
+      page.getByRole("combobox", {
+        name: "Lawyer approach",
+        includeHidden: true,
+      }),
+      "selectOption",
+      "rights",
+    );
     await nav(page, "Hire lawyer & counter clauses");
     expect((await saved(page)).money).toBe(s.money - 250);
-    await page
-      .locator(`[data-action="sport-offer"][data-id="${o.id}"]`)
-      .click();
+    await interact(
+      page,
+      page.locator(`[data-action="sport-offer"][data-id="${o.id}"]`),
+      "click",
+    );
     await expect(
-      page.getByRole("button", { name: "Accept invitation" }),
+      page.getByRole("button", {
+        name: "Accept invitation",
+        includeHidden: true,
+      }),
     ).toBeDisabled();
     await nav(page, "Close dialog");
     await week(page);
     await week(page);
-    await page
-      .locator(`[data-action="sport-offer"][data-id="${o.id}"]`)
-      .click();
-    await expect(page.getByRole("dialog")).toContainText("10%");
+    await interact(
+      page,
+      page.locator(`[data-action="sport-offer"][data-id="${o.id}"]`),
+      "click",
+    );
+    await expect(
+      page.getByRole("dialog", { includeHidden: true }),
+    ).toContainText("10%");
     await nav(page, "Accept invitation");
     const r = await saved(page);
     expect(r.contracts.current[id].imageShare).toBe(0.1);
     await page.reload();
-    await nav(page, "Work & education");
+    await nav(page, "Sport & development");
     await expect(page.locator("[data-depth-contracts]")).toContainText("10%");
     expect(g.restoreGame(await saved(page))).toEqual(await saved(page));
   });
@@ -80,13 +104,23 @@ test("an exclusive label discloses delivery terms, blocks client work and expose
     o = labelOffer(s);
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page.locator(`[data-action="label-offer"][data-id="${o.id}"]`).click();
-  await expect(page.getByRole("dialog")).toContainText("two owned releases");
-  await expect(page.getByRole("dialog")).toContainText("exclusive recording");
+  await interact(
+    page,
+    page.locator(`[data-action="label-offer"][data-id="${o.id}"]`),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "two owned releases",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "exclusive recording",
+  );
   await nav(page, "Sign label agreement");
   await expect(page.locator("[data-depth-contracts]")).toContainText("0/2");
   await nav(page, "Review label buyout");
-  await expect(page.getByRole("dialog")).toContainText("$1,250");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "$1,250",
+  );
   const before = (await saved(page)).money;
   await nav(page, "Pay label buyout");
   const r = await saved(page);
@@ -103,10 +137,12 @@ test("an endorsement pays its balance only after two scheduled appearances and k
     o = endorsementOffer(s, "basketball");
   await load(page, s);
   await nav(page, "Work & education");
-  await page
-    .locator(`[data-action="depth-endorsement-review"][data-id="${o.id}"]`)
-    .click();
-  await expect(page.getByRole("dialog")).toContainText(
+  await interact(
+    page,
+    page.locator(`[data-action="depth-endorsement-review"][data-id="${o.id}"]`),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
     "two public appearances",
   );
   await nav(page, "Sign endorsement");
@@ -114,16 +150,20 @@ test("an endorsement pays its balance only after two scheduled appearances and k
     id = r.contracts.endorsements[0].id;
   expect(r.contracts.endorsements[0].grossPaid).toBe(500);
   expect(r.contracts.endorsements[0].imagePaid).toBe(100);
-  await page
-    .locator(`[data-action="depth-endorsement-book"][data-id="${id}"]`)
-    .click();
+  await interact(
+    page,
+    page.locator(`[data-action="depth-endorsement-book"][data-id="${id}"]`),
+    "click",
+  );
   await week(page);
   r = await saved(page);
   expect(r.contracts.endorsements[0].delivered).toBe(1);
   expect(r.contracts.endorsements[0].grossPaid).toBe(500);
-  await page
-    .locator(`[data-action="depth-endorsement-book"][data-id="${id}"]`)
-    .click();
+  await interact(
+    page,
+    page.locator(`[data-action="depth-endorsement-book"][data-id="${id}"]`),
+    "click",
+  );
   await week(page);
   r = await saved(page);
   expect(r.contracts.endorsements[0].grossPaid).toBe(1000);
@@ -143,7 +183,9 @@ test("campaign cancellation reviews the exact advance repayment before ending de
   await load(page, s);
   await nav(page, "Music & creativity");
   await nav(page, "Review campaign cancellation");
-  await expect(page.getByRole("dialog")).toContainText("$500");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "$500",
+  );
   await nav(page, "Repay and cancel campaign");
   const r = await saved(page);
   expect(r.money).toBe(s.money - 500);
@@ -165,11 +207,15 @@ for (const [id, kind] of [
     await load(page, s);
     await nav(page, "Sport & development");
     const panel = page.locator(`[data-depth-milestones="${id}"]`);
-    await panel
-      .locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`)
-      .click();
+    await interact(
+      page,
+      panel.locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`),
+      "click",
+    );
     const cost = kind === "test" ? 500 : 150;
-    await expect(page.getByRole("dialog")).toContainText(`$${cost}`);
+    await expect(
+      page.getByRole("dialog", { includeHidden: true }),
+    ).toContainText(`$${cost}`);
     await nav(page, "Enter career opportunity");
     let r = await saved(page);
     expect(r.money).toBe(s.money - cost);
@@ -180,7 +226,11 @@ for (const [id, kind] of [
       r.careerMilestones.paths[id].opportunities.find((x) => x.id === o.id)
         .status,
     ).toBe("completed");
-    await panel.getByText("Career history", { exact: true }).click();
+    await interact(
+      page,
+      panel.getByText("Career history", { exact: true }),
+      "click",
+    );
     await expect(panel).toContainText("Assessment completed");
     await page.reload();
     expect(g.restoreGame(await saved(page))).toEqual(await saved(page));
@@ -200,10 +250,14 @@ test("basketball draft entry follows development and produces a separate contrac
   s.careerMilestones.seed = 1;
   await load(page, s);
   await nav(page, "Sport & development");
-  await page
-    .locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`)
-    .click();
-  await expect(page.getByRole("dialog")).toContainText("3 Aug 2026");
+  await interact(
+    page,
+    page.locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "3 Aug 2026",
+  );
   await nav(page, "Enter career opportunity");
   for (let i = 0; i < 4; i++) await week(page);
   const r = await saved(page);
@@ -225,9 +279,11 @@ test("producer showcases build a career record and audience through an actual sc
   s.careerMilestones.seed = 1;
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page
-    .locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`)
-    .click();
+  await interact(
+    page,
+    page.locator(`[data-action="depth-challenge-book"][data-id="${o.id}"]`),
+    "click",
+  );
   await nav(page, "Enter career opportunity");
   await week(page);
   const r = await saved(page);
@@ -247,9 +303,19 @@ test("trusted contact introductions create qualified applications rather than an
   await load(page, s);
   await nav(page, "Relationships");
   const card = page.locator(`[data-contact-career="${id}"]`);
-  await card.getByRole("button", { name: "Ask for an introduction" }).click();
+  await interact(
+    page,
+    card.getByRole("button", {
+      name: "Ask for an introduction",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(
-    card.getByRole("button", { name: "Catch up on their life" }),
+    card.getByRole("button", {
+      name: "Catch up on their life",
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   await week(page);
   await week(page);
@@ -271,10 +337,14 @@ test("contact support changes their own career and a later promotion changes the
   s.livingWorld.seed = 1;
   await load(page, s);
   await nav(page, "Relationships");
-  await page
-    .locator(`[data-contact-career="${id}"]`)
-    .getByRole("button", { name: "Support their development" })
-    .click();
+  await interact(
+    page,
+    page.locator(`[data-contact-career="${id}"]`).getByRole("button", {
+      name: "Support their development",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await saved(page)).money).toBe(s.money - 100);
   await week(page);
   const r = await saved(page);
@@ -296,20 +366,26 @@ test("investor introductions disclose ordinary board fees and transfer no free e
   s.livingWorld.seed = 1;
   await load(page, s);
   await nav(page, "Relationships");
-  await page
-    .locator(`[data-contact-career="${id}"]`)
-    .getByRole("button", { name: "Ask for an introduction" })
-    .click();
+  await interact(
+    page,
+    page.locator(`[data-contact-career="${id}"]`).getByRole("button", {
+      name: "Ask for an introduction",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await week(page);
   await week(page);
   await nav(page, "Review owner introduction");
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
     "paid now and not refunded",
   );
-  await expect(page.getByRole("dialog")).toContainText("premium");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "premium",
+  );
   expect((await saved(page)).ownership).toEqual(s.ownership);
 });
-test("authentic v9 migration keeps the original life records and an exact pre-v14 backup", async ({
+test("authentic v9 migration keeps the original life records and an exact pre-v15 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -328,7 +404,7 @@ test("authentic v9 migration keeps the original life records and an exact pre-v1
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("contract, milestone and evolving-contact panels fit phones without browser errors", async ({
@@ -361,7 +437,9 @@ test("contract, milestone and evolving-contact panels fit phones without browser
   );
   await page.reload();
   await nav(page, "Music & creativity");
+  await reveal(page, page.locator("[data-depth-contracts]"));
   await expect(page.locator("[data-depth-contracts]")).toBeVisible();
+  await reveal(page, page.locator('[data-depth-milestones="music"]'));
   await expect(page.locator('[data-depth-milestones="music"]')).toBeVisible();
   expect(
     await page.evaluate(

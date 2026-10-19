@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -19,11 +19,16 @@ async function load(
 const saved = (page) =>
   page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY);
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 function next(s) {
   if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
@@ -50,7 +55,12 @@ test("football starts through school after growing up from birth", async ({
   await expect(page.locator('[data-sport-card="football"]')).toContainText(
     "School football team",
   );
-  await page.getByLabel("Football training").selectOption("technical");
+  await interact(
+    page,
+    page.getByLabel("Football training"),
+    "selectOption",
+    "technical",
+  );
   const before = await saved(page);
   await week(page);
   const after = await saved(page);
@@ -91,15 +101,43 @@ test("an academy trial takes two weeks, then a separate invitation must be accep
   expect(initial).toBeTruthy();
   await load(page, initial);
   await tap(page, "Sport & development");
-  await page.getByRole("button", { name: "Review invitation" }).click();
-  await page.getByRole("button", { name: "Accept invitation" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Review invitation",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Accept invitation",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(page.locator('[data-sport-card="football"]')).toContainText(
     "decision in 2 weeks",
   );
   await week(page);
   await week(page);
-  await page.getByRole("button", { name: "Review invitation" }).click();
-  await page.getByRole("button", { name: "Accept invitation" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Review invitation",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Accept invitation",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const s = await saved(page);
   expect(s.football.stage).toBe("academy");
   expect(s.employment).toBeNull();
@@ -134,11 +172,21 @@ test("a Formula 4 seat follows a complete top-tier karting championship and lice
   await load(page, initial);
   await tap(page, "Sport & development");
   await week(page);
-  await page
-    .locator('[data-sport-card="racing"]')
-    .getByRole("button", { name: "Review invitation" })
-    .click();
-  await page.getByRole("button", { name: "Accept invitation" }).click();
+  await interact(
+    page,
+    page
+      .locator('[data-sport-card="racing"]')
+      .getByRole("button", { name: "Review invitation", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Accept invitation",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const s = await saved(page);
   expect(s.employment.jobId).toBe("racing-1");
   expect(s.sports.racing.stage).toBe("junior");
@@ -151,20 +199,53 @@ test("shopping filters find equipment and publishing content produces delayed au
 }) => {
   await load(page);
   await tap(page, "Lifestyle & shopping");
-  await page
-    .locator('[data-action="retail-store"][data-id="Electronics"]')
-    .click();
-  await page.getByLabel("Shopping category").selectOption("Essentials");
-  await page.getByLabel("Search shopping").fill("smartphone");
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Electronics"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Shopping category"),
+    "selectOption",
+    "Essentials",
+  );
+  await interact(
+    page,
+    page.getByLabel("Search shopping"),
+    "fill",
+    "smartphone",
+  );
   await expect(page.locator(".shop-card")).toHaveCount(2);
-  await page.locator('[data-action="buy"][data-id="phone"]').click();
-  await page.getByLabel("Show owned possessions only").check();
+  await interact(
+    page,
+    page.locator('[data-action="buy"][data-id="phone"]'),
+    "click",
+  );
+  await interact(page, page.getByLabel("Show owned possessions only"), "check");
   await expect(page.locator(".shop-card")).toHaveCount(1);
   await tap(page, "Social media & fame");
-  await page.locator('[data-action="open-account"][data-id="lens"]').click();
-  await page.locator('[data-action="post"][data-id="lens"]').click();
-  await page.getByLabel("Content approach").selectOption("polished");
-  await page.getByRole("button", { name: "Publish content" }).click();
+  await interact(
+    page,
+    page.locator('[data-action="open-account"][data-id="lens"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="post"][data-id="lens"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Content approach"),
+    "selectOption",
+    "polished",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Publish content", includeHidden: true }),
+    "click",
+  );
   expect((await saved(page)).social.posts[0].status).toBe("pending");
   await week(page);
   let s = await saved(page);
@@ -193,12 +274,42 @@ test("creator sponsorship pays after a labelled post is delivered rather than on
   ];
   await load(page, initial);
   await tap(page, "Social media & fame");
-  await page.getByRole("button", { name: "Review collaboration" }).click();
-  await page.getByRole("button", { name: "Accept collaboration" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Review collaboration",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Accept collaboration",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await saved(page)).money).toBe(initial.money);
-  await page.getByRole("button", { name: "Create sponsored post" }).click();
-  await page.getByLabel("Content approach").selectOption("polished");
-  await page.getByRole("button", { name: "Publish content" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Create sponsored post",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Content approach"),
+    "selectOption",
+    "polished",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Publish content", includeHidden: true }),
+    "click",
+  );
   await week(page);
   const s = await saved(page);
   expect(s.social.deals[0].status).toBe("completed");
@@ -213,29 +324,81 @@ test("a rapper practises, records, and releases a track over four weeks", async 
     g.buy(g.createGame({ seed: 1, age: 18, career: "music" }), "phone"),
   );
   await tap(page, "Music & creativity");
-  await page.getByLabel("Music role").selectOption("rapper");
-  await page.getByLabel("Music genre").selectOption("Hip-hop");
+  await interact(page, page.getByLabel("Music role"), "selectOption", "rapper");
+  await interact(
+    page,
+    page.getByLabel("Music genre"),
+    "selectOption",
+    "Hip-hop",
+  );
   await expect(
-    page.getByRole("button", { name: "Open track workshop" }),
-  ).toBeDisabled();
+    page.getByRole("button", {
+      name: "Open track workshop",
+      includeHidden: true,
+    }),
+  ).toHaveCount(0);
   while ((await saved(page)).music.sessions < 8) {
     if (!(await saved(page)).actions) await week(page);
-    await page.getByRole("button", { name: "Practise your craft" }).click();
+    await interact(
+      page,
+      page.getByRole("button", {
+        name: "Practise your craft",
+        includeHidden: true,
+      }),
+      "click",
+    );
   }
-  await page.getByRole("button", { name: "Open track workshop" }).click();
-  await page.getByLabel("Track title").fill("First chorus");
-  await page.getByLabel("Beat source").selectOption("lease");
-  await page.getByLabel("Production ambition").selectOption("lean");
-  await page.getByRole("button", { name: "Start track workshop" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Create a track",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(page, page.getByLabel("Track title"), "fill", "First chorus");
+  await interact(page, page.getByLabel("Beat source"), "selectOption", "lease");
+  await interact(
+    page,
+    page.getByLabel("Production ambition"),
+    "selectOption",
+    "lean",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Start track workshop",
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (!(await saved(page)).actions) await week(page);
-  await page.getByRole("button", { name: "Write & revise lyrics" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Write & revise lyrics",
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (!(await saved(page)).actions) await week(page);
-  await page.getByRole("button", { name: "Record performance" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Record performance",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(page.locator("main")).toContainText("Mixing expected");
   expect((await saved(page)).music.releases).toHaveLength(0);
   for (let i = 0; i < 4; i++) await week(page);
   expect((await saved(page)).music.releases).toHaveLength(0);
-  await page.getByRole("button", { name: "Release single" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Release single", includeHidden: true }),
+    "click",
+  );
   await week(page);
   const s = await saved(page);
   expect(s.music.releases[0].title).toBe("First chorus");
@@ -252,11 +415,24 @@ test("repeatable experiences spend cash and an action then enforce their cooldow
   const initial = g.createGame({ seed: 1, age: 18, career: "office" });
   await load(page, initial);
   await tap(page, "Lifestyle & shopping");
-  await page
-    .locator('[data-action="retail-store"][data-id="Experiences"]')
-    .click();
-  await page.locator('[data-action="experience"][data-id="dinner"]').click();
-  await page.getByRole("button", { name: "Confirm experience" }).click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Experiences"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="experience"][data-id="dinner"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Confirm experience",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const s = await saved(page);
   expect(s.money).toBe(initial.money - 45);
   expect(s.actions).toBe(2);
@@ -285,12 +461,23 @@ test("existing professional players retain their wages and can export a pre-upgr
   expect(s.football.stage).toBe("professional");
   await tap(page, "Work & education");
   await expect(
-    page.getByRole("button", { name: "Discuss a raise" }),
+    page.getByRole("button", { name: "Discuss a raise", includeHidden: true }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Save & settings" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Save & settings", includeHidden: true }),
+    "click",
+  );
   const pending = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export pre-update save" }).click();
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Export pre-update save",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v15.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

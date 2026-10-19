@@ -88,10 +88,7 @@ export function sportsScreen(s, u, focusedSport = null) {
     )?.id ||
     "football";
   const navigation = `<nav class="category-sections" aria-label="Sport & development sections">${sports.map(({ id, name }) => `<button class="section-shortcut ${id === preferred ? "active" : ""}" data-action="focus-sport" data-id="${id}" aria-controls="sport-section-${id}" ${id === preferred ? 'aria-current="true"' : ""}>${e(name)}</button>`).join("")}</nav>`;
-  const ordered = [
-    sports.find(({ id }) => id === preferred),
-    ...sports.filter(({ id }) => id !== preferred),
-  ];
+  const ordered = [sports.find(({ id }) => id === preferred)];
   return (
     introduction +
     navigation +
@@ -107,14 +104,14 @@ export function sportsScreen(s, u, focusedSport = null) {
 export function socialScreen(s, u) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
     m = s.social;
-  return `${title("CREATE, CONNECT & BUILD AN AUDIENCE", "Find your voice.", "Influencing, long-form video, short-form stories, and streaming take craft, time, and consistency.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">FOLLOWERS ACROSS ACCOUNTS</span><h2>${count(totalFollowers(s))}</h2><p>Account totals can include the same person.</p></section><section class="panel"><span class="eyebrow">PUBLIC RECOGNITION</span><h2>${e(fameLabel(s))}</h2>${meter(s.fame.recognition, "purple")}<p>${s.fame.recognition.toFixed(1)} / 100 recognition · ${Math.round(s.fame.reputation)} / 100 reputation</p></section><section class="panel"><span class="eyebrow">LAST WEEK’S CREATOR INCOME</span><h2>${money(m.weeklyIncome, 2)}</h2><p>${money(m.totalIncome, 2)} earned in total</p></section></div><section class="panel">${panelHeading("Your public identity", "Authentic posts build trust; clickbait risks reputation.", tag(`${Math.round(m.contentSkill)} content skill`, "blue"))}<div class="form-row"><label class="field-label">Content niche<select id="social-niche">${["lifestyle", "football", "business", "gaming", "music"].map((n) => `<option value="${n}" ${n === m.niche ? "selected" : ""}>${n[0].toUpperCase() + n.slice(1)}</option>`).join("")}</select></label><label class="field-label">Account privacy<select id="social-privacy"><option value="public" ${m.privacy === "public" ? "selected" : ""}>Public — discoverable content</option><option value="private" ${m.privacy === "private" ? "selected" : ""}>Private — existing followers only</option></select></label></div><p class="muted">Each post uses one free-time action, production cash, and energy. Produce at most two posts a week. Results arrive next week. Better equipment helps quality; expensive possessions do not buy followers. Public accounts with 1,000 followers and recent posts can earn simulated advertising income. Inactivity loses followers; viral posts are rare.</p></section><div class="career-grid two-columns">${PLATFORMS.map(
+  return `${title("CREATE, CONNECT & BUILD AN AUDIENCE", "Find your voice.", "Share your life, build a community and choose how public you want to be.")}<div class="finance-summary"><section class="panel"><span class="eyebrow">FOLLOWERS ACROSS ACCOUNTS</span><h2>${count(totalFollowers(s))}</h2><p>Account totals can include the same person.</p></section><section class="panel"><span class="eyebrow">PUBLIC RECOGNITION</span><h2>${e(fameLabel(s))}</h2>${meter(s.fame.recognition, "purple")}<p>${s.fame.recognition.toFixed(1)} / 100 recognition · ${Math.round(s.fame.reputation)} / 100 reputation</p></section><section class="panel"><span class="eyebrow">LAST WEEK’S CREATOR INCOME</span><h2>${money(m.weeklyIncome, 2)}</h2><p>${money(m.totalIncome, 2)} earned in total</p></section></div><section class="panel">${panelHeading("Your public identity", "Authentic posts build trust; clickbait risks reputation.", tag("Post, share & connect", "blue"))}<div class="form-row"><label class="field-label">Content niche<select id="social-niche">${["lifestyle", "football", "business", "gaming", "music"].map((n) => `<option value="${n}" ${n === m.niche ? "selected" : ""}>${n[0].toUpperCase() + n.slice(1)}</option>`).join("")}</select></label><label class="field-label">Account privacy<select id="social-privacy"><option value="public" ${m.privacy === "public" ? "selected" : ""}>Public — discoverable content</option><option value="private" ${m.privacy === "private" ? "selected" : ""}>Private — existing followers only</option></select></label></div><p class="muted">Each post uses one free-time action, production cash, and energy. Produce at most two posts a week. Results arrive next week. Better equipment helps quality; expensive possessions do not buy followers. Public accounts with 1,000 followers and recent posts can earn simulated advertising income. Inactivity loses followers; viral posts are rare.</p></section><div class="career-grid two-columns">${PLATFORMS.map(
     (d) => {
       const p = m.profiles[d.id];
-      return `<section class="panel creator-card" data-platform="${d.id}"><span class="feature-icon blue">${icon(d.icon)}</span><span class="eyebrow">${e(d.kind)}</span><h2>${d.name}</h2><div class="life-metrics"><div><span>Followers</span><strong>${count(p.followers)}</strong></div><div><span>Engagement</span><strong>${p.engagement.toFixed(1)}%</strong></div></div>${p.active ? `<p class="muted">${p.lastPostWeek < 0 ? "No content delivered yet." : `Last delivered ${s.week - p.lastPostWeek} week(s) ago.`}</p><button class="button primary full-width" data-action="post" data-id="${d.id}" ${!s.actions || m.posts.filter((p) => p.createdWeek === s.week).length >= 2 ? "disabled" : ""}>${d.id === "stream" ? "Plan a stream" : d.id === "tube" ? "Produce a video" : "Create a post"} ${icon("arrow")}</button>` : `<p class="muted">Start at zero followers. Requires age 13+ and a phone or computer.</p><button class="button secondary full-width" data-action="open-account" data-id="${d.id}" ${!s.actions || age(s) < 13 ? "disabled" : ""}>Open account</button>`}</section>${contractsScreen(s, u, "creator")}`;
+      return `<section class="panel creator-card" data-platform="${d.id}"><span class="feature-icon blue">${icon(d.icon)}</span><span class="eyebrow">${e(d.kind)}</span><h2>${d.name}</h2><div class="life-metrics"><div><span>Followers</span><strong>${count(p.followers)}</strong></div><div><span>Engagement</span><strong>${p.engagement.toFixed(1)}%</strong></div></div>${p.active ? `<p class="muted">${p.lastPostWeek < 0 ? "No content delivered yet." : `Last delivered ${s.week - p.lastPostWeek} week(s) ago.`}</p><button class="button primary full-width" data-action="post" data-id="${d.id}" ${!s.actions || m.posts.filter((p) => p.createdWeek === s.week).length >= 2 ? "disabled" : ""}>${d.id === "stream" ? "Plan a stream" : d.id === "tube" ? "Produce a video" : "Create a post"} ${icon("arrow")}</button>` : `<p class="muted">Start at zero followers. Requires age 13+ and a phone or computer.</p><button class="button secondary full-width" data-action="open-account" data-id="${d.id}" ${!s.actions || age(s) < 13 ? "disabled" : ""}>Open account</button>`}</section>`;
     },
   ).join(
     "",
-  )}</div><section class="panel">${panelHeading("Brand collaborations", "A fee is earned after labelled public content is delivered.")}<div class="application-list">${
+  )}</div>${contractsScreen(s, u, "creator")}<section class="panel">${panelHeading("Brand collaborations", "A fee is earned after labelled public content is delivered.")}<div class="application-list">${
     m.offers
       .filter((o) => o.status === "offered")
       .map(
@@ -167,23 +164,19 @@ export function musicScreen(s, u) {
     )
     .join(
       "",
-    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. Tracks begin in the workshop above: prepare a beat, write lyrics, record, then mix for four weeks. Finished tracks stay in your unreleased library until you choose a single or album. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button><button class="button secondary" data-action="record-music" ${!s.actions || !m.active || m.sessions < 8 || m.projects.some((p) => p.status === "recording") ? "disabled" : ""}>Open track workshop</button></div></section>${creativePlanningScreen(s, u, "music")}${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
-    .filter((p) => ["recording", "ready"].includes(p.status))
+    )}</div><p class="muted">${m.sessions} practice sessions · ${count(m.fans)} music fans · ${money(m.weeklyIncome, 2)} gross music receipts last week · ${money(m.totalIncome, 2)} gross earned in total. Practice costs an action and energy. Tracks begin in the workshop above: prepare a beat, write lyrics, record, then mix for four weeks. Finished tracks stay in your unreleased library until you choose a single or album. Streams earn simulated royalties of $0.002 each; most early releases earn little.</p><div class="inline-actions"><button class="button primary" data-action="music-practice" ${!s.actions ? "disabled" : ""}>Practise your craft</button></div></section>${routineScreen(s, u, "music")}${careerEquipmentScreen(s, u, "music")}${careerSupportScreen(s, u, "music")}${musicWorldScreen(s, u)}${contractsScreen(s, u, "music")}${milestonesScreen(s, u, "music")}<section class="panel">${panelHeading("Recording & releases", "A catalogue takes time; publishing does not guarantee a hit.")}<div class="application-list">${m.projects
+    .filter(
+      (p) =>
+        ["recording", "ready"].includes(p.status) &&
+        !s.globalLife.tracks.some((t) => t.projectId === p.id),
+    )
     .map(
       (p) =>
         `<div class="application-row"><div><strong>${e(p.title)}</strong><small>${p.status === "ready" ? "Finished · unreleased" : "Recording · mixing completes in " + (p.releaseWeek - s.week) + " weeks"}</small></div>${p.status === "ready" ? `<button class="button primary" data-action="ready-recording-release" data-id="${e(p.id)}">Release finished recording</button>` : tag("In production", "purple")}</div>`,
     )
-    .join("")}${
-    m.releases
-      .slice()
-      .reverse()
-      .map(
-        (r) =>
-          `<div class="application-row"><div><strong>${e(r.title)}</strong><small>${e(r.artist || s.globalLife.artistName)} · ${e(r.genre)} · ${e(MUSIC_ROLES[r.role])} · ${r.quality}/100 quality · ${count(r.totalStreams)} streams</small></div><strong>${money(r.totalRoyalties, 2)} earned</strong></div>`,
-      )
-      .join("") ||
-    '<p class="muted">No released music yet. Choose a direction, practise, and record your first track.</p>'
-  }</div></section><section class="panel">${panelHeading("Performances & label interest", "Invitations depend on craft, output, age, and audience.")}<div class="application-list">${
+    .join(
+      "",
+    )}${'<p class="muted">Studio projects from earlier lives appear here. Workshop tracks have their own progress cards; released music lives in Catalogue.</p>'}</div></section><section class="panel">${panelHeading("Performances & label interest", "Invitations depend on craft, output, age, and audience.")}<div class="application-list">${
     m.gigs
       .slice()
       .reverse()

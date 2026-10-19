@@ -1,3 +1,4 @@
+import { promotionStreams } from "./experience.js";
 import { musicRightsShare, recordProducerRoyalty } from "./realism.js";
 import { recordingCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
@@ -273,7 +274,10 @@ export function advanceMusic(s) {
           recordingCampaignBoost(s, p.id),
       );
       const viral = p.quality >= 60 && rng(s) < 0.02;
-      const streams = base + (viral ? Math.floor(5000 + rng(s) * 20000) : 0);
+      const streams =
+        base +
+        promotionStreams(s, p) +
+        (viral ? Math.floor(5000 + rng(s) * 20000) : 0);
       m.fans += Math.floor(streams * 0.005);
       m.releases.push({
         id: p.id,

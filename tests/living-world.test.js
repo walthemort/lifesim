@@ -360,7 +360,7 @@ test("v13 migration preserves every original field and introduces no invented sp
   const s = g.restoreGame(old);
   for (const [key, value] of Object.entries(old))
     if (key !== "version") assert.deepEqual(s[key], value, key);
-  assert.equal(s.version, 14);
+  assert.equal(s.version, g.VERSION);
   assert.deepEqual(s.realWorld.products, []);
   assert.deepEqual(s.realWorld.rights, {});
   assert.equal(s.realWorld.household.joint, null);

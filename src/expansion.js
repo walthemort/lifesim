@@ -175,7 +175,7 @@ export function applyImmigration(state, { country: code, route }) {
   s.globalLife.applications = s.globalLife.applications.slice(-40);
   note(
     s,
-    `Applied for ${country(code).name} ${route === "citizenship" ? "citizenship" : route + " residence permission"}. Review expected ${gameDate(s.week + rule.wait)}; approval is not guaranteed.`,
+    `Applied for ${country(code).name} ${route === "citizenship" ? "citizenship" : route + " residence permission"}. Review expected ${gameDate(s.week + rule.wait, s)}; approval is not guaranteed.`,
   );
   return s;
 }
@@ -411,7 +411,7 @@ export function commitCrime(state, id) {
     s.fame.reputation = clamp(s.fame.reputation - 10 * d.severity);
     note(
       s,
-      `Convicted of ${d.name.toLowerCase()}: $${d.fine} fine, ${sentence} weeks in custody. Expected release ${gameDate(c.prison.releaseWeek)}. Your employment ends.`,
+      `Convicted of ${d.name.toLowerCase()}: $${d.fine} fine, ${sentence} weeks in custody. Expected release ${gameDate(c.prison.releaseWeek, s)}. Your employment ends.`,
       "warning",
     );
   } else {
@@ -643,7 +643,7 @@ export function releaseTrack(state, id) {
   s.globalLife.tracks.find((t) => t.id === id).stage = "scheduled";
   note(
     s,
-    `Scheduled “${p.title}” by ${s.globalLife.artistName} for ${gameDate(p.releaseWeek)}.`,
+    `Scheduled “${p.title}” by ${s.globalLife.artistName} for ${gameDate(p.releaseWeek, s)}.`,
   );
   return s;
 }

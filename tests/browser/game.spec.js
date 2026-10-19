@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -34,11 +34,16 @@ async function saved(page) {
   return page.evaluate((key) => JSON.parse(localStorage.getItem(key)), KEY);
 }
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 function next(s) {
   if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
@@ -58,11 +63,22 @@ test("all screens load without browser errors and instant career switching is go
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await load(page);
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Looking for work",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Looking for work" }),
+    page.getByRole("heading", {
+      name: "Looking for work",
+      includeHidden: true,
+    }),
   ).toBeVisible();
   for (const name of nav) {
     await tap(page, name);
+    await reveal(page, page.locator("main h1"));
     await expect(page.locator("main h1")).toBeVisible();
   }
   expect(await page.locator('[data-action="join-career"]').count()).toBe(0);
@@ -72,25 +88,74 @@ test("new characters start at birth with deferred interests and no qualification
   page,
 }) => {
   await load(page);
-  await page
-    .getByRole("button", { name: "Save & settings", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Enable debug mode", exact: true })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Save & settings",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Enable debug mode",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
   await tap(page, "Overview");
-  await page
-    .getByRole("button", { name: "Your character", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Create a new character" }).click();
-  await page.getByLabel("Your name").fill("Riley Andersen");
-  await page.getByLabel("Home city").selectOption("Copenhagen");
-  await page.getByLabel("Life path / interest").selectOption("racing");
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Your character",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Create a new character",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(page, page.getByLabel("Your name"), "fill", "Riley Andersen");
+  await interact(
+    page,
+    page.getByLabel("Home city"),
+    "selectOption",
+    "Copenhagen",
+  );
+  await interact(
+    page,
+    page.getByLabel("Life path / interest"),
+    "selectOption",
+    "racing",
+  );
   expect(await page.getByLabel("Starting age").count()).toBe(1);
   expect(await page.getByLabel("Starting education").count()).toBe(0);
-  await page.getByRole("button", { name: "Begin my story" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Begin my story", includeHidden: true }),
+    "click",
+  );
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Your early years.",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Your early years." }),
+    page.getByRole("heading", {
+      name: "Your early years.",
+      includeHidden: true,
+    }),
   ).toBeVisible();
   await week(page);
   await week(page);
@@ -111,18 +176,44 @@ test("application decisions, offer acceptance, and actual contract wages work in
 }) => {
   await load(page);
   await tap(page, "Work & education");
-  await page.locator('[data-action="apply-job"][data-id="office-0:0"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="apply-job"][data-id="office-0:0"]'),
+    "click",
+  );
   await expect(page.locator(".application-list")).toContainText(
     "Decision in 2 weeks",
   );
   expect((await saved(page)).employment).toBeNull();
   await week(page);
   await week(page);
-  await page.getByRole("button", { name: "Review offer" }).click();
-  await page.getByRole("button", { name: "Accept this job" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Review offer", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Accept this job", includeHidden: true }),
+    "click",
+  );
+  await reveal(
+    page,
+    page
+      .getByRole("heading", {
+        name: "Office assistant",
+        exact: true,
+        includeHidden: true,
+      })
+      .first(),
+  );
   await expect(
     page
-      .getByRole("heading", { name: "Office assistant", exact: true })
+      .getByRole("heading", {
+        name: "Office assistant",
+        exact: true,
+        includeHidden: true,
+      })
       .first(),
   ).toBeVisible();
   let s = await saved(page);
@@ -160,7 +251,7 @@ test("finishing education unlocks a vacancy, while an incomplete credential bloc
   await expect(page.locator(".vacancy-card")).toContainText("Still needed");
   await week(page);
   await expect(page.locator('[data-action="apply-job"]')).toBeEnabled();
-  await page.locator('[data-action="apply-job"]').click();
+  await interact(page, page.locator('[data-action="apply-job"]'), "click");
   expect((await saved(page)).applications.at(-1).status).toBe("pending");
 });
 test("enrolment costs, part-time progress, and withdrawal are visible and persistent", async ({
@@ -168,13 +259,38 @@ test("enrolment costs, part-time progress, and withdrawal are visible and persis
 }) => {
   await load(page);
   await tap(page, "Work & education");
-  await page.locator('[data-action="enrol"][data-id="business-cert"]').click();
-  await page.getByRole("button", { name: "Enrol in programme" }).click();
+  await interact(
+    page,
+    page.locator('[data-action="enrol"][data-id="business-cert"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Enrol in programme",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await week(page);
   await expect(page.locator(".enrolment")).toContainText("0.5 / 26");
   expect((await saved(page)).money).toBe(12500 - 280 - 35);
-  await page.getByRole("button", { name: "Withdraw from programme" }).click();
-  await page.getByRole("button", { name: "Confirm withdrawal" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Withdraw from programme",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Confirm withdrawal",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await saved(page)).education.active).toBeNull();
 });
 test("salary discussions can raise pay without changing jobs and then disable repeat requests", async ({
@@ -187,12 +303,16 @@ test("salary discussions can raise pay without changing jobs and then disable re
   s.skills.charisma = 100;
   await load(page, s);
   await tap(page, "Work & education");
-  await page.getByRole("button", { name: "Discuss a raise" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Discuss a raise", includeHidden: true }),
+    "click",
+  );
   const r = await saved(page);
   expect(r.employment.jobId).toBe("office-0");
   expect(r.employment.weeklyPay).toBeGreaterThan(s.employment.weeklyPay);
   await expect(
-    page.getByRole("button", { name: "Discuss a raise" }),
+    page.getByRole("button", { name: "Discuss a raise", includeHidden: true }),
   ).toBeDisabled();
 });
 test("fractional crypto and company shares trade, while shopping and relationships still work", async ({
@@ -200,13 +320,29 @@ test("fractional crypto and company shares trade, while shopping and relationshi
 }) => {
   await load(page);
   await tap(page, "Investments");
-  await page.locator('[data-action="trade"][data-id="crypto"]').click();
-  await page.getByLabel("Number of units").fill("0.1");
-  await page.getByRole("button", { name: "Confirm trade" }).click();
+  await interact(
+    page,
+    page.locator('[data-action="trade"][data-id="crypto"]'),
+    "click",
+  );
+  await interact(page, page.getByLabel("Number of units"), "fill", "0.1");
+  await interact(
+    page,
+    page.getByRole("button", { name: "Confirm trade", includeHidden: true }),
+    "click",
+  );
   expect((await saved(page)).holdings.crypto).toBe(0.1);
-  await page.locator('[data-action="trade"][data-id="tech"]').click();
-  await page.getByLabel("Number of units").fill("10");
-  await page.getByRole("button", { name: "Confirm trade" }).click();
+  await interact(
+    page,
+    page.locator('[data-action="trade"][data-id="tech"]'),
+    "click",
+  );
+  await interact(page, page.getByLabel("Number of units"), "fill", "10");
+  await interact(
+    page,
+    page.getByRole("button", { name: "Confirm trade", includeHidden: true }),
+    "click",
+  );
   await expect(
     page.locator(".market-row").filter({ hasText: "Horizon Technologies" }),
   ).toContainText("10 shares");
@@ -214,17 +350,36 @@ test("fractional crypto and company shares trade, while shopping and relationshi
     page.locator(".market-row").filter({ hasText: "Horizon Technologies" }),
   ).toContainText("0.000010% owned");
   await tap(page, "Lifestyle & shopping");
-  await page
-    .locator('[data-action="retail-store"][data-id="Home & hobbies"]')
-    .click();
-  await page.getByLabel("Shopping category").selectOption("Style");
-  await page.locator('[data-action="buy"][data-id="watch"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="retail-store"][data-id="Home & hobbies"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Shopping category"),
+    "selectOption",
+    "Style",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="buy"][data-id="watch"]'),
+    "click",
+  );
   await expect(
     page.locator(".shop-card").filter({ hasText: "The everyday watch" }),
   ).toContainText("Owned");
   await tap(page, "Relationships");
-  await page.getByRole("button", { name: "Meet someone" }).click();
-  await page.locator('[data-action="connect"][data-id="sam"]').click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Meet someone", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="connect"][data-id="sam"]'),
+    "click",
+  );
   expect((await saved(page)).actions).toBe(1);
 });
 test("a real owner introduction, premium bid, acceptance, and closing acquire a company", async ({
@@ -246,26 +401,58 @@ test("a real owner introduction, premium bid, acceptance, and closing acquire a 
   expect(candidate).toBeTruthy();
   await load(page, candidate);
   await tap(page, "Businesses & clubs");
-  await page.locator('[data-action="approach"][data-id="cafe"]').click();
-  await page
-    .getByRole("button", { name: "Pay for introduction request" })
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="approach"][data-id="cafe"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Pay for introduction request",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await week(page);
   await week(page);
-  await page.locator('[data-action="review-bid"]').click();
-  await page.getByLabel("Stake to acquire").selectOption("100");
-  await page.getByLabel("Your cash offer").fill("400000");
-  await page.getByRole("button", { name: "Submit funded offer" }).click();
+  await interact(page, page.locator('[data-action="review-bid"]'), "click");
+  await interact(
+    page,
+    page.getByLabel("Stake to acquire"),
+    "selectOption",
+    "100",
+  );
+  await interact(page, page.getByLabel("Your cash offer"), "fill", "400000");
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Submit funded offer",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect(g.reservedCash(await saved(page))).toBe(400000);
   await week(page);
   await week(page);
-  await page.locator('[data-action="review-bid"]').click();
-  await page.getByRole("button", { name: "Complete acquisition" }).click();
+  await interact(page, page.locator('[data-action="review-bid"]'), "click");
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Complete acquisition",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const result = await saved(page);
   expect(g.stakePercent(result, "cafe")).toBe(100);
   expect(g.reservedCash(result)).toBe(0);
   await expect(page.locator('[data-business="cafe"]')).toContainText(
     "100.000%",
+  );
+  await reveal(
+    page,
+    page.locator('[data-business="cafe"] [data-business-strategy]'),
   );
   await expect(
     page.locator('[data-business="cafe"] [data-business-strategy]'),
@@ -287,17 +474,33 @@ test("football club sale windows transfer ownership and expose per-business mana
   ];
   await load(page, s);
   await tap(page, "Businesses & clubs");
-  await page.getByRole("button", { name: "Review sale" }).click();
-  await page.getByRole("button", { name: "Acquire offered stake" }).click();
-  await page
-    .locator('[data-business-strategy="football-team"]')
-    .selectOption("development");
+  await interact(
+    page,
+    page.getByRole("button", { name: "Review sale", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Acquire offered stake",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-business-strategy="football-team"]'),
+    "selectOption",
+    "development",
+  );
   await week(page);
   const r = await saved(page);
   expect(r.ownership["football-team"].stake).toBe(100);
   expect(r.businessResults["football-team"].strategy).toBe("development");
   expect(r.teams["football-team"].races).toBe(1);
+  await reveal(page, page.locator('[data-business="f1-team"]'));
   await expect(page.locator('[data-business="f1-team"]')).toBeVisible();
+  await reveal(page, page.locator('[data-business="gt-team"]'));
   await expect(page.locator('[data-business="gt-team"]')).toBeVisible();
 });
 test("collectible auctions can leave high-reserve lots unsold", async ({
@@ -309,14 +512,37 @@ test("collectible auctions can leave high-reserve lots unsold", async ({
   ];
   await load(page, s);
   await tap(page, "Investments");
-  await page.locator('[data-action="collectible"][data-id="card:0"]').click();
-  await page.getByRole("button", { name: "Purchase collectible" }).click();
-  await page.locator('[data-action="consign"][data-id="rookie-card"]').click();
-  await page.getByLabel("Minimum acceptable bid").fill("100000");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Consign to auction" })
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="collectible"][data-id="card:0"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Purchase collectible",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="consign"][data-id="rookie-card"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Minimum acceptable bid"),
+    "fill",
+    "100000",
+  );
+  await interact(
+    page,
+    page
+      .getByRole("dialog", { includeHidden: true })
+      .getByRole("button", { name: "Consign to auction", includeHidden: true }),
+    "click",
+  );
   await week(page);
   await week(page);
   const r = await saved(page);
@@ -335,12 +561,38 @@ test("a side company can be founded, configured, and developed while retaining a
   s.skills.business = 35;
   await load(page, s);
   await tap(page, "Start & run a company");
-  await page.getByRole("button", { name: "Plan a company" }).click();
-  await page.getByLabel("Company name").fill("Northstar Labs");
-  await page.getByRole("button", { name: "Launch company" }).click();
-  await page.getByRole("button", { name: "Manage company" }).click();
-  await page.getByLabel("Company strategy").selectOption("reinvest");
-  await page.getByRole("button", { name: "Set my direction" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Plan a company", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Company name"),
+    "fill",
+    "Northstar Labs",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Launch company", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Manage company", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Company strategy"),
+    "selectOption",
+    "reinvest",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Set my direction", includeHidden: true }),
+    "click",
+  );
   await week(page);
   const r = await saved(page);
   expect(r.company.name).toBe("Northstar Labs");
@@ -363,11 +615,22 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
   expect(r.money).toBe(old.money);
   expect(r.employment.weeklyPay).toBe(2100);
   expect(r.ownership["football-team"].stake).toBe(100);
-  await page.getByRole("button", { name: "Save & settings" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Save & settings", includeHidden: true }),
+    "click",
+  );
   const downloaded = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export pre-update save" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Export pre-update save",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await downloaded).suggestedFilename()).toBe(
-    "lifesim-before-v14.json",
+    "lifesim-before-v15.json",
   );
 });
 test("export/import and unreadable-save recovery remain usable", async ({
@@ -375,9 +638,21 @@ test("export/import and unreadable-save recovery remain usable", async ({
 }) => {
   await load(page);
   await week(page);
-  await page.getByRole("button", { name: "Save & settings" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Save & settings", includeHidden: true }),
+    "click",
+  );
   const downloaded = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export save", exact: true }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Export save",
+      exact: true,
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await downloaded).suggestedFilename()).toBe("lifesim-save.json");
   const current = JSON.stringify(await saved(page));
   await page.locator("#import-save").setInputFiles({
@@ -385,13 +660,22 @@ test("export/import and unreadable-save recovery remain usable", async ({
     mimeType: "application/json",
     buffer: Buffer.from("{}"),
   });
-  await expect(page.locator("#toast")).toContainText("invalid");
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "invalid",
+  );
   await page.locator("#import-save").setInputFiles({
     name: "backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(current),
   });
-  await page.getByRole("button", { name: "Replace current save" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Replace current save",
+      includeHidden: true,
+    }),
+    "click",
+  );
   expect((await saved(page)).week).toBe(1);
   await page.evaluate(
     (key) => localStorage.setItem(key, '{"version":99,"name":"Old life"}'),
@@ -399,9 +683,23 @@ test("export/import and unreadable-save recovery remain usable", async ({
   );
   await page.reload();
   await expect(page.locator(".warning")).toContainText("recovery copy");
-  await page.getByRole("button", { name: "Save & settings" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Save & settings", includeHidden: true }),
+    "click",
+  );
+  await reveal(
+    page,
+    page.getByRole("button", {
+      name: "Export recovery copy",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("button", { name: "Export recovery copy" }),
+    page.getByRole("button", {
+      name: "Export recovery copy",
+      includeHidden: true,
+    }),
   ).toBeVisible();
 });
 test("all screens fit on a phone, including large balances and controlled companies", async ({

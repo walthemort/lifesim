@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -17,11 +17,16 @@ async function load(page, state = g.createGame({ seed: 1, age: 18 })) {
   await page.goto("/");
 }
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 async function enableDebug(page) {
   await nav(page, "Save & settings");
@@ -34,10 +39,15 @@ test("ordinary lives offer random creation and keep customization restricted", a
   await load(page);
   await nav(page, "Character & hometown");
   await expect(
-    page.getByRole("button", { name: "Edit character profile" }),
+    page.getByRole("button", {
+      name: "Edit character profile",
+      includeHidden: true,
+    }),
   ).toHaveCount(0);
   await nav(page, "Start a new life");
-  await expect(page.getByRole("dialog")).toContainText("Debug or Pro access");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "Debug or Pro access",
+  );
   await expect(page.getByLabel("Your name")).toHaveCount(0);
   await nav(page, "Begin random life");
   const s = await saved(page);
@@ -54,20 +64,50 @@ test("Debug creator previews appearance and starts a custom life with all specia
   await enableDebug(page);
   await nav(page, "Save & settings");
   await nav(page, "Open character creator");
-  await page.getByLabel("Your name").fill("Riley Andersen");
-  await page.getByLabel("Home city").selectOption("Copenhagen");
-  await page.getByLabel("Birthplace", { exact: true }).selectOption("Monaco");
-  await page.getByLabel("Hair colour").selectOption("Red");
-  await page.getByLabel("Hair style").selectOption("Curly");
-  await page.getByLabel("Life path / interest").selectOption("racing");
+  await interact(page, page.getByLabel("Your name"), "fill", "Riley Andersen");
+  await interact(
+    page,
+    page.getByLabel("Home city"),
+    "selectOption",
+    "Copenhagen",
+  );
+  await interact(
+    page,
+    page.getByLabel("Birthplace", { exact: true }),
+    "selectOption",
+    "Monaco",
+  );
+  await interact(page, page.getByLabel("Hair colour"), "selectOption", "Red");
+  await interact(page, page.getByLabel("Hair style"), "selectOption", "Curly");
+  await interact(
+    page,
+    page.getByLabel("Life path / interest"),
+    "selectOption",
+    "racing",
+  );
   await expect(page.locator("[data-creator-name]")).toHaveText(
     "Riley Andersen",
   );
-  await page.getByLabel("Confidence", { exact: true }).fill("88");
-  await page.locator(".creator-debug summary").click();
-  await page.getByLabel("Starting cash").fill("5000");
-  await page.getByLabel("Music: production", { exact: true }).fill("95");
-  await page.getByLabel("racing: ability", { exact: true }).fill("90");
+  await interact(
+    page,
+    page.getByLabel("Confidence", { exact: true }),
+    "fill",
+    "88",
+  );
+  await interact(page, page.locator(".creator-debug summary"), "click");
+  await interact(page, page.getByLabel("Starting cash"), "fill", "5000");
+  await interact(
+    page,
+    page.getByLabel("Music: production", { exact: true }),
+    "fill",
+    "95",
+  );
+  await interact(
+    page,
+    page.getByLabel("racing: ability", { exact: true }),
+    "fill",
+    "90",
+  );
   await nav(page, "Begin my story");
   const s = await saved(page);
   expect(s.name).toBe("Riley Andersen");
@@ -93,11 +133,18 @@ test("local Pro preview keeps customization after Debug is disabled but hides ch
   await nav(page, "Disable debug mode");
   await nav(page, "Save & settings");
   await nav(page, "Open character creator");
-  await expect(page.getByRole("dialog")).toContainText("PRO CHARACTER CREATOR");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "PRO CHARACTER CREATOR",
+  );
   await expect(page.getByLabel("Starting cash")).toHaveCount(0);
   await expect(page.getByLabel("Starting age")).toHaveCount(0);
-  await page.getByLabel("Your name").fill("Pro Newborn");
-  await page.getByLabel("Family background").selectOption("wealthy");
+  await interact(page, page.getByLabel("Your name"), "fill", "Pro Newborn");
+  await interact(
+    page,
+    page.getByLabel("Family background"),
+    "selectOption",
+    "wealthy",
+  );
   await nav(page, "Begin my story");
   const s = await saved(page);
   expect(s.name).toBe("Pro Newborn");
@@ -107,7 +154,7 @@ test("local Pro preview keeps customization after Debug is disabled but hides ch
   expect(s.debug.enabled).toBe(false);
   await nav(page, "Character & hometown");
   await nav(page, "Edit character profile");
-  await page.getByLabel("Your name").fill("Pro Updated");
+  await interact(page, page.getByLabel("Your name"), "fill", "Pro Updated");
   await nav(page, "Save character profile");
   expect((await saved(page)).name).toBe("Pro Updated");
 });
@@ -123,15 +170,21 @@ for (const [path, name] of [
     await load(page, g.createGame({ seed: 1, age: 12, career: path }));
     await nav(page, "Sport & development");
     const panel = page.locator(`[data-identity-routine="${path}"]`);
-    await panel
-      .getByLabel(`${name} routine`, { exact: true })
-      .selectOption("craft");
-    await panel
-      .getByRole("button", {
+    await interact(
+      page,
+      panel.getByLabel(`${name} routine`, { exact: true }),
+      "selectOption",
+      "craft",
+    );
+    await interact(
+      page,
+      panel.getByRole("button", {
         name: `Plan ${name.toLowerCase()} routine`,
         exact: true,
-      })
-      .click();
+        includeHidden: true,
+      }),
+      "click",
+    );
     await week(page);
     expect((await saved(page)).characterLife.routines[path].sessions).toBe(1);
     await expect(panel).toContainText("1 sessions");
@@ -146,7 +199,12 @@ test("music producers plan studio practice in the music category", async ({
   );
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page.getByLabel("Music routine", { exact: true }).selectOption("craft");
+  await interact(
+    page,
+    page.getByLabel("Music routine", { exact: true }),
+    "selectOption",
+    "craft",
+  );
   await nav(page, "Plan music routine");
   const before = (await saved(page)).music.skills.production;
   await week(page);
@@ -170,10 +228,17 @@ test("family coaching and hometown workshop bookings record outcomes and preserv
   await week(page);
   expect((await saved(page)).characterLife.support.sessions).toBe(1);
   await nav(page, "Character & hometown");
-  await page
-    .getByRole("button", { name: "Book local workshop", exact: true })
-    .first()
-    .click();
+  await interact(
+    page,
+    page
+      .getByRole("button", {
+        name: "Book local workshop",
+        exact: true,
+        includeHidden: true,
+      })
+      .first(),
+    "click",
+  );
   const booked = (await saved(page)).characterLife.localOffers.find(
     (o) => o.status === "booked",
   );
@@ -191,7 +256,12 @@ test("personal goals can be chosen and personal development uses actual actions"
 }) => {
   await load(page, g.createGame({ seed: 1, age: 12, career: "music" }));
   await nav(page, "Character & hometown");
-  await page.getByLabel("Your next personal goal").selectOption("release");
+  await interact(
+    page,
+    page.getByLabel("Your next personal goal"),
+    "selectOption",
+    "release",
+  );
   await nav(page, "Choose personal goal");
   const before = await saved(page);
   await nav(page, "Reflect & listen");
@@ -202,10 +272,14 @@ test("personal goals can be chosen and personal development uses actual actions"
     before.characterLife.personality.patience,
   );
   await expect(
-    page.getByRole("button", { name: "Reflect & listen", exact: true }),
+    page.getByRole("button", {
+      name: "Reflect & listen",
+      exact: true,
+      includeHidden: true,
+    }),
   ).toBeDisabled();
 });
-test("v10 import preserves the original life and exports an exact pre-v14 backup", async ({
+test("v10 import preserves the original life and exports an exact pre-v15 backup", async ({
   page,
 }) => {
   const old = JSON.parse(
@@ -224,7 +298,7 @@ test("v10 import preserves the original life and exports an exact pre-v14 backup
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const download = await pending;
-  expect(download.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await download.path(), "utf8"))).toEqual(
     old,
   );
@@ -237,8 +311,18 @@ test("character screen and the full creator fit a phone without browser errors",
   await page.setViewportSize({ width: 390, height: 844 });
   await load(page, g.createGame({ seed: 1, age: 10, career: "racing" }));
   await nav(page, "Character & hometown");
+  await reveal(
+    page,
+    page.getByRole("navigation", {
+      name: "Character & hometown sections",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("navigation", { name: "Character & hometown sections" }),
+    page.getByRole("navigation", {
+      name: "Character & hometown sections",
+      includeHidden: true,
+    }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -248,12 +332,12 @@ test("character screen and the full creator fit a phone without browser errors",
   await enableDebug(page);
   await nav(page, "Save & settings");
   await nav(page, "Open character creator");
-  await page.locator(".creator-debug summary").click();
+  await interact(page, page.locator(".creator-debug summary"), "click");
   const dialog = page.getByRole("dialog");
   expect(
     await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
   ).toBe(true);
-  await page.getByLabel("Your name").fill("Phone Player");
+  await interact(page, page.getByLabel("Your name"), "fill", "Phone Player");
   await nav(page, "Begin my story");
   expect((await saved(page)).name).toBe("Phone Player");
   expect(errors).toEqual([]);

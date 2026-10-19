@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -18,11 +18,16 @@ async function load(page, state = fresh()) {
 }
 const navigate = (page, name) => tap(page, name);
 async function next(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 const step = (s) => {
   if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
@@ -51,22 +56,53 @@ test("a weekly custom plan persists and controls study progression through the d
   let s = g.enrolEducation(fresh(), "business-cert");
   await load(page, s);
   await navigate(page, "Weekly calendar");
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "Make room for what matters.",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Make room for what matters." }),
+    page.getByRole("heading", {
+      name: "Make room for what matters.",
+      includeHidden: true,
+    }),
   ).toBeVisible();
-  await page
-    .getByRole("combobox", { name: "Planning mode", exact: true })
-    .selectOption("custom");
-  await page.getByRole("spinbutton", { name: /^Study hours/ }).fill("0");
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Planning mode",
+      exact: true,
+      includeHidden: true,
+    }),
+    "selectOption",
+    "custom",
+  );
+  await interact(
+    page,
+    page.getByRole("spinbutton", { name: /^Study hours/, includeHidden: true }),
+    "fill",
+    "0",
+  );
   await navigate(page, "Save weekly plan");
   await next(page);
   expect((await saved(page)).education.active.progress).toBe(0);
   await page.reload();
   await navigate(page, "Weekly calendar");
   await expect(
-    page.getByRole("combobox", { name: "Planning mode", exact: true }),
+    page.getByRole("combobox", {
+      name: "Planning mode",
+      exact: true,
+      includeHidden: true,
+    }),
   ).toHaveValue("custom");
-  await page.getByRole("spinbutton", { name: /^Study hours/ }).fill("16");
+  await interact(
+    page,
+    page.getByRole("spinbutton", { name: /^Study hours/, includeHidden: true }),
+    "fill",
+    "16",
+  );
   await navigate(page, "Save weekly plan");
   await next(page);
   expect((await saved(page)).education.active.progress).toBe(1);
@@ -81,10 +117,21 @@ test("a date is booked, shown on the calendar, and resolved when the week advanc
   const person = page
     .locator(".relationship-card")
     .filter({ hasText: "Riley Chen" });
-  await person.getByRole("button", { name: "Ask on a date" }).click();
-  await page
-    .getByRole("combobox", { name: "Date plan", exact: true })
-    .selectOption("dinner");
+  await interact(
+    page,
+    person.getByRole("button", { name: "Ask on a date", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Date plan",
+      exact: true,
+      includeHidden: true,
+    }),
+    "selectOption",
+    "dinner",
+  );
   await navigate(page, "Send date invitation");
   let booked = await saved(page);
   expect(booked.calendar.entries[0].status).toBe("scheduled");
@@ -134,9 +181,16 @@ test("new profession recruitment requires completing the interview dialog and ac
   await load(page, s);
   await navigate(page, "Work & education");
   await navigate(page, "Prepare interview");
-  await page
-    .getByRole("combobox", { name: "Interview approach", exact: true })
-    .selectOption("prepared");
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Interview approach",
+      exact: true,
+      includeHidden: true,
+    }),
+    "selectOption",
+    "prepared",
+  );
   await navigate(page, "Attend interview");
   expect((await saved(page)).applications[0].interviewed).toBe(true);
   await next(page);
@@ -157,12 +211,26 @@ test("parents can discuss activities, respond to school concerns and share a fam
   await load(page, s);
   await navigate(page, "Family & pets");
   await navigate(page, "Discuss school & activities");
-  await page
-    .getByRole("combobox", { name: "Activity club", exact: true })
-    .selectOption("music");
-  await page
-    .getByRole("combobox", { name: "School choice", exact: true })
-    .selectOption("private");
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Activity club",
+      exact: true,
+      includeHidden: true,
+    }),
+    "selectOption",
+    "music",
+  );
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "School choice",
+      exact: true,
+      includeHidden: true,
+    }),
+    "selectOption",
+    "private",
+  );
   await navigate(page, "Agree on a plan");
   expect((await saved(page)).family.children[0].club).toBe("music");
   await navigate(page, "Listen together · 3 h");
@@ -186,9 +254,9 @@ test("authentic v4 lives upgrade with a downloadable unmodified pre-v9 snapshot"
   await navigate(page, "Save & settings");
   const pending = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v15.json");
   const backup = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
+    (key) => JSON.parse(localStorage.getItem(`${key}-before-v15`)),
     KEY,
   );
   expect(backup).toEqual(old);

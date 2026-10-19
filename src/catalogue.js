@@ -515,7 +515,7 @@ export const EXPERIENCES = [
     cooldown: 8,
     content: 3,
     happiness: 3,
-    description: "Learn composition and editing; improves content skill.",
+    description: "Learn composition and editing for your photos and videos.",
   },
   {
     id: "music-class",

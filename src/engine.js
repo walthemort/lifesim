@@ -1,4 +1,12 @@
 import {
+  initializeExperience,
+  prepareExperience,
+  advanceExperience,
+  validateExperience,
+  applyGodMode,
+} from "./experience.js";
+export * from "./experience.js";
+import {
   initializeRealism,
   prepareRealism,
   advanceRealism,
@@ -132,7 +140,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 14;
+export const VERSION = 15;
 import {
   initializeBanking,
   validateBanking,
@@ -709,6 +717,7 @@ function changeStats(s, changes) {
 }
 export function createGame({
   name = "Alex Morgan",
+  startingYear = 2026,
   age: startAge = 0,
   footballPosition = "Midfielder",
   city = "London",
@@ -725,6 +734,12 @@ export function createGame({
     Number(startAge) > 60
   )
     throw new Error("Choose an age from birth to sixty.");
+  if (
+    !Number.isInteger(Number(startingYear)) ||
+    Number(startingYear) < 1900 ||
+    Number(startingYear) > 2100
+  )
+    throw new Error("Choose a starting year from 1900 to 2100.");
   if (education === "business-degree" && Number(startAge) < 21)
     throw new Error(
       "A completed degree background requires a starting age of at least 21.",
@@ -733,6 +748,7 @@ export function createGame({
     throw new Error("Choose a valid country.");
   const s = {
     version: VERSION,
+    startingYear: Number(startingYear),
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
     startAge: Number(startAge),
     city:
@@ -844,6 +860,7 @@ export function createGame({
   initializePressure(s);
   initializeExpansion(s, { countryCode });
   initializeRealism(s);
+  initializeExperience(s);
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -1598,6 +1615,7 @@ export function advanceWeek(state) {
     const s = advanceCustody(clone(state), MARKETS);
     startBankingWeek(s);
     prepareRealism(s);
+    prepareExperience(s);
     s.money -=
       SHOP.filter(
         (i) => s.inventory.includes(i.id) && i.category !== "Ownership",
@@ -1611,7 +1629,9 @@ export function advanceWeek(state) {
         : 0);
     advanceBanking(s, 0);
     advanceRealism(s);
+    advanceExperience(s);
     for (const r of s.relationships) r.bond = clamp(r.bond - 0.1);
+    applyGodMode(s);
     if (s.health <= 0) s.ended = true;
     s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
     s.history = s.history.slice(-52);
@@ -1626,6 +1646,7 @@ export function advanceWeek(state) {
   s.week++;
   startBankingWeek(s);
   prepareRealism(s);
+  prepareExperience(s);
   prepareChildhood(s);
   prepareLifeCourse(s);
   prepareCareerWorld(s);
@@ -1804,10 +1825,12 @@ export function advanceWeek(state) {
   advancePressure(s);
   advanceExpansion(s, MARKETS);
   advanceRealism(s);
+  advanceExperience(s);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
   s.history = s.history.slice(-52);
+  applyGodMode(s);
   if (age(s) >= 90 || s.health <= 0) {
     s.ended = true;
     s.event = null;
@@ -1825,7 +1848,9 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, VERSION].includes(s.version) ||
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, VERSION].includes(
+      s.version,
+    ) ||
     typeof s.name !== "string" ||
     s.name.length > 32 ||
     !number(s.startAge, 0, 60) ||
@@ -1843,6 +1868,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsExperience = s.version < 15;
   const needsRealism = s.version < 14;
   const needsExpansion = s.version < 13;
   const needsPressure = s.version < 12;
@@ -2045,6 +2071,12 @@ export function restoreGame(raw) {
     initializeRealism(s, { legacy: true });
     s.version = VERSION;
   }
+  if (needsExperience) {
+    s.startingYear = 2026;
+    initializeExperience(s);
+    s.version = VERSION;
+  }
+  validateExperience(s);
   validateRealism(s);
   validateExpansion(s);
   validateOwnershipPlay(s);
@@ -2233,13 +2265,17 @@ export function createCustomCharacter(current, options = {}) {
   s.history[0].value = netWorth(s);
   return s;
 }
-export function createRandomCharacter(seed = Date.now() >>> 0) {
+export function createRandomCharacter(
+  seed = Date.now() >>> 0,
+  { startingYear = 2026 } = {},
+) {
   if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295)
     throw new Error("Choose a valid random-life seed.");
   const stream = { seed },
     pick = (values) => values[Math.floor(rng(stream) * values.length)];
   const s = createGame({
     seed,
+    startingYear,
     name: `${pick(["Alex", "Riley", "Jamie", "Robin", "Morgan", "Casey", "Taylor", "Jordan"])} ${pick(["Andersen", "Morgan", "Chen", "Silva", "Rossi", "Taylor", "Patel", "Martin"])}`,
     city: pick(
       COUNTRIES.map((c) => CITY_CATALOGUE[c.code]?.[0] || c.capital).filter(

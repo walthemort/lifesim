@@ -1,3 +1,22 @@
+import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
+import { organizeWorkspace } from "./phone-workspaces.js";
+import {
+  streamingScreen,
+  promotionScreen,
+  socialManagementScreen,
+  footballMarketScreen,
+  youthScoutingScreen,
+  godModeScreen,
+} from "./experience-screens.js";
+import {
+  hireSocialManager,
+  dismissSocialManager,
+  startMusicCampaign,
+  approachFootballClub,
+  requestYouthAssessment,
+  setGodModeLock,
+  applyGodMode,
+} from "./experience.js";
 import { localProfile } from "./economy.js";
 import {
   isNativeApp,
@@ -414,60 +433,30 @@ let state,
   recoverySave = "",
   migrationSave = "",
   debugBackup = "",
-  migrationVersion = 14,
+  migrationVersion = VERSION,
   toastTimer;
 try {
   recoverySave = localStorage.getItem(`${STORAGE}-recovery`) || "";
   debugBackup = localStorage.getItem(`${STORAGE}-before-debug`) || "";
-  migrationSave =
-    localStorage.getItem(`${STORAGE}-before-v14`) ||
-    localStorage.getItem(`${STORAGE}-before-v13`) ||
-    localStorage.getItem(`${STORAGE}-before-v12`) ||
-    localStorage.getItem(`${STORAGE}-before-v11`) ||
-    localStorage.getItem(`${STORAGE}-before-v10`) ||
-    localStorage.getItem(`${STORAGE}-before-v9`) ||
-    localStorage.getItem(`${STORAGE}-before-v8`) ||
-    localStorage.getItem(`${STORAGE}-before-v7`) ||
-    localStorage.getItem(`${STORAGE}-before-v6`) ||
-    localStorage.getItem(`${STORAGE}-before-v5`) ||
-    localStorage.getItem(`${STORAGE}-before-v4`) ||
-    localStorage.getItem(`${STORAGE}-before-v3`) ||
-    localStorage.getItem(`${STORAGE}-before-v2`) ||
-    "";
-  migrationVersion = localStorage.getItem(`${STORAGE}-before-v14`)
-    ? 14
-    : localStorage.getItem(`${STORAGE}-before-v13`)
-      ? 13
-      : localStorage.getItem(`${STORAGE}-before-v12`)
-        ? 12
-        : localStorage.getItem(`${STORAGE}-before-v11`)
-          ? 11
-          : localStorage.getItem(`${STORAGE}-before-v10`)
-            ? 10
-            : localStorage.getItem(`${STORAGE}-before-v9`)
-              ? 9
-              : localStorage.getItem(`${STORAGE}-before-v8`)
-                ? 8
-                : localStorage.getItem(`${STORAGE}-before-v7`)
-                  ? 7
-                  : localStorage.getItem(`${STORAGE}-before-v6`)
-                    ? 6
-                    : localStorage.getItem(`${STORAGE}-before-v5`)
-                      ? 5
-                      : localStorage.getItem(`${STORAGE}-before-v4`)
-                        ? 4
-                        : 3;
+  for (let v = VERSION; v >= 2; v--) {
+    const backup = localStorage.getItem(`${STORAGE}-before-v${v}`);
+    if (backup) {
+      migrationSave = backup;
+      migrationVersion = v;
+      break;
+    }
+  }
   const saved = localStorage.getItem(STORAGE);
   try {
     state = saved ? restoreGame(saved) : createRandomCharacter();
     if (
       saved &&
       JSON.parse(saved).version < VERSION &&
-      !localStorage.getItem(`${STORAGE}-before-v14`)
+      !localStorage.getItem(`${STORAGE}-before-v${VERSION}`)
     ) {
       migrationSave = saved;
-      migrationVersion = 14;
-      localStorage.setItem(`${STORAGE}-before-v14`, saved);
+      migrationVersion = VERSION;
+      localStorage.setItem(`${STORAGE}-before-v${VERSION}`, saved);
     }
   } catch {
     recoverySave = saved;
@@ -482,6 +471,7 @@ try {
     "Browser storage is unavailable. Export your save before leaving.";
 }
 if (nativeSaveWarning) storageWarning = nativeSaveWarning;
+const workspaceSelections = {};
 const app = document.querySelector("#app"),
   modal = document.querySelector("#modal");
 function save() {
@@ -498,6 +488,18 @@ function save() {
   }
 }
 function notify(text) {
+  if (modal.open) {
+    let feedback = modal.querySelector(".dialog-feedback");
+    if (!feedback) {
+      feedback = document.createElement("div");
+      feedback.className = "dialog-feedback";
+      feedback.setAttribute("role", "alert");
+      modal.querySelector(".modal-close").after(feedback);
+    }
+    feedback.textContent = text;
+    feedback.scrollIntoView({ block: "nearest" });
+    return;
+  }
   const toast = document.querySelector("#toast");
   toast.textContent = text;
   toast.classList.add("visible");
@@ -508,7 +510,7 @@ function update(fn, success = "") {
   try {
     const next = fn(state);
     refreshInbox(next);
-    state = next;
+    state = applyGodMode(next);
     save();
     render();
     if (success) notify(success);
@@ -522,6 +524,7 @@ function dialog(content) {
   if (modal.open) modal.close();
   modal.innerHTML = displayDates(
     `<button class="modal-close icon-button" data-action="close-modal" aria-label="Close dialog">${icon("close")}</button>${content}`,
+    state,
   );
   const heading = modal.querySelector("h2");
   if (heading) {
@@ -533,6 +536,7 @@ function dialog(content) {
     Boolean(modal.querySelector("#character-form")),
   );
   modal.showModal();
+  document.body.classList.add("modal-open");
 }
 function tag(text, color = "green") {
   return `<span class="tag ${color}">${e(text)}</span>`;
@@ -577,23 +581,65 @@ const nav = [
   ["teams", "trophy", "Businesses & clubs"],
 ];
 function sidebar() {
+  const section = ["career", "sports", "music", "social", "company"].includes(
+    view,
+  )
+    ? "activities"
+    : ["relationships", "family", "identity", "housing"].includes(view)
+      ? "people"
+      : ["overview", "activities", "people", "inbox"].includes(view)
+        ? view
+        : "world";
   const items = [
     ["overview", "grid", "Home"],
-    ["career", "briefcase", "Career"],
-    ["sports", "football", "Sport"],
+    ["activities", "briefcase", "Activities"],
+    ["people", "users", "People"],
     ["inbox", "mail", "Inbox"],
     ["world", "spark", "World"],
   ];
-  return `<nav class="phone-tabs" aria-label="App tabs">${items.map(([id, glyph, label]) => `<button class="phone-tab ${view === id ? "active" : ""}" data-view="${id}" aria-label="${label} tab" ${view === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span></button>`).join("")}</nav>`;
+  return `<nav class="phone-tabs" aria-label="App tabs">${items.map(([id, glyph, label]) => `<button class="phone-tab ${section === id ? "active" : ""}" data-view="${id}" aria-label="${label} tab" ${section === id ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${label}</span></button>`).join("")}</nav>`;
+}
+function categoryCard(item) {
+  const [id, glyph, label] = item;
+  return `<button class="world-card" data-view="${id}" aria-label="${e(label)}">${icon(glyph)}<span>${e(label)}</span></button>`;
 }
 function worldView() {
-  return `${title("YOUR LIFE, WITHIN REACH", "Your world.", "Careers, family, money and everything in between.")}<nav class="world-grid" aria-label="Main navigation">${nav.map(([id, glyph, label]) => `<button class="world-card" data-view="${id}" aria-label="${e(label)}">${icon(glyph)}<span>${e(label)}</span></button>`).join("")}</nav>`;
+  const groups = [
+    ["You & your time", ["identity", "childhood", "ageing", "calendar"]],
+    ["People & home", ["relationships", "family", "housing"]],
+    ["Work & creativity", ["career", "sports", "music", "social", "company"]],
+    ["Money & ownership", ["investments", "banking", "realism", "teams"]],
+    ["Everyday life", ["lifestyle", "hobbies", "crime"]],
+  ];
+  return `${title("MAKE ROOM FOR YOUR LIFE", "Your world.", "Everything has a home. Choose what matters this week.")}<label class="world-search"><span class="sr-only">Find an activity</span><input id="world-search" type="search" placeholder="Find an activity…" autocomplete="off"></label><nav class="world-library" aria-label="Main navigation">${groups.map(([name, ids]) => `<section class="world-group"><h2>${name}</h2><div class="world-grid">${ids.map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div></section>`).join("")}</nav><p class="world-empty muted" hidden>No matching activities.</p>`;
+}
+function activitiesView() {
+  const active = ["football", "racing", "basketball", "tennis"].includes(
+    state.career,
+  )
+    ? state.career
+    : state.music.active
+      ? "music"
+      : state.company
+        ? "company"
+        : state.aspiration;
+  const route = ["football", "racing", "basketball", "tennis"].includes(active)
+    ? "sports"
+    : active === "music"
+      ? "music"
+      : ["business", "company"].includes(active)
+        ? "company"
+        : "career";
+  return `${title("YOUR NEXT CHAPTER", "What will you work on?", "One place for work, sport, music and making something of your own.")}<section class="activity-feature"><span class="eyebrow">YOUR CURRENT PATH</span><h2>${e(active === "unemployed" ? "Still discovering" : active === "racing" ? "Motorsport" : active[0].toUpperCase() + active.slice(1))}</h2><p>Pick up where you left off. Opportunities and contracts stay in their own career workspace.</p><button class="button primary" data-view="${route}">Continue your path ${icon("arrow")}</button></section><div class="world-grid">${["career", "sports", "music", "social", "company"].map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div>`;
+}
+function peopleView() {
+  return `${title("THE PEOPLE WHO MATTER", "Your inner circle.", "Make time for relationships and the family you are building.")}<div class="world-grid">${["relationships", "family", "identity", "housing"].map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div>`;
 }
 function privacyView() {
   return `${title("PRIVATE BY DESIGN", "Your life stays on your phone.", "Privacy and support")}<section class="panel phone-privacy"><h2>On-device game data</h2><p>Lifesim stores your character, choices, progress and backup saves on this device. No account, advertising, analytics, location tracking or developer-run server is used. Choosing a birthplace does not access your real location.</p><p>Backups leave your device only when you choose a destination in the share sheet. Files you import are read to restore the game. Uninstalling the app can remove local saves; export a backup first.</p><h3>Support</h3><p>Report bugs at github.com/walthemort/lifesim/issues. Include the app version and steps to reproduce. A save file can contain character names and relationship details; share one only if you choose to.</p><h3>World data credits</h3><p>Country and currency metadata: mledoze/countries, Open Database Licence (ODbL). City catalogue: lutangar/cities.json, derived from GeoNames, CC BY 4.0. The bundled settlement database is deduplicated. Source attribution and licence copies ship with the app in the licences folder.</p><h3>Simulated content</h3><p>All money, investments, businesses, criminal scenarios and relationships are fictional gameplay. No real trades, wagering or payouts are provided. Pro access is a local preview switch; this build contains no purchases.</p><button class="button secondary" data-action="settings">Save & settings</button></section>`;
 }
 function header() {
-  return `<header class="topbar"><div class="phone-appbar"><button class="icon-button" data-action="character" aria-label="View your character"><span class="brand-mark">l.</span></button><div class="phone-heading">${e(view === "world" ? "Your world" : view === "privacy" ? "Privacy & support" : nav.find((n) => n[0] === view)?.[2] || "Lifesim")}<small>${e(state.name)} · ${e(state.city)}</small></div><button class="icon-button notification-bell" data-action="notification-bell" aria-label="Notifications">${icon("bell")}<span>${notificationCount(state)}</span></button><button class="icon-button" data-action="settings" aria-label="Save & settings">${icon("settings")}</button></div><div class="time-controls"><span class="game-date"><span>${gameDate(state.week)}<small>Age ${age(state)}</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
+  return `<header class="topbar"><div class="phone-appbar"><button class="icon-button" data-action="character" aria-label="View your character"><span class="brand-mark">l.</span></button><div class="phone-heading">${e(view === "world" ? "Your world" : view === "privacy" ? "Privacy & support" : view === "activities" ? "Activities" : view === "people" ? "People" : nav.find((n) => n[0] === view)?.[2] || "Lifesim")}<small>${e(state.name)} · ${e(state.city)}</small></div><button class="icon-button notification-bell" data-action="notification-bell" aria-label="Notifications">${icon("bell")}<span>${notificationCount(state)}</span></button><button class="icon-button" data-action="settings" aria-label="Save & settings">${icon("settings")}</button></div><div class="time-controls"><span class="game-date"><span>${gameDate(state.week, state)}<small>Age ${age(state)}</small></span></span><button class="button secondary age-up" data-action="age-up" ${state.ended ? "disabled" : ""}>Age up</button><button class="button primary next-week" data-action="next-week" ${state.ended ? "disabled" : ""}>${state.event ? "Make a choice" : "Next week"} ${icon("arrow")}</button></div></header>`;
 }
 function stats() {
   const cards = [
@@ -764,6 +810,8 @@ function teamsView() {
 const pages = {
   overview,
   world: worldView,
+  activities: activitiesView,
+  people: peopleView,
   privacy: privacyView,
   realism: () => realismScreen(state, ui()),
   inbox: () => inboxScreen(state, ui(), { archived: inboxArchived }),
@@ -794,12 +842,14 @@ const pages = {
             : "football"),
     ),
   music: () =>
+    streamingScreen(state, ui()) +
+    promotionScreen(state, ui()) +
     studioScreen(state, ui()) +
     rightsScreen(state, ui()) +
     musicScreen(state, ui()),
   company: () => companyScreen(state, ui()) + productsScreen(state, ui()),
   crime: () => crimeScreen(state, ui()),
-  social: () => socialScreen(state, ui()),
+  social: () => socialScreen(state, ui()) + socialManagementScreen(state, ui()),
   teams: teamsView,
   family: () =>
     familyScreen(state, ui()) +
@@ -809,7 +859,7 @@ const pages = {
   ageing: () => ageingScreen(state, ui()),
   housing: () => housingScreen(state, ui()),
   hobbies: () => hobbiesScreen(state, ui()) + storyScreen(state, ui()),
-  debug: () => debugScreen(state, ui()),
+  debug: () => debugScreen(state, ui()) + godModeScreen(state, ui()),
 };
 for (const id of [
   "career",
@@ -834,9 +884,19 @@ for (const id of [
 }
 function render() {
   app.innerHTML = displayDates(
-    `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span><button class="button secondary" data-view="debug">Debug controls</button></div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
+    `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span>${view !== "debug" ? '<button class="button secondary" data-view="debug">God mode</button>' : ""}</div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
+    state,
   );
-  addSectionNavigation();
+  const main = document.querySelector("#main");
+  if (view === "sports" && main.querySelector("#sport-section-football"))
+    main
+      .querySelector("#sport-section-football")
+      .insertAdjacentHTML(
+        "beforeend",
+        youthScoutingScreen(state, ui()) + footballMarketScreen(state, ui()),
+      );
+  organizeWorkspace(main, view, state, workspaceSelections);
+  if (!main.querySelector(".workspace-tabs")) addSectionNavigation();
   document.documentElement.style.setProperty(
     "--appbar-height",
     `${document.querySelector(".topbar").getBoundingClientRect().height}px`,
@@ -884,7 +944,7 @@ function newGameDialog() {
     return;
   }
   dialog(
-    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>A new life awaits.</h2><p>Begin at birth with a random name, hometown, family background and personality. Discover your interests as you grow. Starting a new life replaces your current save; export it first to keep both.</p><button class="button primary full-width" data-action="identity-random-life">Begin random life</button><p class="muted">The character creator is available with Debug or Pro access. It lets you choose a name, appearance, birthplace, family and starting interests.</p><button class="button secondary full-width" data-action="settings">Open Save & settings</button>`,
+    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>A new life awaits.</h2><p>Begin at birth with a random name, hometown, family background and personality. Discover your interests as you grow. Starting a new life replaces your current save; export it first to keep both.</p><label class="field-label">Starting year<input name="startingYear" type="number" min="1900" max="2100" step="1" value="${state.startingYear}" required></label><button class="button primary full-width" data-action="identity-random-life">Begin random life</button><p class="muted">The character creator is available with Debug or Pro access. It lets you choose a name, appearance, birthplace, family and starting interests.</p><button class="button secondary full-width" data-action="settings">Open Save & settings</button>`,
   );
 }
 function beginLife(next) {
@@ -894,6 +954,8 @@ function beginLife(next) {
   focusedSport = null;
   focusedOwnership = null;
   inboxArchived = false;
+  for (const key of Object.keys(workspaceSelections))
+    delete workspaceSelections[key];
   save();
   render();
   modal.close();
@@ -910,7 +972,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.14 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.15 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -1006,6 +1068,83 @@ document.addEventListener("click", (event) => {
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "workspace-tab": {
+      workspaceSelections[button.dataset.workspace] = id;
+      const bar = button.closest('[role="tablist"]');
+      for (const tab of bar.querySelectorAll('[role="tab"]')) {
+        const active = tab === button;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+        document.getElementById(tab.getAttribute("aria-controls")).hidden =
+          !active;
+      }
+      window.scrollTo({ top: 0 });
+      break;
+    }
+    case "god-lock":
+      update((s) => setGodModeLock(s, id, !s.experience.locks[id]));
+      break;
+    case "god-lock-all":
+      update((s) =>
+        setGodModeLock(
+          s,
+          "all",
+          !Object.values(s.experience.locks).every(Boolean),
+        ),
+      );
+      break;
+    case "god-max-group": {
+      const values = DEBUG_SPECIALIST_SKILLS.filter(
+        (k) =>
+          k.id !== "social.contentSkill" &&
+          (id === "all" || k.id.startsWith(id + ".")),
+      );
+      update((s) =>
+        debugEdit(s, {
+          ...(id === "all" || id === "hobbies"
+            ? {
+                hobbySkills: Object.fromEntries(
+                  Object.keys(s.pastimes.hobbies).map((k) => [k, 100]),
+                ),
+              }
+            : {}),
+          ...(id === "all" || id === "general"
+            ? {
+                skills: Object.fromEntries(
+                  Object.keys(s.skills).map((k) => [k, 100]),
+                ),
+              }
+            : {}),
+          ...(values.length
+            ? {
+                specialistSkills: Object.fromEntries(
+                  values.map((k) => [k.id, 100]),
+                ),
+              }
+            : {}),
+        }),
+      );
+      break;
+    }
+    case "social-manager-hire":
+      update((s) => hireSocialManager(s, id), "Your social manager is hired.");
+      break;
+    case "social-manager-dismiss":
+      update((s) => dismissSocialManager(s), "Social retainer ended.");
+      break;
+    case "football-approach":
+      update(
+        (s) => approachFootballClub(s, id),
+        "Club approach sent. Your current contract continues.",
+      );
+      break;
+    case "youth-assessment":
+      update(
+        (s) => requestYouthAssessment(s),
+        "Youth assessment arranged. Clubs respond in two weeks.",
+      );
+      break;
+
     case "chapter-inbox-filter":
       inboxArchived = !inboxArchived;
       render();
@@ -1094,7 +1233,7 @@ document.addEventListener("click", (event) => {
       const area = document.querySelector("[data-dressing-room]");
       if (area) {
         area.querySelector(".character-portrait").outerHTML = characterPortrait(
-          state.characterLife.profile,
+          { ...state.characterLife.profile, visualAge: age(state) },
         );
         area.querySelector("[data-outfit-name]").textContent =
           "Your current look";
@@ -1108,6 +1247,7 @@ document.addEventListener("click", (event) => {
         area.querySelector(".character-portrait").outerHTML = characterPortrait(
           {
             ...state.characterLife.profile,
+            visualAge: age(state),
             outfit: item.outfit,
             garment: item.garment,
           },
@@ -1253,7 +1393,17 @@ document.addEventListener("click", (event) => {
         settingsDialog();
       break;
     case "identity-random-life":
-      beginLife(createRandomCharacter());
+      try {
+        beginLife(
+          createRandomCharacter(Date.now() >>> 0, {
+            startingYear: Number(
+              modal.querySelector('[name="startingYear"]').value,
+            ),
+          }),
+        );
+      } catch (error) {
+        notify(error.message);
+      }
       break;
     case "identity-edit-profile":
       if (!creatorAvailable(state)) {
@@ -1821,6 +1971,7 @@ document.addEventListener("click", (event) => {
       update(practiseMusic, "Practice session complete.");
       break;
     case "record-music":
+      workspaceSelections.music = "Studio";
       dialog(trackDialog(state, ui()));
       break;
     case "music-gig": {
@@ -2119,6 +2270,24 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
+    "music-rollout-form": (s, data) =>
+      startMusicCampaign(s, Object.fromEntries(data)),
+    "god-money-form": (s, data) =>
+      debugEdit(s, { money: Number(data.get("money")) }),
+    "god-skills-form": (s, data, form) =>
+      debugEdit(
+        s,
+        ["general", "hobbies"].includes(form.dataset.group)
+          ? {
+              [form.dataset.group === "hobbies" ? "hobbySkills" : "skills"]:
+                Object.fromEntries([...data].map(([k, v]) => [k, Number(v)])),
+            }
+          : {
+              specialistSkills: Object.fromEntries(
+                [...data].map(([k, v]) => [k, Number(v)]),
+              ),
+            },
+      ),
     "joint-transfer-form": (s, data) =>
       jointTransfer(s, Object.fromEntries(data)),
     "separation-form": (s, data) =>
@@ -2315,6 +2484,7 @@ document.addEventListener("submit", (event) => {
       [...data].filter(([key]) => !key.includes(":")),
     );
     options.age = Number(data.get("age") || 0);
+    options.startingYear = Number(data.get("startingYear"));
     if (options.money === "") delete options.money;
     else if (options.money !== undefined) options.money = Number(options.money);
     options.personality = Object.fromEntries(
@@ -2567,6 +2737,9 @@ document.addEventListener("input", (event) => {
     preview.outerHTML = characterPortrait({
       ...state.characterLife.profile,
       ...Object.fromEntries(data),
+      visualAge: Number(
+        form.querySelector("[data-portrait-age]")?.value ?? age(state),
+      ),
     });
   const name = form.querySelector("[data-creator-name]");
   if (name) name.textContent = data.get("name") || "Your character";
@@ -2650,4 +2823,37 @@ document.addEventListener("keydown", (event) => {
     return;
   event.preventDefault();
   document.querySelector('[data-action="next-week"]')?.click();
+});
+
+modal.addEventListener("close", () => {
+  if (!modal.open) document.body.classList.remove("modal-open");
+});
+document.addEventListener("keydown", (event) => {
+  const bar = event.target.closest('[role="tablist"]');
+  if (!bar || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+    return;
+  event.preventDefault();
+  const tabs = [...bar.querySelectorAll('[role="tab"]')],
+    i = tabs.indexOf(event.target);
+  const next =
+    event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? tabs.length - 1
+        : (i + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) %
+          tabs.length;
+  tabs[next].click();
+  tabs[next].focus();
+});
+document.addEventListener("input", (event) => {
+  if (event.target.id !== "world-search") return;
+  const query = event.target.value.trim().toLowerCase();
+  const cards = [...document.querySelectorAll(".world-library .world-card")];
+  for (const card of cards)
+    card.hidden = !card.textContent.toLowerCase().includes(query);
+  for (const group of document.querySelectorAll(".world-group"))
+    group.hidden = ![...group.querySelectorAll(".world-card")].some(
+      (c) => !c.hidden,
+    );
+  document.querySelector(".world-empty").hidden = cards.some((c) => !c.hidden);
 });

@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -24,11 +24,16 @@ async function load(page, state) {
 }
 const nav = (page, name) => tap(page, name);
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 for (const id of g.WORLD_SPORTS) {
   test(`${id}: qualified career talks, review, household plan and signing persist`, async ({
@@ -38,59 +43,144 @@ for (const id of g.WORLD_SPORTS) {
       s = professional(id, seed),
       oldClub = athlete(s, id).club;
     await load(page, s);
-    await nav(page, "Work & education");
-    const panel = page.locator(`[data-sport-world="${id}"]`),
+    await nav(page, "Sport & development");
+    const panel = page.locator(
+        id === "football"
+          ? "[data-football-market]"
+          : `[data-sport-world="${id}"]`,
+      ),
       form = panel.locator("#sport-move-form");
-    await form
-      .locator('[name="destination"]')
-      .selectOption(g.SPORT_DESTINATIONS[id][1].name);
-    await form.locator('[name="role"]').selectOption("starter");
-    await form.getByRole("button").click();
+    if (id === "football") {
+      await interact(
+        page,
+        panel
+          .locator(".club-card")
+          .filter({ hasText: g.SPORT_DESTINATIONS[id][1].name })
+          .getByRole("button", { name: "Approach club", includeHidden: true }),
+        "click",
+      );
+    } else {
+      await interact(
+        page,
+        form.locator('[name="destination"]'),
+        "selectOption",
+        g.SPORT_DESTINATIONS[id][1].name,
+      );
+      await interact(
+        page,
+        form.locator('[name="role"]'),
+        "selectOption",
+        "starter",
+      );
+      await interact(
+        page,
+        form.getByRole("button", { includeHidden: true }),
+        "click",
+      );
+    }
     expect(athlete(await saved(page), id).club).toBe(oldClub);
     await expect(panel).toContainText("pending");
     await week(page);
     await week(page);
+    await reveal(
+      page,
+      panel.getByRole("button", {
+        name: "Review career move",
+        includeHidden: true,
+      }),
+    );
     await expect(
-      panel.getByRole("button", { name: "Review career move" }),
+      panel.getByRole("button", {
+        name: "Review career move",
+        includeHidden: true,
+      }),
     ).toBeVisible();
-    await panel.getByRole("button", { name: "Review career move" }).click();
-    await expect(page.getByRole("dialog")).toContainText("Household plan");
-    await expect(page.getByRole("dialog")).toContainText("funding");
+    await interact(
+      page,
+      panel.getByRole("button", {
+        name: "Review career move",
+        includeHidden: true,
+      }),
+      "click",
+    );
+    await expect(
+      page.getByRole("dialog", { includeHidden: true }),
+    ).toContainText("Household plan");
+    await expect(
+      page.getByRole("dialog", { includeHidden: true }),
+    ).toContainText("funding");
     await nav(page, "Sign career move");
     const r = await saved(page);
     expect(athlete(r, id).club).toBe(g.SPORT_DESTINATIONS[id][1].name);
     expect(r.employment.employer).toBe(athlete(r, id).club);
     expect(r.careerWorld.sports[id].travel).toBe(true);
     await page.reload();
-    await nav(page, "Work & education");
-    await expect(panel).toContainText("Copenhagen");
-    await expect(panel).toContainText("travel");
+    await nav(page, "Sport & development");
+    await expect(page.locator(`[data-sport-world="${id}"]`)).toContainText(
+      "Copenhagen",
+    );
+    await expect(page.locator(`[data-sport-world="${id}"]`)).toContainText(
+      "travel",
+    );
     expect(g.restoreGame(await saved(page))).toEqual(await saved(page));
   });
 }
-test("a transfer opened from the existing invitation list uses the same household and negotiation flow", async ({
+test("a football transfer has one review entry and preserves the household and negotiation flow", async ({
   page,
 }) => {
   const { s, o } = moveOffer("football");
   await load(page, s);
   await nav(page, "Sport & development");
-  await page.locator(`[data-action="sport-offer"][data-id="${o.id}"]`).click();
-  await expect(page.getByRole("dialog")).toContainText("Household plan");
-  await page
-    .getByRole("combobox", { name: "Contract approach" })
-    .selectOption("security");
+  await interact(
+    page,
+    page.locator(`[data-action="world-move-review"][data-id="${o.id}"]`),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "Household plan",
+  );
+  await expect(
+    page.locator(`[data-action="sport-offer"][data-id="${o.id}"]`),
+  ).toHaveCount(0);
+  await interact(
+    page,
+    page.getByRole("combobox", {
+      name: "Contract approach",
+      includeHidden: true,
+    }),
+    "selectOption",
+    "security",
+  );
   await nav(page, "Send counteroffer");
   const panel = page.locator('[data-sport-world="football"]');
-  await panel.getByRole("button", { name: "Review career move" }).click();
+  await interact(
+    page,
+    panel.getByRole("button", {
+      name: "Review career move",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(
-    page.getByRole("button", { name: "Sign career move" }),
+    page.getByRole("button", { name: "Sign career move", includeHidden: true }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Close dialog" }).click();
+  await interact(
+    page,
+    page.getByRole("button", { name: "Close dialog", includeHidden: true }),
+    "click",
+  );
   await week(page);
   await week(page);
-  await panel.getByRole("button", { name: "Review career move" }).click();
+  await interact(
+    page,
+    panel.getByRole("button", {
+      name: "Review career move",
+      includeHidden: true,
+    }),
+    "click",
+  );
   await expect(
-    page.getByRole("button", { name: "Sign career move" }),
+    page.getByRole("button", { name: "Sign career move", includeHidden: true }),
   ).toBeEnabled();
   await nav(page, "Sign career move");
   expect((await saved(page)).football.club).toBe(o.club);
@@ -101,11 +191,16 @@ test("basketball loans disclose the parent return contract and survive a browser
   const { s, o } = moveOffer("basketball", "loan");
   await load(page, s);
   await nav(page, "Sport & development");
-  await page
-    .locator('[data-sport-world="basketball"]')
-    .getByRole("button", { name: "Review career move" })
-    .click();
-  await expect(page.getByRole("dialog")).toContainText("twenty-six weeks");
+  await interact(
+    page,
+    page
+      .locator('[data-sport-world="basketball"]')
+      .getByRole("button", { name: "Review career move", includeHidden: true }),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "twenty-six weeks",
+  );
   await nav(page, "Sign career move");
   const r = await saved(page);
   expect(r.careerWorld.sports.basketball.loan.returnWeek).toBe(r.week + 26);
@@ -125,24 +220,32 @@ test("race engineers, physiotherapists and engineering debriefs work from the ca
   await load(page, s);
   await nav(page, "Work & education");
   const panel = page.locator('[data-sport-world="racing"]');
-  await panel
-    .locator('[data-action="world-staff-hire"][data-id="coach"]')
-    .click();
-  await panel
-    .locator('[data-action="world-staff-hire"][data-id="physio"]')
-    .click();
-  await panel
-    .locator('[data-action="world-sport-activity"][data-kind="team"]')
-    .click();
+  await interact(
+    page,
+    panel.locator('[data-action="world-staff-hire"][data-id="coach"]'),
+    "click",
+  );
+  await interact(
+    page,
+    panel.locator('[data-action="world-staff-hire"][data-id="physio"]'),
+    "click",
+  );
+  await interact(
+    page,
+    panel.locator('[data-action="world-sport-activity"][data-kind="team"]'),
+    "click",
+  );
   let r = await saved(page);
   expect(r.money).toBe(s.money - 550);
   expect(r.careerWorld.sports.racing.staff).toEqual(["coach", "physio"]);
   expect(r.careerWorld.sports.racing.chemistry).toBe(52);
   await page.reload();
   await nav(page, "Work & education");
-  await panel
-    .locator('[data-action="world-staff-dismiss"][data-id="coach"]')
-    .click();
+  await interact(
+    page,
+    panel.locator('[data-action="world-staff-dismiss"][data-id="coach"]'),
+    "click",
+  );
   r = await saved(page);
   expect(r.careerWorld.sports.racing.staff).toEqual(["physio"]);
 });
@@ -160,7 +263,11 @@ test("international tennis appearances reserve time and resolve through the week
   });
   await load(page, s);
   await nav(page, "Sport & development");
-  await page.locator('[data-action="world-international"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="world-international"]'),
+    "click",
+  );
   let r = await saved(page);
   expect(g.careerWorldHours(r, r.week + 1)).toBe(8);
   await nav(page, "Weekly calendar");
@@ -181,10 +288,17 @@ test("collaboration recording displays ownership and produces a shared release",
   await nav(page, "Music & creativity");
   const panel = page.locator("[data-music-world]");
   await expect(panel).toContainText("70%");
-  await panel.getByRole("button", { name: "Record project" }).click();
-  await page
-    .getByRole("textbox", { name: "Project title" })
-    .fill("Together in the city");
+  await interact(
+    page,
+    panel.getByRole("button", { name: "Record project", includeHidden: true }),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByRole("textbox", { name: "Project title", includeHidden: true }),
+    "fill",
+    "Together in the city",
+  );
   await nav(page, "Start agreed recording");
   expect((await saved(page)).careerWorld.music.offers[0].status).toBe(
     "accepted",
@@ -206,17 +320,21 @@ test("music counteroffers settle before recording and cannot be repeated", async
   await load(page, s);
   await nav(page, "Work & education");
   const panel = page.locator("[data-music-world]");
-  await panel.getByRole("button", { name: "Discuss terms" }).click();
+  await interact(
+    page,
+    panel.getByRole("button", { name: "Discuss terms", includeHidden: true }),
+    "click",
+  );
   await expect(
-    panel.getByRole("button", { name: "Record project" }),
+    panel.getByRole("button", { name: "Record project", includeHidden: true }),
   ).toBeDisabled();
   await expect(
-    panel.getByRole("button", { name: "Discuss terms" }),
+    panel.getByRole("button", { name: "Discuss terms", includeHidden: true }),
   ).toBeDisabled();
   await week(page);
   await week(page);
   await expect(
-    panel.getByRole("button", { name: "Record project" }),
+    panel.getByRole("button", { name: "Record project", includeHidden: true }),
   ).toBeEnabled();
   expect(["agreed", "refused"]).toContain(
     (await saved(page)).careerWorld.music.offers.find((x) => x.id === o.id)
@@ -229,13 +347,16 @@ test("owned tracks can be mastered into an album without duplicating the catalog
   const s = musician();
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page
-    .getByRole("textbox", { name: "Album title" })
-    .fill("My first chapter");
+  await interact(
+    page,
+    page.getByRole("textbox", { name: "Album title", includeHidden: true }),
+    "fill",
+    "My first chapter",
+  );
   for (const checkbox of await page
     .locator('#world-album-form input[type="checkbox"]')
     .all())
-    await checkbox.check();
+    await interact(page, checkbox, "check");
   await nav(page, "Master an album");
   let r = await saved(page);
   expect(r.money).toBe(s.money - 250);
@@ -258,9 +379,25 @@ test("tour rehearsal, live crew budgeting, actual shows and concrete cancellatio
   await load(page, s);
   await nav(page, "Work & education");
   const panel = page.locator("[data-music-world]");
-  await panel.getByRole("button", { name: "Rehearse live set" }).click();
-  await panel.getByRole("combobox", { name: "Live team" }).selectOption("band");
-  await panel.getByRole("button", { name: "Plan tour" }).click();
+  await interact(
+    page,
+    panel.getByRole("button", {
+      name: "Rehearse live set",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(
+    page,
+    panel.getByRole("combobox", { name: "Live team", includeHidden: true }),
+    "selectOption",
+    "band",
+  );
+  await interact(
+    page,
+    panel.getByRole("button", { name: "Plan tour", includeHidden: true }),
+    "click",
+  );
   let r = await saved(page);
   expect(r.careerWorld.music.tours[0].stops[0].cost).toBe(280);
   expect(r.careerWorld.music.liveReadiness).toBe(26);
@@ -271,15 +408,24 @@ test("tour rehearsal, live crew budgeting, actual shows and concrete cancellatio
     r.careerWorld.music.tours[0].stops[0].status,
   );
   expect(r.careerWorld.music.tours[0].costs).toBe(400);
-  await panel.getByRole("button", { name: "Review tour cancellation" }).click();
-  await expect(page.getByRole("dialog")).toContainText("$140");
+  await interact(
+    page,
+    panel.getByRole("button", {
+      name: "Review tour cancellation",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "$140",
+  );
   const cash = r.money;
   await nav(page, "Cancel remaining tour");
   r = await saved(page);
   expect(r.money).toBe(cash - 140);
   expect(r.careerWorld.music.activeTour).toBe(null);
   await page.reload();
-  await nav(page, "Work & education");
+  await nav(page, "Music & creativity");
   await expect(panel).toContainText("cancelled");
   expect(g.restoreGame(await saved(page))).toEqual(await saved(page));
 });
@@ -299,15 +445,22 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
     if (key !== "version") expect(r[key]).toEqual(value);
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v15`)),
       KEY,
     ),
   ).toEqual(old);
   await nav(page, "Save & settings");
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export pre-update save" }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: "Export pre-update save",
+      includeHidden: true,
+    }),
+    "click",
+  );
   const file = await download;
-  expect(file.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(file.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await file.path(), "utf8"))).toEqual(old);
 });
 test("expanded sport and music panels fit a phone and load without browser errors", async ({
@@ -325,6 +478,7 @@ test("expanded sport and music panels fit a phone and load without browser error
     );
     await page.reload();
     await nav(page, "Sport & development");
+    await reveal(page, page.locator(`[data-sport-world="${id}"]`));
     await expect(page.locator(`[data-sport-world="${id}"]`)).toBeVisible();
     expect(
       await page.evaluate(
@@ -344,6 +498,7 @@ test("expanded sport and music panels fit a phone and load without browser error
   );
   await page.reload();
   await nav(page, "Music & creativity");
+  await reveal(page, page.locator("[data-music-world]"));
   await expect(page.locator("[data-music-world]")).toBeVisible();
   expect(
     await page.evaluate(

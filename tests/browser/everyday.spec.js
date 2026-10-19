@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -19,11 +19,16 @@ async function navigate(page, name) {
   await tap(page, name);
 }
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 async function debug(page) {
   await navigate(page, "Save & settings");
@@ -55,8 +60,18 @@ test("debug is discoverable, keeps an original backup, persists edits and restor
   const initial = g.createGame({ seed: 8, age: 18, career: "office" });
   await load(page, initial);
   await debug(page);
+  await reveal(
+    page,
+    page.getByRole("heading", {
+      name: "God mode.",
+      includeHidden: true,
+    }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Try a different possibility." }),
+    page.getByRole("heading", {
+      name: "God mode.",
+      includeHidden: true,
+    }),
   ).toBeVisible();
   await navigate(page, "Add $1 billion");
   await navigate(page, "Restore wellbeing");
@@ -93,18 +108,46 @@ test("debug exact stats, hobby skills, followers, and qualifications can be edit
 }) => {
   await load(page);
   await debug(page);
-  await page.getByLabel("Cash balance", { exact: true }).fill("500000");
-  await page.getByLabel("Energy", { exact: true }).fill("42");
+  await interact(
+    page,
+    page.getByLabel("Cash balance", { exact: true }),
+    "fill",
+    "500000",
+  );
+  await interact(
+    page,
+    page.getByLabel("Energy", { exact: true }),
+    "fill",
+    "42",
+  );
   await navigate(page, "Apply character values");
-  await page.getByLabel("Skill to edit").selectOption("hobby:cooking");
-  await page.getByLabel("Skill value").fill("55");
+  await interact(
+    page,
+    page.getByLabel("Skill to edit"),
+    "selectOption",
+    "hobby:cooking",
+  );
+  await interact(page, page.getByLabel("Skill value"), "fill", "55");
   await navigate(page, "Apply skill");
-  await page.getByLabel("Platform audience").selectOption("lens");
-  await page.getByLabel("Followers", { exact: true }).fill("10000");
+  await interact(
+    page,
+    page.getByLabel("Platform audience"),
+    "selectOption",
+    "lens",
+  );
+  await interact(
+    page,
+    page.getByLabel("Followers", { exact: true }),
+    "fill",
+    "10000",
+  );
   await navigate(page, "Apply audience");
-  await page
-    .getByLabel("Qualification to grant")
-    .selectOption("business-degree");
+  await interact(
+    page,
+    page.getByLabel("Qualification to grant"),
+    "selectOption",
+    "business-degree",
+  );
   await navigate(page, "Grant qualification");
   const s = await saved(page);
   expect(s.money).toBe(500000);
@@ -138,11 +181,28 @@ test("renting, buying, moving into a home and listing it for sale use actual cas
 }) => {
   await load(page, wealthy());
   await navigate(page, "Homes & property");
-  await page.getByRole("button", { name: "Review rental" }).first().click();
+  await interact(
+    page,
+    page
+      .getByRole("button", { name: "Review rental", includeHidden: true })
+      .first(),
+    "click",
+  );
   await navigate(page, "Move into rental");
   expect((await saved(page)).housing.deposit).toBe(480);
-  await page.getByRole("button", { name: "Review purchase" }).first().click();
-  await page.getByLabel("Purchase method").selectOption("cash");
+  await interact(
+    page,
+    page
+      .getByRole("button", { name: "Review purchase", includeHidden: true })
+      .first(),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Purchase method"),
+    "selectOption",
+    "cash",
+  );
   await navigate(page, "Purchase property");
   let s = await saved(page);
   expect(s.housing.properties).toHaveLength(1);
@@ -168,13 +228,30 @@ test("mortgage underwriting failures do not spend cash and a qualified buyer get
   const s = wealthy();
   await load(page, s);
   await navigate(page, "Homes & property");
-  await page.getByRole("button", { name: "Review purchase" }).first().click();
-  await page.getByLabel("Purchase method").selectOption("mortgage");
+  await interact(
+    page,
+    page
+      .getByRole("button", { name: "Review purchase", includeHidden: true })
+      .first(),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Purchase method"),
+    "selectOption",
+    "mortgage",
+  );
   await navigate(page, "Purchase property");
   expect((await saved(page)).housing.properties).toHaveLength(0);
   expect((await saved(page)).money).toBe(s.money);
-  await expect(page.locator("#toast")).toContainText("26 weeks");
-  await page.getByRole("button", { name: "Close dialog" }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "26 weeks",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Close dialog", includeHidden: true }),
+    "click",
+  );
   const old = g.restoreGame(
     JSON.parse(
       fs.readFileSync(new URL("../fixtures/v1-save.json", import.meta.url)),
@@ -189,8 +266,19 @@ test("mortgage underwriting failures do not spend cash and a qualified buyer get
   );
   await page.reload();
   await navigate(page, "Homes & property");
-  await page.getByRole("button", { name: "Review purchase" }).first().click();
-  await page.getByLabel("Purchase method").selectOption("mortgage");
+  await interact(
+    page,
+    page
+      .getByRole("button", { name: "Review purchase", includeHidden: true })
+      .first(),
+    "click",
+  );
+  await interact(
+    page,
+    page.getByLabel("Purchase method"),
+    "selectOption",
+    "mortgage",
+  );
   await navigate(page, "Purchase property");
   expect((await saved(page)).housing.properties[0].loan.balance).toBe(96000);
   await week(page);
@@ -209,11 +297,22 @@ test("a family can choose a proposal, wait, and book a wedding separately", asyn
   expect((await saved(page)).relationships.at(-1).role).toBe("Partner");
   await navigate(page, "Plan a wedding");
   await navigate(page, "Confirm family plan");
-  await expect(page.locator("#toast")).toContainText("four weeks");
-  await page.getByRole("button", { name: "Close dialog" }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "four weeks",
+  );
+  await interact(
+    page,
+    page.getByRole("button", { name: "Close dialog", includeHidden: true }),
+    "click",
+  );
   for (let i = 0; i < 4; i++) await week(page);
   await navigate(page, "Plan a wedding");
-  await page.getByLabel("Wedding style").selectOption("simple");
+  await interact(
+    page,
+    page.getByLabel("Wedding style"),
+    "selectOption",
+    "simple",
+  );
   await navigate(page, "Confirm family plan");
   expect((await saved(page)).relationships.at(-1).role).toBe("Spouse");
   await page.reload();
@@ -226,7 +325,7 @@ test("planning a child preserves the waiting period and creates ongoing care aft
   await load(page, initial);
   await navigate(page, "Family & pets");
   await navigate(page, "Plan for a child");
-  await page.getByLabel("Child name").fill("Robin");
+  await interact(page, page.getByLabel("Child name"), "fill", "Robin");
   await navigate(page, "Confirm family plan");
   let s = await saved(page);
   expect(s.family.pending.arrivalWeek).toBe(initial.week + 39);
@@ -237,7 +336,12 @@ test("planning a child preserves the waiting period and creates ongoing care aft
   s = await saved(page);
   expect(s.family.children[0].name).toBe("Robin");
   expect(g.householdCosts(s)).toBe(45);
-  await page.getByLabel("Parenting focus").selectOption("quality");
+  await interact(
+    page,
+    page.getByLabel("Parenting focus"),
+    "selectOption",
+    "quality",
+  );
   const bond = (await saved(page)).family.children[0].bond;
   await navigate(page, "Spend time · $10");
   expect((await saved(page)).family.children[0].bond).toBeGreaterThan(bond);
@@ -248,8 +352,13 @@ test("pet adoption adds a named companion and care changes its connection", asyn
   await load(page);
   await navigate(page, "Family & pets");
   await navigate(page, "Adopt a companion");
-  await page.getByLabel("Pet name").fill("Milo");
-  await page.getByRole("combobox", { name: /^Companion/ }).selectOption("dog");
+  await interact(page, page.getByLabel("Pet name"), "fill", "Milo");
+  await interact(
+    page,
+    page.getByRole("combobox", { name: /^Companion/, includeHidden: true }),
+    "selectOption",
+    "dog",
+  );
   await navigate(page, "Adopt pet");
   const initial = await saved(page);
   expect(initial.family.pets[0].name).toBe("Milo");
@@ -269,12 +378,26 @@ test("hobby practice unlocks a project that later produces a portfolio piece and
   await navigate(page, "Hobbies & journal");
   const hobby = page.locator('[data-hobby="photography"]');
   await expect(
-    hobby.getByRole("button", { name: "Create a project" }),
+    hobby.getByRole("button", {
+      name: "Create a project",
+      includeHidden: true,
+    }),
   ).toBeDisabled();
   for (let i = 0; i < 2; i++)
-    await hobby.getByRole("button", { name: "Practise · $5" }).click();
-  await hobby.getByRole("button", { name: "Create a project" }).click();
-  await page.getByLabel("Project title").fill("City light");
+    await interact(
+      page,
+      hobby.getByRole("button", { name: "Practise · $5", includeHidden: true }),
+      "click",
+    );
+  await interact(
+    page,
+    hobby.getByRole("button", {
+      name: "Create a project",
+      includeHidden: true,
+    }),
+    "click",
+  );
+  await interact(page, page.getByLabel("Project title"), "fill", "City light");
   await navigate(page, "Start hobby project");
   expect((await saved(page)).pastimes.projects[0].status).toBe("working");
   for (let i = 0; i < 4; i++) await week(page);
@@ -300,10 +423,10 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   await navigate(page, "Save & settings");
   const download = page.waitForEvent("download");
   await navigate(page, "Export pre-update save");
-  expect((await download).suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect((await download).suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v14`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v15`)),
       KEY,
     ),
   ).toEqual(old);

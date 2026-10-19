@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -37,18 +37,32 @@ test("birth dashboard, supervised choices and birthday events persist", async ({
   page,
 }) => {
   await load(page);
-  await expect(page.getByRole("heading", { name: "Infancy" })).toBeVisible();
-  await page
-    .locator('[data-action="childhood-activity"][data-id="play"]')
-    .click();
+  await reveal(
+    page,
+    page.getByRole("heading", { name: "Infancy", includeHidden: true }),
+  );
+  await expect(
+    page.getByRole("heading", { name: "Infancy", includeHidden: true }),
+  ).toBeVisible();
+  await interact(
+    page,
+    page.locator('[data-action="childhood-activity"][data-id="play"]'),
+    "click",
+  );
   expect((await saved(page)).childhood.development.movement).toBe(6);
   await nav(page, "Age up");
-  await expect(page.getByRole("dialog")).toContainText("A world to explore.");
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
+    "A world to explore.",
+  );
   expect((await saved(page)).week).toBe(52);
-  await page.locator(".event-option").first().click();
+  await interact(page, page.locator(".event-option").first(), "click");
   await page.reload();
+  await reveal(
+    page,
+    page.getByRole("heading", { name: "Toddler years", includeHidden: true }),
+  );
   await expect(
-    page.getByRole("heading", { name: "Toddler years" }),
+    page.getByRole("heading", { name: "Toddler years", includeHidden: true }),
   ).toBeVisible();
   expect((await saved(page)).childhood.choices).toHaveLength(1);
 });
@@ -65,8 +79,18 @@ test("young children have age-appropriate sleep and locked independent screens",
     "Family & pets",
   ]) {
     await nav(page, name);
+    await reveal(
+      page,
+      page.getByRole("heading", {
+        name: "Your early years.",
+        includeHidden: true,
+      }),
+    );
     await expect(
-      page.getByRole("heading", { name: "Your early years." }),
+      page.getByRole("heading", {
+        name: "Your early years.",
+        includeHidden: true,
+      }),
     ).toBeVisible();
     expect(
       await page.locator('[data-action="apply-job"]:enabled').count(),
@@ -79,10 +103,18 @@ test("music studio equipment can be bought from career and music screens", async
   const s = g.createGame({ seed: 1, age: 23, career: "music" });
   await load(page, s);
   await nav(page, "Work & education");
-  await page.locator('[data-equipment="laptop"] button').click();
+  await interact(
+    page,
+    page.locator('[data-equipment="laptop"] button'),
+    "click",
+  );
   await nav(page, "Music & creativity");
   for (const id of ["audio-interface", "studio-monitors", "treated-studio"])
-    await page.locator(`[data-equipment="${id}"] button`).click();
+    await interact(
+      page,
+      page.locator(`[data-equipment="${id}"] button`),
+      "click",
+    );
   const after = await saved(page);
   expect(after.money).toBe(
     s.money - g.SHOP.find((i) => i.id === "laptop").price - 350 - 650 - 2500,
@@ -95,12 +127,12 @@ test("music studio equipment can be bought from career and music screens", async
     page.locator('[data-equipment="professional-studio"] button'),
   ).toBeDisabled();
   await page.reload();
-  await nav(page, "Work & education");
+  await nav(page, "Music & creativity");
   await expect(
     page.locator('[data-equipment="audio-interface"] button'),
   ).toHaveText("Owned");
 });
-test("debug exposes and persists music, football, racing and creator skills", async ({
+test("debug exposes music, football and racing skills without a social-media skill", async ({
   page,
 }) => {
   await load(page, g.createGame({ seed: 1, age: 23, career: "music" }));
@@ -112,10 +144,14 @@ test("debug exposes and persists music, football, racing and creator skills", as
     ["music.lyrics", "62"],
     ["football.ability", "77"],
     ["racing.ability", "83"],
-    ["social.contentSkill", "90"],
   ]) {
-    await page.getByLabel("Skill to edit").selectOption(`specialist:${id}`);
-    await page.getByLabel("Skill value").fill(value);
+    await interact(
+      page,
+      page.getByLabel("Skill to edit"),
+      "selectOption",
+      `specialist:${id}`,
+    );
+    await interact(page, page.getByLabel("Skill value"), "fill", value);
     await nav(page, "Apply skill");
   }
   await page.reload();
@@ -123,7 +159,7 @@ test("debug exposes and persists music, football, racing and creator skills", as
   expect(s.music.skills).toEqual({ production: 84.5, vocals: 71, lyrics: 62 });
   expect(s.football.ability).toBe(77);
   expect(s.sports.racing.ability).toBe(83);
-  expect(s.social.contentSkill).toBe(90);
+  expect(s.social.contentSkill).toBe(20);
   expect(s.week).toBe(0);
   await nav(page, "Music & creativity");
   await expect(page.locator("main")).toContainText("85 / 100");
@@ -134,18 +170,24 @@ test("musicians hire a manager, promote releases and improve their craft in the 
   const s = musician();
   await load(page, s);
   await nav(page, "Work & education");
-  await page
-    .locator('[data-action="hire-music-manager"][data-id="local"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="hire-music-manager"][data-id="local"]'),
+    "click",
+  );
   await expect(page.locator('[data-career-support="music"]')).toContainText(
     "First Track Management",
   );
-  await page
-    .locator('[data-action="career-activity"][data-id="campaign"]')
-    .click();
-  await page
-    .locator('[data-action="career-activity"][data-id="songwriting"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="career-activity"][data-id="campaign"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="career-activity"][data-id="songwriting"]'),
+    "click",
+  );
   const after = await saved(page);
   expect(after.money).toBe(s.money - 200);
   expect(after.music.skills.lyrics).toBe(s.music.skills.lyrics + 0.8);
@@ -165,12 +207,16 @@ test("footballers can use their agent for club outreach and analyse match footag
   s = g.advanceWeek(s);
   await load(page, s);
   await nav(page, "Sport & development");
-  await page
-    .locator('[data-action="career-activity"][data-id="club-outreach"]')
-    .click();
-  await page
-    .locator('[data-action="career-activity"][data-id="match-analysis"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="career-activity"][data-id="club-outreach"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="career-activity"][data-id="match-analysis"]'),
+    "click",
+  );
   const after = await saved(page);
   expect(after.football.nextScoutWeek).toBe(s.week + 1);
   expect(after.football.ability).toBe(s.football.ability + 0.5);
@@ -188,7 +234,11 @@ test("music interviews are booked separately and resolve on the next week", asyn
   s.skills.charisma = 100;
   await load(page, s);
   await nav(page, "Music & creativity");
-  await page.locator('[data-action="music-interview"]').click();
+  await interact(
+    page,
+    page.locator('[data-action="music-interview"]'),
+    "click",
+  );
   expect((await saved(page)).careerSupport.music.press[0].status).toBe(
     "booked",
   );
@@ -220,7 +270,7 @@ test("authentic v6 migration keeps old lives and downloads an exact backup", asy
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("birth and expanded career panels fit phones without browser errors", async ({

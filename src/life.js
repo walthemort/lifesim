@@ -254,6 +254,13 @@ export function acceptFootballOffer(state, id) {
     f.stage = "academy";
     f.club = o.club;
     f.academyWeeks = 0;
+    for (const other of f.offers)
+      if (
+        other.id !== o.id &&
+        ["academy", "academy-trial"].includes(other.kind) &&
+        other.status === "offered"
+      )
+        other.status = "declined";
     log(
       s,
       `Joined ${o.club}. Continue school while developing; this is not a professional contract.`,
@@ -444,7 +451,10 @@ function footballTick(s) {
     f.trial = null;
     const success =
       f.injuryWeeks === 0 &&
-      rng(s) < clamp(0.1 + f.ability * 0.006 + f.discipline * 0.002, 0.1, 0.85);
+      rng(s) <
+        (f.ability >= 90 && f.discipline >= 90
+          ? 0.995
+          : clamp(0.1 + f.ability * 0.006 + f.discipline * 0.002, 0.1, 0.85));
     if (success)
       footballOffer(
         s,
@@ -683,7 +693,7 @@ export function createPost(
   const quality = Math.round(
     clamp(
       10 +
-        media.contentSkill * 0.4 +
+        22 +
         s.skills.charisma * 0.2 +
         gear +
         subject +
@@ -693,7 +703,7 @@ export function createPost(
   const reputationDelta =
     approach === "clickbait" ? -5 : approach === "authentic" ? 1 : 0;
   s.fame.reputation = clamp(s.fame.reputation + reputationDelta);
-  media.contentSkill = clamp(media.contentSkill + 0.6);
+
   media.posts.push({
     id: `post:${s.week}:${media.posts.filter((p) => p.createdWeek === s.week).length}:${platform}`,
     platform,
@@ -826,12 +836,6 @@ function socialTick(s) {
         s.fame.reputation >= 50
       )
         m.weeklyIncome += round((p.followers * 0.0008 * p.engagement) / 5);
-      if (
-        s.football.stage === "professional" &&
-        s.football.lastMatch?.week === s.week &&
-        m.privacy === "public"
-      )
-        p.followers += Math.floor(s.football.reputation * 0.3);
     }
   for (const o of m.offers)
     if (o.status === "offered" && o.expiresWeek <= s.week) o.status = "expired";

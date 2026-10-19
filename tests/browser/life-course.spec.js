@@ -1,4 +1,4 @@
-import { tap } from "./mobile-helpers.js";
+import { tap, interact, reveal } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -17,11 +17,16 @@ async function load(page, s) {
 }
 const nav = (page, name) => tap(page, name);
 async function week(page) {
-  await page
-    .getByRole("button", { name: /^(Next week|Make a choice)$/ })
-    .click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /^(Next week|Make a choice)$/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   if (await page.getByRole("dialog").isVisible())
-    await page.locator(".event-option").last().click();
+    await interact(page, page.locator(".event-option").last(), "click");
 }
 function family(age = 16) {
   const s = g.createGame({ seed: 1, familyBackground: "wealthy" });
@@ -42,7 +47,12 @@ test("new family backgrounds change parents finances and a sibling arrives while
   await nav(page, "Enable debug mode");
   await nav(page, "View your character");
   await nav(page, "Create a new character");
-  await page.getByLabel("Family background").selectOption("modest");
+  await interact(
+    page,
+    page.getByLabel("Family background"),
+    "selectOption",
+    "modest",
+  );
   await nav(page, "Begin my story");
   let s = await saved(page);
   expect(s.lifeCourse.background).toBe("modest");
@@ -51,7 +61,7 @@ test("new family backgrounds change parents finances and a sibling arrives while
   for (let i = 0; i < 3; i++) {
     await nav(page, "Age up");
     if (await page.getByRole("dialog").isVisible())
-      await page.locator(".event-option").last().click();
+      await interact(page, page.locator(".event-option").last(), "click");
   }
   s = await saved(page);
   expect(g.age(s)).toBe(3);
@@ -65,13 +75,27 @@ test("school focus, clubs, preparation and classmates have persistent effects", 
   const s = g.createGame({ seed: 1, age: 12 });
   await load(page, s);
   await nav(page, "Childhood & school");
-  await page.getByLabel("School focus").selectOption("academic");
+  await interact(
+    page,
+    page.getByLabel("School focus"),
+    "selectOption",
+    "academic",
+  );
   await nav(page, "Set school focus");
-  await page.getByLabel("Extracurricular club").selectOption("science");
+  await interact(
+    page,
+    page.getByLabel("Extracurricular club"),
+    "selectOption",
+    "science",
+  );
   await nav(page, "Choose school club");
-  await page
-    .locator('[data-action="school-peer"][data-kind="befriend"][data-id="ava"]')
-    .click();
+  await interact(
+    page,
+    page.locator(
+      '[data-action="school-peer"][data-kind="befriend"][data-id="ava"]',
+    ),
+    "click",
+  );
   await nav(page, "Prepare for exams");
   let r = await saved(page);
   expect(r.lifeCourse.school.preparation).toBe(10);
@@ -107,7 +131,12 @@ test("teenage work schedules hours, pays real wages and records experience", asy
   const s = g.createGame({ seed: 1, age: 16 });
   await load(page, s);
   await nav(page, "Childhood & school");
-  await page.getByLabel("School-age part-time job").selectOption("shop");
+  await interact(
+    page,
+    page.getByLabel("School-age part-time job"),
+    "selectOption",
+    "shop",
+  );
   await nav(page, "Choose part-time job");
   await week(page);
   const r = await saved(page);
@@ -144,16 +173,20 @@ test("parents retire, family care costs money and transfers support to the relat
   await load(page, s);
   await nav(page, "Family & pets");
   await expect(page.locator("[data-origin-family]")).toContainText("Retired");
-  await page
-    .locator(
+  await interact(
+    page,
+    page.locator(
       `[data-action="relative-support"][data-kind="money"][data-id="${id}"]`,
-    )
-    .click();
-  await page
-    .locator(
+    ),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator(
       `[data-action="relative-support"][data-kind="care"][data-id="${id}"]`,
-    )
-    .click();
+    ),
+    "click",
+  );
   const r = await saved(page);
   expect(r.money).toBe(s.money - 150);
   expect(r.connections.profiles[id].wealth).toBe(
@@ -171,22 +204,29 @@ test("physical care changes real fitness and injury wear and specialist debug va
   s.football.injuryWeeks = 4;
   await load(page, s);
   await nav(page, "Health & ageing");
-  await page
-    .locator('[data-action="body-care"][data-id="conditioning"]')
-    .click();
-  await page
-    .locator('[data-action="body-care"][data-id="rehabilitation"]')
-    .click();
+  await interact(
+    page,
+    page.locator('[data-action="body-care"][data-id="conditioning"]'),
+    "click",
+  );
+  await interact(
+    page,
+    page.locator('[data-action="body-care"][data-id="rehabilitation"]'),
+    "click",
+  );
   let r = await saved(page);
   expect(r.lifeCourse.body.fitness).toBe(s.lifeCourse.body.fitness + 1);
   expect(r.lifeCourse.body.scars.football).toBe(2.5);
   expect(r.football.injuryWeeks).toBe(4);
   await nav(page, "Save & settings");
   await nav(page, "Enable debug mode");
-  await page
-    .getByLabel("Skill to edit")
-    .selectOption("specialist:body.mobility");
-  await page.getByLabel("Skill value").fill("82.5");
+  await interact(
+    page,
+    page.getByLabel("Skill to edit"),
+    "selectOption",
+    "specialist:body.mobility",
+  );
+  await interact(page, page.getByLabel("Skill value"), "fill", "82.5");
   await nav(page, "Apply skill");
   await page.reload();
   expect((await saved(page)).lifeCourse.body.mobility).toBe(82.5);
@@ -209,13 +249,22 @@ test("merit scholarship claims reduce tuition without awarding a degree", async 
   expect(r.lifeCourse.school.scholarship.remaining).toBe(156);
   expect(r.education.completed).not.toContain("business-degree");
   await nav(page, "Work & education");
-  await page
-    .locator('[data-action="enrol"][data-id="business-degree"]')
-    .click();
-  await expect(page.getByRole("dialog")).toContainText(
+  await interact(
+    page,
+    page.locator('[data-action="enrol"][data-id="business-degree"]'),
+    "click",
+  );
+  await expect(page.getByRole("dialog", { includeHidden: true })).toContainText(
     "$32.50 per calendar week",
   );
-  await page.getByRole("button", { name: /Enrol in programme/ }).click();
+  await interact(
+    page,
+    page.getByRole("button", {
+      name: /Enrol in programme/,
+      includeHidden: true,
+    }),
+    "click",
+  );
   await week(page);
   r = await saved(page);
   expect(r.education.active.spent).toBe(32.5);
@@ -238,7 +287,7 @@ test("authentic v7 saves preserve managers and finances with an exact downloadab
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const dl = await pending;
-  expect(dl.suggestedFilename()).toBe("lifesim-before-v14.json");
+  expect(dl.suggestedFilename()).toBe("lifesim-before-v15.json");
   expect(JSON.parse(fs.readFileSync(await dl.path()))).toEqual(raw);
 });
 test("expanded school, family and health screens fit phones without browser errors", async ({
