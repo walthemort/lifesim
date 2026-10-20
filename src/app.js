@@ -1,6 +1,8 @@
 import { retailScreen } from "./retail-screens.js";
 import { educationScreen, healthScreen, socialLifeScreen } from "./simulation/screens.js";
 import { simulationCommand } from "./simulation/index.js";
+import { mobilityScreen, homeDesignScreen } from "./simulation/ownership-screens.js";
+import { vehicleFinanceQuote, renovationQuote } from "./simulation/index.js";
 import { RETAIL_BUSINESSES, RETAIL_CATEGORIES } from "./retail-data.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
 import { organizeWorkspace } from "./phone-workspaces.js";
@@ -607,6 +609,8 @@ const nav = [
   ["school-life", "briefcase", "School record"],
   ["health-record", "heart", "Medical record"],
   ["social-life", "users", "Connected life"],
+  ["garage", "car", "Garage & journeys"],
+  ["home-design", "home", "Rooms & renovations"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -831,6 +835,8 @@ const pages = {
   "school-life": () => educationScreen(state, ui()),
   "health-record": () => healthScreen(state, ui()),
   "social-life": () => socialLifeScreen(state, ui()),
+  garage: () => mobilityScreen(state, ui()),
+  "home-design": () => homeDesignScreen(state, ui()),
   overview,
   world: worldView,
   activities: activitiesView,
@@ -952,8 +958,13 @@ function render() {
     ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
     relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
     family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
+    housing: ["home-design", "Rooms & renovations", "Furnish your space and manage building work."],
   }[view];
-  if (detailed) footer.insertAdjacentHTML("beforebegin", `<section class="panel" data-detailed-shortcut><h3>${detailed[1]}</h3><p>${detailed[2]}</p><button class="button primary" data-view="${detailed[0]}">Open ${detailed[1].toLowerCase()}</button></section>`);
+  if (detailed) {
+    const shortcut = `<section class="panel" data-detailed-shortcut><h3>${detailed[1]}</h3><p>${detailed[2]}</p><button class="button primary" data-view="${detailed[0]}">Open ${detailed[1].toLowerCase()}</button></section>`;
+    const heading = main.querySelector(":scope > .page-title");
+    if (heading) heading.insertAdjacentHTML("afterend", shortcut); else footer.insertAdjacentHTML("beforebegin", shortcut);
+  }
   if (view === "career")
     footer.insertAdjacentHTML(
       "beforebegin",
@@ -1142,6 +1153,11 @@ document.addEventListener("click", (event) => {
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "simulation-confirm": {
+      try { if (update((s) => simulationCommand(s, button.dataset.operation, JSON.parse(button.dataset.params)), "Agreement recorded.")) modal.close(); }
+      catch (error) { notify(error.message); }
+      break;
+    }
     case "profession-current": {
       const path = activeCareerPath(state);
       view = SPORT_PATHS.includes(path)
@@ -2452,6 +2468,16 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("submit", (event) => {
+  if (event.target.dataset.form === "simulation-action" && ["vehicle-finance", "renovate"].includes(event.target.dataset.operation)) {
+    event.preventDefault();
+    const operation = event.target.dataset.operation, params = Object.fromEntries(new FormData(event.target));
+    try {
+      const q = operation === "vehicle-finance" ? vehicleFinanceQuote(state, params.vehicle, params.kind) : renovationQuote(state, params.property, params.type, params.contractor);
+      const terms = operation === "vehicle-finance" ? `<p>Price ${money(q.price)} · initial payment ${money(q.deposit)} plus $100 setup.</p><p>${money(q.payment)}/week for ${q.term} weeks. ${params.kind === "finance" ? `Secured principal ${money(q.principal)} at 7% APR; repay before sale.` : "Lease vehicles are not owned. Early exit costs 25% of remaining payments plus excess mileage."}</p><p>Keep ${money(q.payment * 12)} in cash after the initial payment. ${q.eligible ? "Current income, tenure, credit and reserve checks pass." : "Current income, tenure, credit or reserve requirements are not met."}</p>` : `<p>Contract quote ${money(q.price)} · deposit ${money(q.deposit)} plus ${money(q.permit)} approval/inspection fee.</p><p>${q.weeks} delivered stages, normally ${money(q.installment)} per stage. Delays and permit refusal are possible. Unused pre-approval deposits are refunded after refusal; application fees remain spent.</p>`;
+      dialog(`<h2>Review ${operation === "vehicle-finance" ? "vehicle agreement" : "building contract"}</h2>${terms}<button class="button primary full-width" data-action="simulation-confirm" data-operation="${operation}" data-params="${e(JSON.stringify(params))}" ${operation === "vehicle-finance" && !q.eligible ? "disabled" : ""}>Confirm agreement & initial payment</button>`);
+    } catch (error) { notify(error.message); }
+    return;
+  }
   if (event.target.id === "loan-quote-form") {
     event.preventDefault();
     const data = new FormData(event.target),

@@ -1,6 +1,6 @@
 import currencies from "./currencies.json" with { type: "json" };
 import { country } from "./geography.js";
-import { eraIndex } from "./simulation/effects.js";
+import { eraIndex, vehicleWearFactor } from "./simulation/effects.js";
 const PROFILES = {
   GB: {
     wage: 1,
@@ -251,5 +251,5 @@ export const rentTerms = (s, r) =>
       };
 export const resalePrice = (s, item) =>
   Math.round(
-    (s.realWorld?.economy.purchaseBasis[item.id] ?? item.price) * 0.8 * 100,
+    (s.realWorld?.economy.purchaseBasis[item.id] ?? item.price) * 0.8 * vehicleWearFactor(s, item.id) * 100,
   ) / 100;

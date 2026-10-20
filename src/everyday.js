@@ -3,6 +3,7 @@ import { settleSeparation, custodyFactor } from "./realism.js";
 import { receiveIncome, recordCapitalGain } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng, BUSINESSES, stakePercent } from "./world.js";
+import { renovationRentBonus, renovationBedrooms } from "./simulation/effects.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
@@ -571,7 +572,7 @@ export function homeBedrooms(s) {
           h.id ===
           s.housing.properties.find((p) => p.id === s.housing.residence)?.type,
       )?.bedrooms || 0
-    );
+    ) + renovationBedrooms(s, s.housing.residence);
   if (s.housing.rental)
     return RENTALS.find((r) => r.id === s.housing.rental).bedrooms;
   const bedrooms = Math.max(
@@ -1051,7 +1052,7 @@ export function advanceEveryday(s) {
       round(home.value * (1 + (rng(s) - 0.45) * 0.006)),
     );
     if (home.tenant) {
-      const rent = round(d.rent * 0.9);
+      const rent = round(d.rent * 0.9 * (1 + renovationRentBonus(s, home.id)));
       h.weeklyIncome += rent;
       receiveIncome(s, rent, "investment");
       if (home.nextTenantWeek <= s.week) {

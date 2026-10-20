@@ -10,7 +10,7 @@ import { careerSupportHours } from "./career-support.js";
 import { storyWeeklyHours } from "./stories.js";
 import { professionHours } from "./profession-effects.js";
 import { careerPathReason } from "./career-commitment.js";
-import { simulationHours } from "./simulation/effects.js";
+import { simulationHours, simulationCommute } from "./simulation/effects.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
@@ -96,7 +96,7 @@ export function requiredHours(s, week = s.week) {
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,
     work: working + extra,
     school,
-    commute: working || school ? 5 : 0,
+    commute: working || school ? simulationCommute(s) : 0,
     care,
   };
 }

@@ -1,3 +1,4 @@
+import { outfitSuitability } from "./simulation/effects.js";
 import { routePartnerContribution } from "./realism.js";
 import { relativeAlive } from "./life-course.js";
 import { availableCash, rng } from "./world.js";
@@ -547,6 +548,7 @@ export function advanceConnections(s) {
         shared = plan.interest && p.interests.includes(plan.interest),
         quality =
           compatibility(s, r.id) * 0.5 +
+          outfitSuitability(s, "formal") +
           p.mood * 0.25 +
           (e.approach === "attentive"
             ? 15

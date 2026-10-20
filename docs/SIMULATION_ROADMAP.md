@@ -32,16 +32,16 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 28. Habit formation
 - [x] 29. Household illness transmission
 - [x] 30. Dental hearing and vision care
-- [ ] 31. Actual vehicle use
-- [ ] 32. Used-vehicle inspections
-- [ ] 33. Servicing and breakdowns
-- [ ] 34. Insurance policies
-- [ ] 35. Vehicle finance and leasing
-- [ ] 36. Driving boating and pilot licences
-- [ ] 37. Storage capacity
-- [ ] 38. Contextual clothing
-- [ ] 39. Furnished rooms
-- [ ] 40. Renovation projects
+- [x] 31. Actual vehicle use
+- [x] 32. Used-vehicle inspections
+- [x] 33. Servicing and breakdowns
+- [x] 34. Insurance policies
+- [x] 35. Vehicle finance and leasing
+- [x] 36. Driving boating and pilot licences
+- [x] 37. Storage capacity
+- [x] 38. Contextual clothing
+- [x] 39. Furnished rooms
+- [x] 40. Renovation projects
 - [ ] 41. Medical specialisation
 - [ ] 42. Nursing wards
 - [ ] 43. Teaching classes
@@ -106,3 +106,7 @@ Status is tracked against playable controls, persistent state, consequences and 
 ## First connected batch
 
 Items 1–30 have implemented controls, persistent records and weekly consequences. Verification: 21 focused Node simulation tests; six phone-browser flows including 320/390/430px layouts; production build; the prior 455 simulation tests also passed after the initial schema integration. Historical mode is explicit at character creation and models broad technology availability and nominal price/wage indices; geography and national laws retain the modern fictional-world assumptions. Medical and family models remain abstract game systems.
+
+## Ownership batch
+
+Items 31–40 now have garage/journey/licence/finance/used-market and room/style/project workspaces. Verification: fifteen focused simulation tests and four phone-browser flows, including three phone widths and a quote-before-payment flow. Vehicle principal is deducted from net worth, liens clear on sale, lease returns retain penalties, deficiencies survive repossession, and claim payments require actual repair invoices. Earlier mileage is not invented. Furnishing placements retain their existing inventory value; renovations use staged costs and the real housing ledger.

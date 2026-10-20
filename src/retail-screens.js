@@ -170,7 +170,7 @@ export function retailScreen(
       ([id]) => id === (store?.category || category),
     );
   const crumbs = `<nav class="retail-breadcrumbs" aria-label="Shopping location"><button data-action="retail-home">Shopping</button>${district ? `<span>/</span><button data-action="retail-category" data-id="${district[0]}">${u.e(district[1])}</button>` : ""}${store ? `<span>/</span><span aria-current="page">${u.e(store.name)}</span>` : belongings ? '<span>/</span><span aria-current="page">My belongings</span>' : ""}</nav>`;
-  const summary = `<div class="retail-wallet"><span>Available cash <strong>${u.money(availableCash(s))}</strong></span><button class="button secondary" data-action="retail-belongings">My belongings</button></div>`;
+  const summary = `<div class="retail-wallet"><span>Available cash <strong>${u.money(availableCash(s))}</strong></span><button class="button secondary" data-action="retail-belongings">My belongings</button></div>${district?.[0] === "vehicles" ? '<section class="panel"><button class="button secondary" data-view="garage">Open garage, journeys & licences</button></section>' : ["home", "property"].includes(district?.[0]) ? '<section class="panel"><button class="button secondary" data-view="home-design">Open rooms & renovations</button></section>' : ""}`;
   if (belongings) {
     const wardrobe = s.globalLife.wardrobe.map((id) =>
       CLOTHING.find((i) => i.id === id),

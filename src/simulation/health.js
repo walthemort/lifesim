@@ -90,7 +90,11 @@ export function healthPerformance(s) {
 }
 export function advanceHealth(s) {
   const h = s.simulation.health; if (h.lastWeek === s.week) return; h.lastWeek = s.week; h.lastCost = 0;
-  if (!h.active || s.globalLife.crime.prison) return;
+  if (!h.active) return;
+  if (s.globalLife.crime.prison) {
+    for (const a of h.appointments.filter((a) => a.status === "booked" && a.week <= s.week)) { a.status = "missed"; a.result = "Outside appointment missed while in custody; booking fees remain spent."; }
+    return;
+  }
   const deficit = recommendedSleep(s) - s.calendar.sleep;
   h.sleepDebt = clamp(h.sleepDebt + deficit * 5 - (s.activity === "rest" ? 5 : 0));
   const strain = (s.workLife.arrangement === "overtime" ? 3 : 0) + (s.energy < 25 ? 2 : 0) + conditionLoad(s) / 100;

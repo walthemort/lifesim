@@ -1,5 +1,6 @@
 import { onParentalLeave, leavePayFactor } from "./realism.js";
 import { personalityModifier } from "./personality.js";
+import { outfitSuitability } from "./simulation/effects.js";
 import {
   JOBS,
   TRACK_SKILLS,
@@ -67,6 +68,7 @@ export function attendInterview(state, id, approach) {
   const experience = Math.min(25, s.progress[j.track].weeks / 10);
   application.interviewScore = clamp(
     35 +
+      outfitSuitability(s, "work") +
       personalityModifier(s, "interview") +
       s.skills[TRACK_SKILLS[j.track]] * 0.35 +
       s.skills.charisma * 0.15 +

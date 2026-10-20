@@ -217,7 +217,9 @@ export * from "./debug.js";
 import { EXTRA_SHOP, STUDIO_ITEMS } from "./catalogue.js";
 import { RETAIL_PRODUCTS } from "./retail-data.js";
 import { initializeSimulation, advanceSimulation, validateSimulation } from "./simulation/index.js";
-import { simulationCosts, historicalAvailability, eraIndex } from "./simulation/effects.js";
+import { simulationCosts, historicalAvailability, eraIndex, mobilityDebt } from "./simulation/effects.js";
+import { recordVehiclePurchase, settleVehicleSale } from "./simulation/mobility.js";
+import { removeHomeItem } from "./simulation/home.js";
 export * from "./simulation/index.js";
 import {
   initializeLife,
@@ -706,6 +708,7 @@ export const portfolioValue = (s) =>
   MARKETS.reduce((n, m) => n + s.holdings[m.id] * s.market[m.id], 0);
 export const netWorth = (s) =>
   s.money +
+  -mobilityDebt(s) +
   jointShare(s) -
   (s.realWorld?.household.support.reduce((n, a) => n + a.arrears, 0) || 0) +
   housingEquity(s) +
@@ -1029,6 +1032,7 @@ export function buy(state, id) {
       "Clubs and companies require a sale opportunity or an accepted acquisition offer.",
     );
   if (state.inventory.includes(id)) throw new Error("You already own this.");
+  if (state.simulation?.mobility.contracts.some((c) => c.vehicle === id && c.kind === "lease" && c.status === "active")) throw new Error("Return the current lease before buying this model.");
   const requirements = equipmentRequirements(state, id);
   if (requirements.length)
     throw new Error(`Requires: ${requirements.join(", ")}.`);
@@ -1045,6 +1049,7 @@ export function buy(state, id) {
   s.money -= purchasePrice;
   if (s.realWorld) s.realWorld.economy.purchaseBasis[id] = purchasePrice;
   s.inventory.push(id);
+  recordVehiclePurchase(s, id);
   changeStats(s, { happiness: item.happiness });
   addLog(s, `Purchased ${item.name.toLowerCase()}.`, "milestone");
   return s;
@@ -1056,6 +1061,8 @@ export function sellItem(state, id) {
     throw new Error("You do not own this item.");
   const s = clone(state);
   s.money += resalePrice(state, item);
+  settleVehicleSale(s, id);
+  removeHomeItem(s, id);
   s.inventory = s.inventory.filter((i) => i !== id);
   addLog(s, `Sold ${item.name.toLowerCase()} for 80% of its purchase price.`);
   return s;

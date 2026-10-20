@@ -1,8 +1,29 @@
 import * as school from "./education.js";
 import * as health from "./health.js";
 import * as social from "./social.js";
+import * as mobility from "./mobility.js";
+import * as home from "./home.js";
 export function simulationCommand(s, operation, p = {}) {
   const actions = {
+    "fleet-start": () => mobility.startFleetManagement(s),
+    "licence-lesson": () => mobility.licenceLesson(s, p.licence),
+    "licence-exam": () => mobility.sitLicenceExam(s, p.licence),
+    "commute": () => mobility.changeCommute(s, p.mode, p.vehicle),
+    "vehicle-service": () => mobility.serviceVehicle(s, p.vehicle),
+    "vehicle-insure": () => mobility.insureVehicle(s, p.vehicle, p.cover),
+    "vehicle-uninsure": () => mobility.cancelVehicleInsurance(s, p.vehicle),
+    "vehicle-trip": () => mobility.vehicleTrip(s, p.vehicle, p.route, p.operator),
+    "vehicle-repair": () => mobility.repairVehicle(s, p.vehicle),
+    "vehicle-claim": () => mobility.claimInsurance(s, p.vehicle),
+    "vehicle-finance": () => mobility.financeVehicle(s, p.vehicle, p.kind),
+    "vehicle-settle": () => mobility.repayVehicleFinance(s, p.contract),
+    "vehicle-storage": () => mobility.rentVehicleStorage(s, p.type, Number(p.spaces)),
+    "vehicle-inspect": () => mobility.inspectUsedVehicle(s, p.offer),
+    "vehicle-used": () => mobility.buyUsedVehicle(s, p.offer, Number(p.fraction)),
+    "outfit-context": () => home.setDressContext(s, p.context),
+    "furniture": () => home.placeFurniture(s, p.item, p.room, p.property),
+    "renovate": () => home.startRenovation(s, p.property, p.type, p.contractor),
+    "renovation-cancel": () => home.cancelRenovation(s, p.project),
     "explore": () => school.exploreAptitude(s, p.subject),
     "study": () => school.studySubject(s, p.subject),
     "teacher": () => school.talkTeacher(s, p.subject),

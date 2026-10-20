@@ -7,6 +7,7 @@ const off = (s, min = 6) => s.ended || s.event || !s.actions || s.globalLife.cri
 const select = (u, name, label, values, chosen = null) => `<label class="field-label">${u.e(label)}<select name="${name}">${Object.entries(values).map(([id, title]) => `<option value="${u.e(id)}" ${id === chosen ? "selected" : ""}>${u.e(title)}</option>`).join("")}</select></label>`;
 const form = (s, operation, body, label, min = 6) => `<form data-form="simulation-action" data-operation="${operation}" class="simulation-form">${body}<button class="button secondary" ${off(s, min)}>${label}</button></form>`;
 const panel = (u, tab, heading, description, body) => `<section class="panel" data-simulation-tab="${tab}">${u.panelHeading(heading, description)}${body}</section>`;
+export { off, select, form, panel };
 export function educationScreen(s, u) {
   const e = s.simulation.education, student = age(s) >= 5 && age(s) < 18;
   return u.title("GROW INTO YOUR OWN LIFE", "Your school record.", "Aptitudes, teachers and subject results shape opportunities. Qualifications still need their normal courses.") +
