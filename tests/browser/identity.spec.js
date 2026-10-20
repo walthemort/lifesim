@@ -298,7 +298,7 @@ test("v10 import preserves the original life and exports an exact pre-v15 backup
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const download = await pending;
-  expect(download.suggestedFilename()).toBe("lifesim-before-v15.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v16.json");
   expect(JSON.parse(fs.readFileSync(await download.path(), "utf8"))).toEqual(
     old,
   );

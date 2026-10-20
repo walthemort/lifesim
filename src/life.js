@@ -30,6 +30,9 @@ import { initializeMusic, advanceMusic, validateMusic } from "./music.js";
 export * from "./sport.js";
 export * from "./music.js";
 export { EXPERIENCES } from "./catalogue.js";
+import { seriesAudienceBonus } from "./profession-effects.js";
+import { assertCareerPath, careerPathReason } from "./career-commitment.js";
+
 export const PLATFORMS = [
   {
     id: "lens",
@@ -164,14 +167,17 @@ export function initializeLife(
     }
 }
 export const footballCosts = (s) =>
-  s.football.stage === "school"
-    ? age(s) < 12
-      ? 0
-      : 5
-    : s.football.stage === "community"
-      ? 15
-      : 0;
+  careerPathReason(s, "football")
+    ? 0
+    : s.football.stage === "school"
+      ? age(s) < 12
+        ? 0
+        : 5
+      : s.football.stage === "community"
+        ? 15
+        : 0;
 export function joinFootball(state) {
+  assertCareerPath(state, "football");
   if (age(state) < 5) throw new Error("School football starts at age five.");
   action(state);
   if (!["none", "retired"].includes(state.football.stage))
@@ -192,6 +198,7 @@ export function joinFootball(state) {
   return s;
 }
 export function configureFootball(state, { position, training }) {
+  assertCareerPath(state, "football");
   writable(state);
   if (
     !FOOTBALL_POSITIONS.includes(position) ||
@@ -226,6 +233,7 @@ export function leaveFootball(state, { automatic = false } = {}) {
   return s;
 }
 export function acceptFootballOffer(state, id) {
+  assertCareerPath(state, "football");
   action(state);
   const offer = state.football.offers.find((o) => o.id === id);
   if (!offer || offer.status !== "offered" || offer.expiresWeek <= state.week)
@@ -374,7 +382,8 @@ function footballTick(s) {
       "warning",
     );
   }
-  if (["none", "retired"].includes(f.stage)) return;
+  if (["none", "retired"].includes(f.stage) || careerPathReason(s, "football"))
+    return;
   if (
     age(s) >= 40 &&
     ["academy", "reserve", "professional"].includes(f.stage)
@@ -770,7 +779,8 @@ function socialTick(s) {
       const base =
         (30 + post.quality * 3 + p.followers * (0.08 + rng(s) * 0.14)) *
         (post.approach === "clickbait" ? 1.7 : 1) *
-        contentCampaignBoost(s, post.id);
+        contentCampaignBoost(s, post.id) *
+        seriesAudienceBonus(s, post);
       post.views = Math.round(
         discoverable
           ? viral

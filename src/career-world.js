@@ -19,6 +19,8 @@ import {
   musicManagerCommission,
 } from "./career-support.js";
 import { receiveIncome } from "./banking.js";
+import { careerPathReason } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100;
@@ -193,6 +195,8 @@ export function sportMoveEligibility(s, id, kind, destination) {
   const p = actor(s, id),
     d = SPORT_DESTINATIONS[id]?.find((d) => d.name === destination),
     missing = [];
+  const locked = careerPathReason(s, id);
+  if (locked) missing.push(locked);
   if (!paid(s, id) || age(s) < 16 || age(s) >= (id === "football" ? 40 : 42))
     missing.push("an active eligible professional contract");
   if (!d || d.name === p?.club) missing.push("a different destination");

@@ -16,6 +16,8 @@ import {
 } from "./seasons.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { rng, availableCash, jobDefinition } from "./world.js";
+import { assertCareerPath, careerPathReason } from "./career-commitment.js";
+
 export const SPORTS = [
   {
     id: "racing",
@@ -97,10 +99,16 @@ export function initializeSports(s, { legacy = false } = {}) {
 export const sportCosts = (s) =>
   SPORTS.reduce(
     (sum, d) =>
-      sum + (s.sports[d.id].stage === "local" && age(s) >= 12 ? d.entryFee : 0),
+      sum +
+      (s.sports[d.id].stage === "local" &&
+      !careerPathReason(s, d.id) &&
+      age(s) >= 12
+        ? d.entryFee
+        : 0),
     0,
   );
 export function joinSport(state, id) {
+  assertCareerPath(state, id);
   writable(state);
   const d = SPORTS.find((d) => d.id === id);
   if (!d) throw new Error("Sport unavailable.");
@@ -124,6 +132,7 @@ export function joinSport(state, id) {
   return s;
 }
 export function setSportTraining(state, id, training) {
+  assertCareerPath(state, id);
   writable(state);
   if (
     !state.sports[id] ||
@@ -173,6 +182,7 @@ export function clearOtherSportContracts(s, keep = null) {
     }
 }
 export function acceptSportOffer(state, sportId, id) {
+  assertCareerPath(state, sportId);
   writable(state);
   if (!state.actions) throw new Error("No free-time actions left.");
   const p = state.sports[sportId],
@@ -322,7 +332,8 @@ export function advanceSports(s) {
         "warning",
       );
     }
-    if (["none", "retired"].includes(p.stage)) continue;
+    if (["none", "retired"].includes(p.stage) || careerPathReason(s, d.id))
+      continue;
     if (
       age(s) >= 42 &&
       ["academy", "junior", "professional"].includes(p.stage)

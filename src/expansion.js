@@ -16,6 +16,8 @@ import { enhanceSportOffer, syncSeason } from "./seasons.js";
 import { releaseSportAgreement } from "./contracts.js";
 import { startMusicProject } from "./music.js";
 import { gameDate } from "./dates.js";
+import { assertCareerPath } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const note = (s, text, kind = "info") => {
@@ -483,6 +485,7 @@ export function startTrack(
   state,
   { title, beat = "produce", theme = "Personal", ambition = "standard" },
 ) {
+  assertCareerPath(state, "music");
   if (state.realWorld?.retiredMusic)
     throw new Error("Resume new music work first.");
   if (
@@ -549,6 +552,7 @@ export function startTrack(
   return s;
 }
 export function workTrack(state, id) {
+  assertCareerPath(state, "music");
   const t = state.globalLife.tracks.find((t) => t.id === id);
   if (!t || !["beat", "lyrics", "vocals"].includes(t.stage))
     throw new Error("Choose a track in production.");
@@ -949,7 +953,11 @@ export function advanceExpansion(s, markets) {
     const h = s.marketHistory[m.id],
       previous = h.at(-2),
       change = previous ? (h.at(-1) / previous - 1) * 100 : 0;
-    if (s.holdings[m.id] > 0 && Math.abs(change) >= 3)
+    if (
+      (s.holdings[m.id] > 0 ||
+        s.profession?.investing.watchlist.includes(m.id)) &&
+      Math.abs(change) >= 3
+    )
       g.marketAlerts.push({
         id: `market:${m.id}:${s.week}`,
         market: m.id,

@@ -15,6 +15,9 @@ import { storyTuitionSupport } from "./stories.js";
 import { EXTRA_PROGRAMS, EXTRA_JOBS, EXTRA_CAREERS } from "./career-data.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { beginEmployment } from "./careers.js";
+import { orderCashReserved } from "./profession-effects.js";
+import { assertCareerPath, careerPathReason } from "./career-commitment.js";
+
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
   ...EXTRA_PROGRAMS,
@@ -661,7 +664,7 @@ export const tuitionDue = (s) =>
 export const reservedCash = (s) =>
   s.negotiations
     .filter((n) => ["submitted", "accepted"].includes(n.status))
-    .reduce((sum, n) => sum + n.offer, 0);
+    .reduce((sum, n) => sum + n.offer, 0) + orderCashReserved(s);
 export const availableCash = (s) => s.money - reservedCash(s);
 export const assetValue = (s, id) => {
   const b = asset(id);
@@ -836,6 +839,8 @@ export function jobEligibility(s, vacancy) {
   const j = jobDefinition(vacancy.jobId),
     missing = [];
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
+  const locked = careerPathReason(s, j.track);
+  if (locked) missing.push(locked);
   if (s.globalLife?.crime.prison) missing.push("release from custody");
   if (
     s.globalLife?.crime.record.some((r) => r.severity >= 3) &&
@@ -896,6 +901,7 @@ export function acceptJobOffer(state, id) {
   const a = state.applications.find((a) => a.id === id);
   if (!a || a.status !== "offer" || a.expiresWeek <= state.week)
     throw new Error("This job offer is no longer available.");
+  assertCareerPath(state, jobDefinition(a.jobId).track);
   const s = clone(state),
     application = s.applications.find((a) => a.id === id),
     j = jobDefinition(a.jobId);
@@ -939,7 +945,8 @@ export function resignJob(state) {
   );
   clearPlayingContracts(s);
   s.employment = null;
-  s.career = s.company ? "business" : "unemployed";
+  s.career =
+    s.company && !s.profession?.company.delegated ? "business" : "unemployed";
   return s;
 }
 export function requestRaise(state) {
@@ -1040,6 +1047,7 @@ export function foundCompany(
   state,
   { name, sector, model = "service", price = "standard" },
 ) {
+  assertCareerPath(state, "business");
   writable(state);
   if (state.startAge + Math.floor(state.week / 52) < 18)
     throw new Error("Founding a company independently requires age 18+.");
@@ -1609,6 +1617,12 @@ function businessesTick(s) {
     const volatility = industry(c.sector)?.volatility || 0.01;
     const growth =
       0.0005 +
+      (s.profession?.company.delegated &&
+      !s.ownershipPlay.management.founder?.staff.some(
+        (p) => p.role === "coach" && p.expiresWeek > s.week,
+      )
+        ? -0.005
+        : 0) +
       (s.globalLife?.companyPlan?.research || 0) * 0.00001 +
       ((s.globalLife?.companyPlan?.quality || 50) - 50) * 0.000005 +
       (s.globalLife?.companyPlan?.model === "subscription" ? 0.0002 : 0) +

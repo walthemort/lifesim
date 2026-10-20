@@ -13,7 +13,7 @@ const project = read("ios/App/App.xcodeproj/project.pbxproj"),
   info = read("ios/App/App/Info.plist"),
   privacy = read("ios/App/App/PrivacyInfo.xcprivacy");
 assert.ok(project.includes("TARGETED_DEVICE_FAMILY = 1;"));
-assert.ok(project.includes("MARKETING_VERSION = 0.15.0;"));
+assert.ok(project.includes("MARKETING_VERSION = 0.16.0;"));
 assert.ok(
   /Begin PBXResourcesBuildPhase section[\s\S]*?PrivacyInfo\.xcprivacy in Resources[\s\S]*?End PBXResourcesBuildPhase section/.test(
     project,

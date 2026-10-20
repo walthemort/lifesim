@@ -5,6 +5,8 @@ import { FX, residenceCode, localProfile, economyProfile } from "./economy.js";
 import { rng, availableCash, jobDefinition } from "./world.js";
 import { spendTime } from "./calendar.js";
 import { receiveIncome } from "./banking.js";
+import { assertCareerPath } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   round = (n) => Math.round(n * 100) / 100,
   clamp = (n) => Math.max(0, Math.min(100, n));
@@ -603,6 +605,7 @@ export function retireMusic(state) {
   return s;
 }
 export function resumeMusic(state) {
+  assertCareerPath(state, "music");
   const s = act(state, 2, 18);
   s.realWorld.retiredMusic = false;
   s.music.active = true;

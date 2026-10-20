@@ -8,6 +8,9 @@ import { lifeCourseHours, teenWorkHours } from "./life-course.js";
 import { recommendedSleep } from "./childhood.js";
 import { careerSupportHours } from "./career-support.js";
 import { storyWeeklyHours } from "./stories.js";
+import { professionHours } from "./profession-effects.js";
+import { careerPathReason } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
 export const TIME_BLOCKS = [
@@ -48,7 +51,7 @@ export function requiredHours(s, week = s.week) {
           (["football", "racing", "basketball", "tennis"].includes(s.career)
             ? 35
             : 40)
-      : s.company
+      : s.company && !s.profession?.company.delegated
         ? 20
         : 0);
   const school = s.school.enrolled && age(s) < 18 ? 30 : 0;
@@ -85,7 +88,8 @@ export function requiredHours(s, week = s.week) {
     contractHours(s, week) +
     milestoneHours(s, week) +
     identityHours(s, week) +
-    chapterHours(s, week);
+    chapterHours(s, week) +
+    professionHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,
@@ -111,16 +115,21 @@ export function calendarForecast(s, { comingWeek = false } = {}) {
           ? 16
           : 8
         : s.calendar.hours.study;
-  if (!["none", "retired"].includes(s.football.stage) && !s.football.contract)
+  if (
+    !careerPathReason(s, "football") &&
+    !["none", "retired"].includes(s.football.stage) &&
+    !s.football.contract
+  )
     desired.football =
       s.calendar.mode === "automatic" ? 6 : s.calendar.hours.football;
   for (const id of ["racing", "basketball", "tennis"])
     if (
       !["none", "retired"].includes(s.sports[id].stage) &&
+      !careerPathReason(s, id) &&
       !s.sports[id].contract
     )
       desired[id] = s.calendar.mode === "automatic" ? 6 : s.calendar.hours[id];
-  if (s.music.active)
+  if (s.music.active && !careerPathReason(s, "music"))
     desired.music =
       s.calendar.mode === "automatic" ? 4 : s.calendar.hours.music;
   if (

@@ -15,6 +15,13 @@ import {
 import { rng, jobDefinition, availableCash } from "./world.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { receiveIncome } from "./banking.js";
+import {
+  specialtyBonus,
+  detailedTacticBonus,
+  trainingRisk,
+} from "./profession-effects.js";
+import { careerPathReason } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100;
@@ -324,6 +331,7 @@ export function prepareSeasons(s) {
     const path = s.seasons[id],
       p = actor(s, id);
     path.blocked =
+      careerPathReason(s, id) ||
       internationalDuty(s, id) ||
       milestoneAway(s, id) ||
       familySportAbsence(s, id)
@@ -649,6 +657,8 @@ function result(s, id, path, f) {
     clamp(
       p.ability * 0.65 +
         performanceBonus(s, id, f) +
+        specialtyBonus(s, id, f) +
+        detailedTacticBonus(s, id, f) +
         sportChemistryBonus(s, id) +
         physicalPerformance(s, id) +
         p.discipline * 0.15 +
@@ -669,7 +679,12 @@ function result(s, id, path, f) {
         t.id === 0
           ? clamp(
               t.rating * 0.65 +
-                (selected ? p.ability + performanceBonus(s, id, f) : t.rating) *
+                (selected
+                  ? p.ability +
+                    performanceBonus(s, id, f) +
+                    specialtyBonus(s, id, f) +
+                    detailedTacticBonus(s, id, f)
+                  : t.rating) *
                   0.35,
             )
           : t.rating;
@@ -789,6 +804,7 @@ function result(s, id, path, f) {
       rng(s) <
       (p.training === "fitness" ? 0.012 : 0.004) *
         injuryRisk(s, id) *
+        trainingRisk(s, id) *
         performanceInjuryRisk(s, id, f)
     ) {
       p.injuryWeeks = 2 + Math.floor(rng(s) * 4);

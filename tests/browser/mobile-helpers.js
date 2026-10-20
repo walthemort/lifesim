@@ -42,12 +42,24 @@ export async function reveal(page, locator) {
     if (!(await panel.isVisible()))
       await page.locator(`[role="tab"][aria-controls="${id}"]`).click();
   }
-  const details = await locator
-    .first()
-    .locator("xpath=ancestor::details[not(@open)]")
-    .all();
-  for (const item of details.reverse())
-    await item.locator(":scope > summary").click();
+  // Open one stable element at a time: opening a details changes the set of
+  // closed ancestors. Stop once a summary itself is visible so its caller can
+  // perform the requested toggle.
+  while (!(await locator.first().isVisible())) {
+    const handle = await locator.first().evaluateHandle((el) => {
+      let outermost = null;
+      for (let n = el.parentElement; n; n = n.parentElement)
+        if (n.tagName === "DETAILS" && !n.open) outermost = n;
+      return outermost?.querySelector(":scope > summary") ?? null;
+    });
+    const summary = handle.asElement();
+    if (!summary) {
+      await handle.dispose();
+      break;
+    }
+    await summary.click();
+    await handle.dispose();
+  }
 }
 export async function interact(page, locator, method, ...args) {
   await reveal(page, locator);

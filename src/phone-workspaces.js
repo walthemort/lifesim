@@ -2,7 +2,9 @@
 function makeWorkspace(scope, key, labels, classify, selections, defaultTab) {
   const nodes = [...scope.children].filter(
     (n) =>
-      !n.matches("footer,.page-title,.sandbox-banner,.info-banner.warning"),
+      !n.matches(
+        "footer,.page-title,.sandbox-banner,.info-banner.warning,[data-career-commitment]",
+      ),
   );
   const bar = document.createElement("nav");
   bar.className = "workspace-tabs";
@@ -69,7 +71,11 @@ export function organizeWorkspace(main, view, s, selections) {
       ["Overview", "Studio", "Catalogue", "Promote", "Live", "Team"],
       (n) => {
         const h = heading(n);
-        if (n.matches("[data-music-overview],[data-music-chart]"))
+        if (
+          n.matches(
+            "[data-music-overview],[data-music-chart],[data-profession-music-audience]",
+          )
+        )
           return "Overview";
         if (
           n.matches(
@@ -104,6 +110,15 @@ export function organizeWorkspace(main, view, s, selections) {
   } else if (view === "sports" && main.querySelector(".sport-section")) {
     const section = main.querySelector(".sport-section"),
       id = section.id.replace("sport-section-", "");
+    const matchday =
+      id === "racing"
+        ? "Race weekend"
+        : id === "basketball"
+          ? "Game day"
+          : id === "tennis"
+            ? "Tournament"
+            : "Matchday";
+    if (!section.querySelector("[data-sport-card]")) return;
     const school = [...main.children].find((n) =>
       n.matches(".info-banner:not(.warning)"),
     );
@@ -124,7 +139,7 @@ export function organizeWorkspace(main, view, s, selections) {
       for (const o of s.football.offers.filter((o) => o.kind === "contract"))
         section
           .querySelector('[data-sport-card="football"]')
-          .querySelector(
+          ?.querySelector(
             `[data-action="sport-offer"][data-id="${CSS.escape(o.id)}"]`,
           )
           ?.closest(".application-row")
@@ -133,9 +148,15 @@ export function organizeWorkspace(main, view, s, selections) {
     makeWorkspace(
       section,
       `sports:${id}`,
-      ["Matchday", "Development", "Standings", "Team", "Contract"],
+      [matchday, "Development", "Standings", "Team", "Contract", "Style"],
       (n) => {
-        if (n.matches(".career-cockpit,[data-performance]")) return "Matchday";
+        if (
+          n.matches(
+            ".career-cockpit,[data-performance],[data-profession-analysis]",
+          )
+        )
+          return matchday;
+        if (n.matches("[data-profession-style]")) return "Style";
         if (n.matches("[data-season]")) return "Standings";
         if (n.matches("[data-rivals]")) return "Team";
         if (n.matches("[data-sport-team]"))
@@ -152,8 +173,28 @@ export function organizeWorkspace(main, view, s, selections) {
         (id === "football" ? s.football : s.sports[id]).stage,
       )
         ? "Development"
-        : "Matchday",
+        : matchday,
     );
+    const development = section.querySelector(
+      '[data-workspace-panel="Development"]',
+    );
+    development.querySelector("[data-profession-training]") &&
+      development.prepend(
+        development.querySelector("[data-profession-training]"),
+      );
+    for (const n of [...development.children])
+      if (
+        n.matches(
+          "[data-identity-routine],[data-career-support],[data-equipment-group],[data-depth-milestones]",
+        )
+      ) {
+        const details = document.createElement("details"),
+          summary = document.createElement("summary");
+        details.className = "career-support-details";
+        summary.textContent = heading(n);
+        n.before(details);
+        details.append(summary, n);
+      }
   } else if (view === "social" && main.querySelector("[data-platform]")) {
     makeWorkspace(
       main,
@@ -167,7 +208,11 @@ export function organizeWorkspace(main, view, s, selections) {
           h === "Contracts, rights & commercial work"
         )
           return "Deals";
-        if (h === "Your recent content" || h === "Research, record & edit")
+        if (
+          n.matches("[data-profession-series]") ||
+          h === "Your recent content" ||
+          h === "Research, record & edit"
+        )
           return "Content";
         return "Accounts";
       },
@@ -206,13 +251,31 @@ export function organizeWorkspace(main, view, s, selections) {
     makeWorkspace(
       main,
       "company",
-      ["Overview", "Products", "Operations"],
+      ["Overview", "Products", "Clients", "Operations"],
       (n) =>
-        n.matches("[data-business-products]")
-          ? "Products"
-          : n.matches("[data-ownership-dashboard]")
-            ? "Operations"
-            : "Overview",
+        n.matches("[data-profession-clients]")
+          ? "Clients"
+          : n.matches("[data-business-products]")
+            ? "Products"
+            : n.matches("[data-ownership-dashboard]")
+              ? "Operations"
+              : "Overview",
+      selections,
+    );
+  } else if (
+    view === "investments" &&
+    main.querySelector("[data-profession-orders]")
+  ) {
+    makeWorkspace(
+      main,
+      "investing",
+      ["Market", "Research", "Orders"],
+      (n) =>
+        n.matches("[data-profession-orders]")
+          ? "Orders"
+          : n.matches("[data-profession-research]")
+            ? "Research"
+            : "Market",
       selections,
     );
   }

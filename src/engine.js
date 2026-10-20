@@ -140,7 +140,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 15;
+export const VERSION = 16;
 import {
   initializeBanking,
   validateBanking,
@@ -223,6 +223,15 @@ import {
   sportCosts,
 } from "./life.js";
 export * from "./life.js";
+import {
+  initializeProfession,
+  prepareProfession,
+  advanceProfession,
+  validateProfession,
+} from "./profession.js";
+import { orderSharesReserved } from "./profession-effects.js";
+export * from "./profession.js";
+
 export const CAREERS = {
   ...EXTRA_CAREERS,
   basketball: {
@@ -861,6 +870,7 @@ export function createGame({
   initializeExpansion(s, { countryCode });
   initializeRealism(s);
   initializeExperience(s);
+  initializeProfession(s);
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -961,7 +971,10 @@ export function invest(state, id, quantity) {
   if (Math.abs(cost) < 1) throw new Error("The minimum trade value is $1.");
   if (quantity > 0 && cost > availableCash(state))
     throw new Error("Not enough uncommitted cash.");
-  if (quantity < 0 && -quantity > state.holdings[id] + 1e-9)
+  if (
+    quantity < 0 &&
+    -quantity > state.holdings[id] - orderSharesReserved(state, id) + 1e-9
+  )
     throw new Error("You cannot sell more units than you own.");
   if ((state.tradeVolumes[id] || 0) + Math.abs(quantity) > m.volume)
     throw new Error(
@@ -1616,6 +1629,7 @@ export function advanceWeek(state) {
     startBankingWeek(s);
     prepareRealism(s);
     prepareExperience(s);
+    prepareProfession(s);
     s.money -=
       SHOP.filter(
         (i) => s.inventory.includes(i.id) && i.category !== "Ownership",
@@ -1630,6 +1644,7 @@ export function advanceWeek(state) {
     advanceBanking(s, 0);
     advanceRealism(s);
     advanceExperience(s);
+    advanceProfession(s, { trade: invest, markets: MARKETS });
     for (const r of s.relationships) r.bond = clamp(r.bond - 0.1);
     applyGodMode(s);
     if (s.health <= 0) s.ended = true;
@@ -1651,6 +1666,7 @@ export function advanceWeek(state) {
   prepareLifeCourse(s);
   prepareCareerWorld(s);
   prepareCalendar(s);
+  prepareProfession(s);
   prepareSeasons(s);
   if (s.employment || s.career === "business") p.weeks++;
   s.actions = 3;
@@ -1826,6 +1842,7 @@ export function advanceWeek(state) {
   advanceExpansion(s, MARKETS);
   advanceRealism(s);
   advanceExperience(s);
+  advanceProfession(s, { trade: invest, markets: MARKETS });
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1848,7 +1865,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, VERSION].includes(
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, VERSION].includes(
       s.version,
     ) ||
     typeof s.name !== "string" ||
@@ -1868,6 +1885,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsProfession = s.version < 16;
   const needsExperience = s.version < 15;
   const needsRealism = s.version < 14;
   const needsExpansion = s.version < 13;
@@ -2076,6 +2094,11 @@ export function restoreGame(raw) {
     initializeExperience(s);
     s.version = VERSION;
   }
+  if (needsProfession) {
+    initializeProfession(s);
+    s.version = VERSION;
+  }
+  validateProfession(s, MARKETS);
   validateExperience(s);
   validateRealism(s);
   validateExpansion(s);

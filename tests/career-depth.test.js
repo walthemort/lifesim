@@ -40,9 +40,11 @@ for (const id of g.CONTRACT_SPORTS) {
       exceptional: false,
       offeredPay: 650,
     });
-    assert.throws(() => g.acceptJobOffer(s, "exit-job"), /release clause/);
+    assert.throws(() => g.acceptJobOffer(s, "exit-job"), /Leave your/);
     s.money = 100000;
-    const r = g.acceptJobOffer(s, "exit-job");
+    assert.throws(() => g.acceptJobOffer(s, "exit-job"), /Leave your/);
+    const left = id === "football" ? g.leaveFootball(s) : g.leaveSport(s, id);
+    const r = g.acceptJobOffer(left, "exit-job");
     assert.equal(r.money, s.money - fee);
     assert.equal(r.contracts.current[id].status, "ended");
     assert.equal(athlete(r, id).contract, null);

@@ -719,4 +719,226 @@ body.modal-open {
     height: 38px;
   }
 }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.specialty-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 20px 0;
+}
+.specialty-grid > div {
+  min-width: 0;
+}
+.specialty-grid span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.specialty-grid strong {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 9px;
+}
+.career-brief {
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+.career-brief h3 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+.career-brief p,
+.career-brief small {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.career-brief .button {
+  margin-top: 12px;
+}
+.sport-tactical-details {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0 18px;
+}
+.sport-tactical-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  font-size: 13px;
+  min-height: 28px;
+}
+.sport-tactical-details p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.career-kit-preview {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  display: block;
+  margin: auto;
+}
+.career-style-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3440, #222236);
+  border-radius: 16px;
+  padding: 12px;
+  margin: 16px 0;
+}
+.career-style-hero > svg {
+  width: 50%;
+}
+.career-kit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+.career-kit-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  min-width: 0;
+}
+.career-kit-card h3 {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.career-kit-card .button {
+  padding: 10px 7px;
+  font-size: 10px;
+  width: 100%;
+}
+.career-kit-card p {
+  font-size: 12px;
+}
+.career-kit-card .tag {
+  font-size: 9px;
+  padding: 5px 7px;
+}
+.celebration-preview {
+  display: block;
+  width: 110px;
+  height: 120px;
+  flex-shrink: 0;
+}
+.equipped-career-kit {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #263e432b;
+  margin: 18px 0;
+}
+.equipped-career-kit .career-kit-preview {
+  width: 86px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.equipped-career-kit strong,
+.equipped-career-kit small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.equipped-career-kit small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.victory-moment {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0;
+  border-radius: 14px;
+  background: #69d8ac12;
+}
+.victory-moment .celebration-preview {
+  animation: signature-moment 0.7s ease-out both;
+  transform-origin: 50% 90%;
+}
+@keyframes signature-moment {
+  from {
+    transform: translateY(6px) rotate(-4deg);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+.career-commitment {
+  border: 1px solid #6fc6aa44;
+  background: linear-gradient(120deg, #18332d, #17222d);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.career-commitment h3 {
+  margin: 8px 0;
+  font-size: 19px;
+}
+.career-commitment p {
+  color: #b1c9c0;
+  line-height: 1.6;
+  font-size: 12px;
+}
+.career-commitment .button,
+.career-commitment .text-button {
+  font-size: 11px;
+}
+.category-sections .section-shortcut:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+[data-profession-studio] form {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+[data-profession-orders] small {
+  display: block;
+}
+@media (prefers-reduced-motion: reduce) {
+  .victory-moment .celebration-preview {
+    animation: none;
+  }
+}
+.career-support-details {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 14px;
+  margin: 14px 0;
+  overflow: hidden;
+}
+.career-support-details > summary {
+  padding: 17px;
+  min-height: 52px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.career-support-details > .panel {
+  border: 0;
+  margin-bottom: 0;
+  padding-top: 6px;
+}

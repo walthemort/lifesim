@@ -29,6 +29,8 @@ import {
   footballCosts,
   sportCosts,
 } from "./engine.js";
+import { careerPathReason } from "./career-commitment.js";
+
 const count = (n) => Math.round(n).toLocaleString("en-US");
 export function sportsScreen(s, u, focusedSport = null) {
   const { title, panelHeading, tag, icon, meter, money, e } = u,
@@ -41,7 +43,7 @@ export function sportsScreen(s, u, focusedSport = null) {
           `<div class="application-row"><div><strong>${e(o.club)}</strong><small>${e(o.kind.replaceAll("-", " "))}${o.kind === "contract" ? ` · ${money(o.pay)}/wk gross base income · ${o.terms?.weeks || o.duration || 104} weeks` : ""} · respond in ${o.expiresWeek - s.week} weeks</small></div><div class="inline-actions"><button class="button primary" data-action="sport-offer" data-sport="${sport}" data-id="${e(o.id)}">Review invitation</button><button class="text-button" data-action="decline-sport" data-sport="${sport}" data-id="${e(o.id)}">Decline</button></div></div>`,
       )
       .join("");
-  const introduction = `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `${age(s) < 12 ? "Primary" : "Secondary"} school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. ${age(s) < 12 ? "Your family covers basic needs and local sports fees; your allowance starts at six." : "Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly."}` : "You can continue local sport alongside work or study. Youth academy places have age limits; a professional offer is never guaranteed."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div>`;
+  const introduction = `${title("PRACTICE, COMPETITION & DEVELOPMENT", "Every athlete starts somewhere.", "School teams, local clubs, academies, and scouting. A professional contract is an outcome of development.")}<div class="info-banner">${icon("football")}<span>${s.school.enrolled ? `${age(s) < 12 ? "Primary" : "Secondary"} school · grade ${Math.round(s.school.grade)} / 100 · graduation at age 18. ${age(s) < 12 ? "Your family covers basic needs and local sports fees; your allowance starts at six." : "Guardians cover housing; you receive $25 allowance and pay $15 personal costs weekly."}` : "Local sport can be your active path while you study. Leave another career before joining; youth academy age limits and professional qualifications still apply."} Weekly local-sport fees: ${money(footballCosts(s) + sportCosts(s))}.</span></div>`;
   const cards = {};
   cards.football = `<section class="panel sport-panel" data-sport-card="football">${panelHeading("Football", f.club || "Start with school or your local club.", tag(f.stage, "green"))}<div class="sport-summary"><span class="feature-icon green">${icon("football")}</span><div><h2>${e(f.club || "The football path")}</h2><p>${e(f.position)} · ${f.matches} matches · ${f.goals} goals</p></div></div><div class="life-metrics"><div><span>Football ability</span><strong>${Math.round(f.ability)} / 100</strong>${meter(f.ability, "green")}</div><div><span>Coach trust</span><strong>${Math.round(f.coachTrust)} / 100</strong>${meter(f.coachTrust, "blue")}</div><div><span>Sport reputation</span><strong>${Math.round(f.reputation)} / 100</strong>${meter(f.reputation, "purple")}</div></div><div class="path-steps">${["School / local", "Academy", "Development squad", "Professional contract"].map((x) => `<span>${x}</span>`).join("")}</div>${
     f.stage === "none" || f.stage === "retired"
@@ -77,8 +79,9 @@ export function sportsScreen(s, u, focusedSport = null) {
   }
   const sports = [{ id: "football", name: "Football" }, ...SPORTS];
   const preferred =
-    [focusedSport, s.career, s.aspiration].find((id) =>
-      sports.some((sport) => sport.id === id),
+    [focusedSport, s.career, s.aspiration].find(
+      (id) =>
+        sports.some((sport) => sport.id === id) && !careerPathReason(s, id),
     ) ||
     sports.find(
       ({ id }) =>
@@ -87,7 +90,7 @@ export function sportsScreen(s, u, focusedSport = null) {
         ),
     )?.id ||
     "football";
-  const navigation = `<nav class="category-sections" aria-label="Sport & development sections">${sports.map(({ id, name }) => `<button class="section-shortcut ${id === preferred ? "active" : ""}" data-action="focus-sport" data-id="${id}" aria-controls="sport-section-${id}" ${id === preferred ? 'aria-current="true"' : ""}>${e(name)}</button>`).join("")}</nav>`;
+  const navigation = `<nav class="category-sections" aria-label="Sport & development sections">${sports.map(({ id, name }) => `<button class="section-shortcut ${id === preferred ? "active" : ""}" data-action="focus-sport" data-id="${id}" aria-controls="sport-section-${id}" ${careerPathReason(s, id) ? `disabled title="${e(careerPathReason(s, id))}"` : ""} ${id === preferred ? 'aria-current="true"' : ""}>${e(name)}${careerPathReason(s, id) ? ' <span aria-label="Locked">▣</span>' : ""}</button>`).join("")}</nav>`;
   const ordered = [sports.find(({ id }) => id === preferred)];
   return (
     introduction +

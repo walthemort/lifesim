@@ -18,6 +18,9 @@ import { musicStudioBonus } from "./career-equipment.js";
 import { receiveIncome } from "./banking.js";
 import { allocationRatio, spendTime } from "./calendar.js";
 import { availableCash, rng } from "./world.js";
+import { artisticDiscovery, artisticRetention } from "./profession-effects.js";
+import { assertCareerPath } from "./career-commitment.js";
+
 export const MUSIC_ROLES = {
   singer: "Singer",
   rapper: "Rapper",
@@ -38,6 +41,7 @@ const action = (s) => {
   if (age(s) < 6) throw new Error("Music lessons start at age six.");
   if (s.ended) throw new Error("This life is complete.");
   if (!s.actions) throw new Error("No free-time actions left.");
+  assertCareerPath(s, "music");
 };
 export function initializeMusic(s) {
   s.music = {
@@ -69,6 +73,7 @@ export const musicLabel = (s) =>
           ? "Local artist"
           : "Bedroom hobbyist";
 export function configureMusic(state, { role, genre }) {
+  assertCareerPath(state, "music");
   if (state.realWorld?.retiredMusic)
     throw new Error("Resume new music work first.");
   if (age(state) < 6) throw new Error("Music lessons start at age six.");
@@ -271,7 +276,8 @@ export function advanceMusic(s) {
           (0.4 + rng(s) * 1.2) *
           (m.label ? 1.2 : 1) *
           musicPromotionMultiplier(s) *
-          recordingCampaignBoost(s, p.id),
+          recordingCampaignBoost(s, p.id) *
+          artisticDiscovery(s),
       );
       const viral = p.quality >= 60 && rng(s) < 0.02;
       const streams =
@@ -312,6 +318,7 @@ export function advanceMusic(s) {
       const promoted = s.careerSupport.music.campaignUntil > s.week;
       r.weeklyStreams = Math.round(
         organic *
+          artisticRetention(s, r) *
           (promoted ? 1.08 + (currentMusicManager(s)?.skill || 0) * 0.2 : 1),
       );
       if (promoted) m.fans += Math.floor((r.weeklyStreams - organic) * 0.005);

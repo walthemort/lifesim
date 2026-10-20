@@ -190,7 +190,7 @@ test("a famous player can hire a social manager and gain public followers withou
   expect(await page.locator("[data-depth-contracts]").count()).toBe(1);
 });
 
-test("football has one active sport, five clear menus and one-button club approaches", async ({
+test("football has one active sport, six clear menus and one-button club approaches", async ({
   page,
 }) => {
   await load(page, professional("football"));
@@ -203,6 +203,7 @@ test("football has one active sport, five clear menus and one-button club approa
     "Standings",
     "Team",
     "Contract",
+    "Style",
   ]);
   await tabs.getByRole("tab", { name: "Contract", exact: true }).click();
   await expect(page.locator("#sport-move-form")).toHaveCount(0);

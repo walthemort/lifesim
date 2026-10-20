@@ -18,6 +18,8 @@ import {
   ownerQuote,
   ownerFacilityQuote,
 } from "./ownership-play.js";
+import { matchDetailFields } from "./profession-screens.js";
+
 const sportNames = {
   football: "Football",
   racing: "Motorsport",
@@ -44,7 +46,7 @@ export function performanceScreen(s, u, path) {
                 .map(([id, name]) => `<option value="${id}">${name}</option>`)
                 .join(
                   "",
-                )}</select></label><button class="button secondary" type="submit" ${!s.actions || s.event || s.ended || p.injuryWeeks ? "disabled" : ""}>Prepare performance plan</button></div></form><p class="muted">Costs one action and two preparation hours. One decision per fixture, in the two weeks before it starts.</p>`
+                )}</select></label></div>${matchDetailFields(s, u, path, f)}<button class="button secondary" type="submit" ${!s.actions || s.event || s.ended || p.injuryWeeks ? "disabled" : ""}>Prepare performance plan</button></form><p class="muted">Costs one action and two preparation hours. One decision per fixture, in the two weeks before it starts.</p>`
         }`
       : '<p class="muted">Your next fixture is more than two weeks away. Training and recovery continue.</p>'
   }${history.map((p) => `<p class="muted">Week ${p.resultWeek}: ${e(PERFORMANCE_CHOICES[path][p.choice])} · ${e(p.status)}${p.status === "delivered" ? ` · ${p.score}/100 performance` : ""}</p>`).join("")}</section>`;

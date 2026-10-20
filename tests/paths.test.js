@@ -236,15 +236,21 @@ test("academy recruitment and junior competition occur without a job application
   assert.equal(s.employment.jobId, "basketball-1");
   assert.equal(s.applications.length, 0);
 });
-test("switching paid sporting contracts leaves other sports as local hobbies, and resignation keeps saves consistent", () => {
+test("switching sporting paths requires an explicit funded exit and preserves sporting progress", () => {
   let s = fresh({ age: 20, career: "football" });
   s.money = 100000;
   s = g.acceptFootballOffer(s, footballInvitation(s).id);
   const footballExit = g.sportExitCost(s, "football");
+  assert.throws(
+    () =>
+      g.acceptSportOffer(s, "basketball", sportsInvitation(s, "basketball").id),
+    /Leave your/,
+  );
+  s = g.leaveFootball(s);
   s = g.acceptSportOffer(s, "basketball", sportsInvitation(s, "basketball").id);
   assert.equal(s.money, 100000 - footballExit);
   assert.equal(s.football.contract, null);
-  assert.equal(s.football.stage, "community");
+  assert.equal(s.football.stage, "retired");
   assert.equal(s.employment.jobId, "basketball-1");
   const basketballExit = g.sportExitCost(s, "basketball");
   s = g.resignJob(s);
@@ -255,15 +261,17 @@ test("switching paid sporting contracts leaves other sports as local hobbies, an
 });
 test("local sports remain available later in life while new professional contracts have retirement limits", () => {
   let s = fresh({ age: 50, career: "football" });
-  s = g.joinSport(s, "tennis");
-  const r = next(s);
-  assert.equal(r.football.stage, "community");
-  assert.equal(r.sports.tennis.stage, "local");
-  assert.ok(r.football.matches > 0);
   assert.throws(
     () => g.acceptFootballOffer(s, footballInvitation(s).id),
     /age 40/,
   );
+  assert.throws(() => g.joinSport(s, "tennis"), /Leave your/);
+  s = g.leaveFootball(s);
+  s = g.joinSport(s, "tennis");
+  const r = next(s);
+  assert.equal(r.football.stage, "retired");
+  assert.equal(r.sports.tennis.stage, "local");
+  assert.equal(r.football.matches, 0);
   assert.throws(
     () => g.acceptSportOffer(s, "tennis", sportsInvitation(s, "tennis").id),
     /age 42/,

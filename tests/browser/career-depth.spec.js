@@ -232,6 +232,9 @@ for (const [id, kind] of [
       "click",
     );
     await expect(panel).toContainText("Assessment completed");
+    await expect(
+      panel.getByText("Assessment completed", { exact: true }),
+    ).toBeVisible();
     await page.reload();
     expect(g.restoreGame(await saved(page))).toEqual(await saved(page));
   });
@@ -404,7 +407,7 @@ test("authentic v9 migration keeps the original life records and an exact pre-v1
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v15.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v16.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("contract, milestone and evolving-contact panels fit phones without browser errors", async ({

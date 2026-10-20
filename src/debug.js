@@ -1,7 +1,15 @@
 import { PROGRAMS, reservedCash } from "./world.js";
 import { HOBBIES } from "./everyday.js";
+import { SPORT_SPECIALTIES } from "./profession-data.js";
 
 export const DEBUG_SPECIALIST_SKILLS = [
+  ...Object.entries(SPORT_SPECIALTIES).flatMap(([path, skills]) =>
+    Object.entries(skills).map(([key, label]) => ({
+      id: `${path}.${key}`,
+      label: `${path}: ${label}`,
+      path: ["profession", "sports", path, "skills", key],
+    })),
+  ),
   ...["confidence", "ambition", "patience", "discipline", "empathy"].map(
     (key) => ({
       id: `personality.${key}`,
@@ -129,7 +137,7 @@ export function debugEdit(state, changes) {
       const max = k === "money" ? 1e12 : k === "actions" ? 3 : 100;
       if (!number(changes[k], min, max, k === "actions"))
         throw new Error(
-          `Invalid ${k}; enter ${min} to ${max}. Cash cannot be lower than reserved bids.`,
+          `Invalid ${k}; enter ${min} to ${max}. Cash cannot be lower than reserved bids or orders.`,
         );
       if (k === "recognition") s.fame.recognition = changes[k];
       else s[k] = changes[k];
@@ -172,6 +180,21 @@ export function debugEdit(state, changes) {
       s.education.active = null;
     summary.push(`Granted ${changes.qualification}.`);
   }
+  for (const path of Object.keys(SPORT_SPECIALTIES))
+    if (
+      s.profession &&
+      Object.keys(changes.specialistSkills || {}).some((key) =>
+        key.startsWith(path + "."),
+      )
+    ) {
+      const p = s.profession.sports[path],
+        a = path === "football" ? s.football : s.sports[path],
+        earned = Math.max(0, a.ability - p.foundation);
+      for (const key of Object.keys(SPORT_SPECIALTIES[path]))
+        if (!Object.hasOwn(changes.specialistSkills || {}, `${path}.${key}`))
+          p.skills[key] = Math.min(100, p.skills[key] + earned);
+      p.foundation = a.ability;
+    }
   audit(s, summary.join(" ").slice(0, 200));
   return s;
 }

@@ -1,4 +1,5 @@
 import { availableCash } from "./world.js";
+import { careerPathReason, assertCareerPath } from "./career-commitment.js";
 import { spendTime, calendarForecast } from "./calendar.js";
 import { startMusicProject } from "./music.js";
 import { createPost } from "./life.js";
@@ -49,6 +50,7 @@ function action(state, hours, label) {
   return s;
 }
 export function choosePerformancePlan(state, path, choice) {
+  assertCareerPath(state, path);
   if (
     !Object.hasOwn(PERFORMANCE_CHOICES, path) ||
     !Object.hasOwn(PERFORMANCE_CHOICES[path], choice)
@@ -124,7 +126,7 @@ export function startPlannedRecording(
     );
   const s = startMusicProject(state, { title }),
     p = s.music.projects.at(-1);
-  p.manualRelease=true;
+  p.manualRelease = true;
   spendTime(s, 2, "Recording budget and release planning");
   s.money = round(s.money - extra);
   p.quality = clamp(
@@ -355,7 +357,11 @@ function sources(s) {
       );
 
     const f = nextPerformance(s, path);
-    if (f && !["none", "retired"].includes(p.stage))
+    if (
+      f &&
+      !careerPathReason(s, path) &&
+      !["none", "retired"].includes(p.stage)
+    )
       push(
         "performance",
         f.id,
@@ -471,6 +477,51 @@ function sources(s) {
       "inbox",
       p.createdWeek + 3,
     );
+  if (s.profession) {
+    const w = s.profession.work.active;
+    if (w)
+      push(
+        "career-task",
+        w.id,
+        w.title,
+        `Work assignment: ${w.progress}/6 units. Deliver before the recorded deadline; supervisor review follows your actual work.`,
+        "career",
+        w.dueWeek,
+      );
+    for (const c of s.profession.company.contracts.filter((c) =>
+      ["active", "invoiced", "disputed"].includes(c.status),
+    ))
+      push(
+        "career-task",
+        c.id,
+        `${c.companyName}: client delivery`,
+        c.note,
+        "company",
+        c.invoiceWeek || c.dueWeek,
+      );
+    for (const p of s.profession.creator.series.filter(
+      (p) => p.status === "active",
+    ))
+      push(
+        "career-task",
+        p.id,
+        `${p.title}: next episode`,
+        `${p.episodes.length}/6 episodes planned or delivered. Your next publishing slot is due; missed cadence affects retention.`,
+        "social",
+        p.nextWeek + 1,
+      );
+    for (const o of s.profession.investing.orders.filter(
+      (o) => o.status === "pending",
+    ))
+      push(
+        "career-task",
+        o.id,
+        `${o.side.toUpperCase()} ${o.asset}: open limit order`,
+        o.note,
+        "investments",
+        o.expiresWeek,
+      );
+  }
   return result;
 }
 export function refreshInbox(s) {
@@ -836,6 +887,7 @@ export function validatePressure(s) {
           "sale",
           "press",
           "backlash",
+          "career-task",
         ].includes(m.kind) ||
         !text(m.ref, 120) ||
         !text(m.title, 160) ||
@@ -848,6 +900,8 @@ export function validatePressure(s) {
           "inbox",
           "family",
           "teams",
+          "company",
+          "investments",
         ].includes(m.view) ||
         !int(m.deadline) ||
         !int(m.createdWeek, 0, s.week) ||

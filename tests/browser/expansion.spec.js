@@ -378,7 +378,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     if (k !== "version") expect(r[k]).toEqual(v);
   expect(
     await page.evaluate(
-      (key) => localStorage.getItem(key + "-before-v15"),
+      (key) => localStorage.getItem(key + "-before-v16"),
       KEY,
     ),
   ).toBe(JSON.stringify(old));
@@ -387,7 +387,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     page.waitForEvent("download"),
     nav(page, "Export pre-update save"),
   ]);
-  expect(download.suggestedFilename()).toBe("lifesim-before-v15.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v16.json");
 });
 test("expanded character, retail, company and career interfaces fit a phone without browser errors", async ({
   page,

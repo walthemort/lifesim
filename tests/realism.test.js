@@ -288,18 +288,22 @@ test("startup capital is required and founder drawings cannot exceed actual prof
   });
   assert.equal(g.salary(s), 0);
 });
-test("a side business preserves employment and remains active", () => {
+test("an employee must leave their paid career before starting a founder career", () => {
   let s = employed();
   s.skills.business = 35;
-  const pay = g.salary(s);
+  assert.throws(
+    () => g.foundCompany(s, { name: "Northstar", sector: "Clean energy" }),
+    /Leave your/,
+  );
+  s = g.resignJob(s);
   s = g.foundCompany(s, { name: "Northstar", sector: "Clean energy" });
-  assert.equal(s.career, "office");
-  assert.equal(g.salary(s), pay);
+  assert.equal(s.career, "business");
+  assert.equal(s.employment, null);
   s = next(s);
   assert.ok(Number.isFinite(s.company.profit));
   assert.deepEqual(g.restoreGame(s), s);
 });
-test("quarterly side-business distributions follow the selected strategy and leave retained profits in company cash", () => {
+test("preserved legacy side-business distributions follow the selected strategy and leave retained profits in company cash", () => {
   for (const [strategy, share] of [
     ["reinvest", 0],
     ["balanced", 0.25],
@@ -308,7 +312,19 @@ test("quarterly side-business distributions follow the selected strategy and lea
     let s = employed();
     if (s.event) s = g.resolveEvent(s, s.event.options.length - 1);
     s.skills.business = 35;
-    s = g.foundCompany(s, { name: "Northstar", sector: "Technology" });
+    const employment = s.employment,
+      workLife = s.workLife;
+    s = g.foundCompany(g.resignJob(s), {
+      name: "Northstar",
+      sector: "Technology",
+    });
+    // An existing pre-lock save can retain company ownership alongside its job.
+    s.employment = employment;
+    s.workLife = workLife;
+    s.career = "office";
+    s.version = 15;
+    delete s.profession;
+    s = g.restoreGame(s);
     s = g.configureCompany(s, { ...s.company, strategy });
     s.week = 12;
     s.company.periodProfit = 1000;

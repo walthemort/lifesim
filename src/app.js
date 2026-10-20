@@ -95,6 +95,7 @@ import {
   familyConflictScreen,
   recordingPlanDialog,
   contentPlanDialog,
+  ownershipDashboardScreen,
 } from "./pressure-screens.js";
 import {
   refreshInbox,
@@ -331,6 +332,47 @@ import {
   hobbiesScreen,
   debugScreen,
 } from "./everyday-screens.js";
+import {
+  sportingDevelopment,
+  sportingAnalysis,
+  careerStyleScreen,
+  workAssignmentScreen,
+  musicCareerScreens,
+  creatorSeriesScreen,
+  clientContractsScreen,
+  investorScreens,
+} from "./profession-screens.js";
+import {
+  startTrainingBlock,
+  cancelTrainingBlock,
+  setSportRole,
+  startWorkAssignment,
+  workAssignment,
+  setArtisticDirection,
+  reviewStudioRecording,
+  startCreatorSeries,
+  createSeriesEpisode,
+  acceptClientBrief,
+  deliverClientWork,
+  researchInvestment,
+  toggleWatchlist,
+  placeLimitOrder,
+  cancelLimitOrder,
+  prepareSportDetails,
+  equipCareerKit,
+  setCareerCelebration,
+  leaveCreatorPath,
+  stopMusicPath,
+  delegateFounderPath,
+  resumeFounderPath,
+} from "./profession.js";
+import {
+  activeCareerPath,
+  careerPathReason,
+  PATH_NAMES,
+  SPORT_PATHS,
+} from "./career-commitment.js";
+
 let shopFilters = {
   category: "All",
   query: "",
@@ -603,6 +645,12 @@ function categoryCard(item) {
   const [id, glyph, label] = item;
   return `<button class="world-card" data-view="${id}" aria-label="${e(label)}">${icon(glyph)}<span>${e(label)}</span></button>`;
 }
+function careerCommitmentPanel(target = null) {
+  const current = activeCareerPath(state),
+    reason = target ? careerPathReason(state, target) : null;
+  if (!current) return "";
+  return `<section class="career-commitment" data-career-commitment><span class="eyebrow">ONE ACTIVE PATH</span><h3>${e(PATH_NAMES[current] || current)}</h3><p>${reason ? e(reason) : "Your other career paths are locked while you develop this one. Leaving does not award entry qualifications for a new path."}</p><div class="inline-actions"><button class="button secondary" data-action="profession-current">Manage current path</button><button class="text-button" data-action="profession-leave-review">Leave this path</button></div></section>`;
+}
 function worldView() {
   const groups = [
     ["You & your time", ["identity", "childhood", "ageing", "calendar"]],
@@ -614,23 +662,17 @@ function worldView() {
   return `${title("MAKE ROOM FOR YOUR LIFE", "Your world.", "Everything has a home. Choose what matters this week.")}<label class="world-search"><span class="sr-only">Find an activity</span><input id="world-search" type="search" placeholder="Find an activity…" autocomplete="off"></label><nav class="world-library" aria-label="Main navigation">${groups.map(([name, ids]) => `<section class="world-group"><h2>${name}</h2><div class="world-grid">${ids.map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div></section>`).join("")}</nav><p class="world-empty muted" hidden>No matching activities.</p>`;
 }
 function activitiesView() {
-  const active = ["football", "racing", "basketball", "tennis"].includes(
-    state.career,
-  )
-    ? state.career
-    : state.music.active
-      ? "music"
-      : state.company
-        ? "company"
-        : state.aspiration;
+  const active = activeCareerPath(state) || state.aspiration;
   const route = ["football", "racing", "basketball", "tennis"].includes(active)
     ? "sports"
-    : active === "music"
-      ? "music"
-      : ["business", "company"].includes(active)
-        ? "company"
-        : "career";
-  return `${title("YOUR NEXT CHAPTER", "What will you work on?", "One place for work, sport, music and making something of your own.")}<section class="activity-feature"><span class="eyebrow">YOUR CURRENT PATH</span><h2>${e(active === "unemployed" ? "Still discovering" : active === "racing" ? "Motorsport" : active[0].toUpperCase() + active.slice(1))}</h2><p>Pick up where you left off. Opportunities and contracts stay in their own career workspace.</p><button class="button primary" data-view="${route}">Continue your path ${icon("arrow")}</button></section><div class="world-grid">${["career", "sports", "music", "social", "company"].map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div>`;
+    : active === "creator"
+      ? "social"
+      : active === "music"
+        ? "music"
+        : ["business", "company"].includes(active)
+          ? "company"
+          : "career";
+  return `${title("YOUR NEXT CHAPTER", "What will you work on?", "One place for work, sport, music and making something of your own.")}${careerCommitmentPanel()}<section class="activity-feature"><span class="eyebrow">YOUR CURRENT PATH</span><h2>${e(active === "unemployed" ? "Still discovering" : active === "racing" ? "Motorsport" : active[0].toUpperCase() + active.slice(1))}</h2><p>Pick up where you left off. Opportunities and contracts stay in their own career workspace.</p><button class="button primary" data-view="${route}">Continue your path ${icon("arrow")}</button></section><div class="world-grid">${["career", "sports", "music", "social", "company"].map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div>`;
 }
 function peopleView() {
   return `${title("THE PEOPLE WHO MATTER", "Your inner circle.", "Make time for relationships and the family you are building.")}<div class="world-grid">${["relationships", "family", "identity", "housing"].map((id) => categoryCard(nav.find((n) => n[0] === id))).join("")}</div>`;
@@ -842,14 +884,26 @@ const pages = {
             : "football"),
     ),
   music: () =>
-    streamingScreen(state, ui()) +
-    promotionScreen(state, ui()) +
-    studioScreen(state, ui()) +
-    rightsScreen(state, ui()) +
-    musicScreen(state, ui()),
-  company: () => companyScreen(state, ui()) + productsScreen(state, ui()),
+    careerPathReason(state, "music")
+      ? careerCommitmentPanel("music") + streamingScreen(state, ui())
+      : musicCareerScreens(state, ui()) +
+        streamingScreen(state, ui()) +
+        promotionScreen(state, ui()) +
+        studioScreen(state, ui()) +
+        rightsScreen(state, ui()) +
+        musicScreen(state, ui()),
+  company: () =>
+    careerPathReason(state, "business")
+      ? careerCommitmentPanel("business") +
+        (state.company ? ownershipDashboardScreen(state, ui(), "founder") : "")
+      : companyScreen(state, ui()) +
+        productsScreen(state, ui()) +
+        clientContractsScreen(state, ui()),
   crime: () => crimeScreen(state, ui()),
-  social: () => socialScreen(state, ui()) + socialManagementScreen(state, ui()),
+  social: () =>
+    socialScreen(state, ui()) +
+    socialManagementScreen(state, ui()) +
+    creatorSeriesScreen(state, ui()),
   teams: teamsView,
   family: () =>
     familyScreen(state, ui()) +
@@ -895,6 +949,37 @@ function render() {
         "beforeend",
         youthScoutingScreen(state, ui()) + footballMarketScreen(state, ui()),
       );
+  if (view === "sports" && main.querySelector(".sport-section")) {
+    const section = main.querySelector(".sport-section"),
+      path = section.id.replace("sport-section-", "");
+    if (careerPathReason(state, path)) {
+      section.innerHTML = careerCommitmentPanel(path);
+      main.querySelector(".career-cockpit")?.remove();
+      main.querySelector("[data-rivals]")?.remove();
+    } else
+      section.insertAdjacentHTML(
+        "beforeend",
+        sportingDevelopment(state, ui(), path) +
+          sportingAnalysis(state, ui(), path) +
+          careerStyleScreen(state, ui(), path),
+      );
+  }
+  const footer = main.querySelector(":scope > footer");
+  if (view === "career")
+    footer.insertAdjacentHTML(
+      "beforebegin",
+      careerCommitmentPanel() + workAssignmentScreen(state, ui()),
+    );
+  if (view === "investments" && age(state) >= 12)
+    footer.insertAdjacentHTML(
+      "beforebegin",
+      investorScreens(state, ui(), MARKETS),
+    );
+  if (view === "company" && state.company)
+    footer.insertAdjacentHTML(
+      "beforebegin",
+      `<section class="panel"><h3>${state.profession.company.delegated ? "Delegated company ownership" : "Your founder career"}</h3><p>Ownership can continue after a paid operations manager takes over. Client deliveries require your active founder role.</p>${state.profession.company.delegated ? '<button class="button secondary" data-action="profession-founder-resume">Return to founder role</button>' : careerCommitmentPanel()}</section>`,
+    );
   organizeWorkspace(main, view, state, workspaceSelections);
   if (!main.querySelector(".workspace-tabs")) addSectionNavigation();
   document.documentElement.style.setProperty(
@@ -972,7 +1057,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.15 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.16 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -1068,6 +1153,96 @@ document.addEventListener("click", (event) => {
   }
   const id = button.dataset.id;
   switch (button.dataset.action) {
+    case "profession-current": {
+      const path = activeCareerPath(state);
+      view = SPORT_PATHS.includes(path)
+        ? "sports"
+        : path === "music"
+          ? "music"
+          : path === "creator"
+            ? "social"
+            : path === "business"
+              ? "company"
+              : "career";
+      if (SPORT_PATHS.includes(path)) focusedSport = path;
+      render();
+      window.scrollTo({ top: 0 });
+      break;
+    }
+    case "profession-leave-review": {
+      const path = activeCareerPath(state);
+      if (!path) break;
+      dialog(
+        `<h2>Leave ${e(PATH_NAMES[path] || path)}?</h2><p>You keep your recorded progress, qualifications and possessions. Future entry still needs its normal applications, age, licences and experience. ${SPORT_PATHS.includes(path) ? `Current contract exit cost: ${money(sportExitCost(state, path))}.` : path === "music" ? "Finish active recordings and booked performances first. Catalogue royalties continue under their existing terms." : path === "business" ? "Appoint a current operations manager and finish client deliveries before delegating. Your company remains owned and pays its management costs." : path === "creator" ? "Your current series will be cancelled; published content and accounts remain." : "Current wages end immediately."}</p><button class="button primary" data-action="profession-leave-confirm">Confirm leaving current path</button>`,
+      );
+      break;
+    }
+    case "profession-leave-confirm": {
+      const path = activeCareerPath(state);
+      const fn =
+        path === "football"
+          ? leaveFootball
+          : SPORT_PATHS.includes(path)
+            ? (s) => leaveSport(s, path)
+            : state.employment
+              ? resignJob
+              : path === "music"
+                ? stopMusicPath
+                : path === "creator"
+                  ? leaveCreatorPath
+                  : path === "business"
+                    ? delegateFounderPath
+                    : null;
+      if (
+        fn &&
+        update(fn, "Career path ended. New paths still need qualifications.")
+      ) {
+        focusedSport = null;
+        modal.close();
+      }
+      break;
+    }
+    case "profession-founder-resume":
+      update(resumeFounderPath, "Returned to the founder role.");
+      break;
+    case "profession-training-cancel":
+      update((s) => cancelTrainingBlock(s, id));
+      break;
+    case "profession-assignment-start":
+      update(
+        startWorkAssignment,
+        "Assignment accepted. Review its brief and deadline.",
+      );
+      break;
+    case "profession-client-accept":
+      update(
+        (s) => acceptClientBrief(s, id),
+        "Client brief accepted. Fund delivery from company cash.",
+      );
+      break;
+    case "profession-watch":
+      update((s) => toggleWatchlist(s, id, MARKETS));
+      break;
+    case "profession-research":
+      update(
+        (s) => researchInvestment(s, id, MARKETS),
+        "Research saved from current observations.",
+      );
+      break;
+    case "profession-order-cancel":
+      update(
+        (s) => cancelLimitOrder(s, id),
+        "Order cancelled; reservation released.",
+      );
+      break;
+    case "profession-equip":
+      update((s) => equipCareerKit(s, id), "Career kit equipped.");
+      break;
+    case "profession-open-style":
+      workspaceSelections[`sports:${id}`] = "Style";
+      render();
+      window.scrollTo({ top: 0 });
+      break;
     case "workspace-tab": {
       workspaceSelections[button.dataset.workspace] = id;
       const bar = button.closest('[role="tablist"]');
@@ -2270,6 +2445,25 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
+    "sport-identity": (s, data, form) =>
+      setSportRole(s, form.dataset.path, data.get("role")),
+    "sport-block": (s, data, form) =>
+      startTrainingBlock(s, form.dataset.path, Object.fromEntries(data)),
+    "work-assignment": (s, data) => workAssignment(s, data.get("method")),
+    "artistic-direction": (s, data) =>
+      setArtisticDirection(s, data.get("direction")),
+    "studio-review": (s, data, form) =>
+      reviewStudioRecording(s, form.dataset.id, data.get("method")),
+    "creator-series": (s, data) =>
+      startCreatorSeries(s, Object.fromEntries(data)),
+    "series-episode": (s, data, form) =>
+      createSeriesEpisode(s, form.dataset.id, data.get("approach")),
+    "client-delivery": (s, data, form) =>
+      deliverClientWork(s, form.dataset.id, data.get("approach")),
+    "limit-order": (s, data) =>
+      placeLimitOrder(s, Object.fromEntries(data), MARKETS),
+    "career-celebration": (s, data, form) =>
+      setCareerCelebration(s, form.dataset.path, data.get("celebration")),
     "music-rollout-form": (s, data) =>
       startMusicCampaign(s, Object.fromEntries(data)),
     "god-money-form": (s, data) =>
@@ -2371,7 +2565,15 @@ document.addEventListener("submit", (event) => {
     "teen-job-form": (s, data) => schoolAction(s, "part-time", data.get("job")),
     "school-route-form": (s, data) => chooseSchoolRoute(s, data.get("route")),
     "performance-plan": (s, data, form) =>
-      choosePerformancePlan(s, form.dataset.path, data.get("choice")),
+      prepareSportDetails(
+        choosePerformancePlan(s, form.dataset.path, data.get("choice")),
+        form.dataset.path,
+        Object.fromEntries(
+          [...data]
+            .filter(([k]) => k.startsWith("detail-"))
+            .map(([k, v]) => [k.slice(7), v]),
+        ),
+      ),
     "chapter-recording-form": (s, data) =>
       startPlannedRecording(s, Object.fromEntries(data)),
     "chapter-content-form": (s, data) =>

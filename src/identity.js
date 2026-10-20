@@ -7,6 +7,7 @@ import {
 import { availableCash, rng, TRACK_SKILLS, jobDefinition } from "./world.js";
 import { spendTime, calendarForecast } from "./calendar.js";
 import { relativeAlive } from "./life-course.js";
+import { careerPathReason } from "./career-commitment.js";
 import {
   PERSONALITY,
   growPersonality,
@@ -402,6 +403,11 @@ export function editCharacterProfile(state, fields) {
 export function routineAvailable(s, path) {
   if (!Object.hasOwn(LIFE_PATHS, path) || age(s) < LIFE_PATHS[path].age)
     return false;
+  if (
+    !["school", "office", "investor"].includes(path) &&
+    careerPathReason(s, path)
+  )
+    return false;
   if (sports.includes(path))
     return !["none", "retired"].includes(actor(s, path).stage);
   if (path === "music") return s.music.active;
@@ -409,7 +415,8 @@ export function routineAvailable(s, path) {
     return Object.values(s.social.profiles).some((p) => p.active);
   if (path === "school") return s.school.enrolled && age(s) < 18;
   if (path === "office") return !!s.employment && !sports.includes(s.career);
-  if (path === "business") return !!s.company;
+  if (path === "business")
+    return !!s.company && !s.profession?.company.delegated;
   return Object.values(s.holdings).some((n) => n > 0);
 }
 function action(state, hours, label, minAge = 5) {

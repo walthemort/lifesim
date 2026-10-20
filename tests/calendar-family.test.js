@@ -82,11 +82,9 @@ test("zero study time pauses progress and allocated hours determine the pace", (
   assert.equal(half.education.active.progress, 0.5);
   assert.equal(full.education.active.progress, 1);
 });
-test("oversubscribed optional paths share available time and poor sleep has consequences", () => {
+test("an employed student shares optional time with relationships and poor sleep has consequences", () => {
   let s = g.enrolEducation(employed(), "business-cert");
-  s = g.joinSport(s, "tennis");
-  s = g.configureMusic(s, { role: "producer", genre: "Electronic" });
-  s = plan(s, { study: 40, tennis: 40, music: 40, relationships: 40 });
+  s = plan(s, { study: 40, relationships: 40 }, 10);
   const forecast = g.calendarForecast(s);
   assert.ok(forecast.deficit > 0);
   assert.ok(forecast.allocations.study < 16);

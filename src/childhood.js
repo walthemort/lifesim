@@ -4,6 +4,8 @@ import { joinSport, SPORTS } from "./sport.js";
 import { configureMusic } from "./music.js";
 import { ensurePeople } from "./connections.js";
 import { spendTime } from "./calendar.js";
+import { careerPathReason } from "./career-commitment.js";
+
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const log = (s, text) => {
@@ -217,6 +219,7 @@ export function prepareChildhood(s) {
   if (
     a < 12 &&
     interest &&
+    !careerPathReason(s, interest.id) &&
     interest.id !== "unemployed" &&
     a >= interest.minAge
   ) {

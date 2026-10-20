@@ -554,13 +554,23 @@ test("collectible auctions can leave high-reserve lots unsold", async ({
       .filter({ hasText: "Signed rookie football card" }),
   ).toContainText("Last auction found no qualifying buyer");
 });
-test("a side company can be founded, configured, and developed while retaining a job", async ({
+test("an employee leaves the current career before founding and developing a company", async ({
   page,
 }) => {
   const s = hired();
   s.skills.business = 35;
   await load(page, s);
   await tap(page, "Start & run a company");
+  await expect(page.locator("[data-career-commitment]")).toContainText(
+    "Leave your Office work",
+  );
+  await page
+    .getByRole("button", { name: "Leave this path", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirm leaving current path" })
+    .click();
+  expect((await saved(page)).employment).toBeNull();
   await interact(
     page,
     page.getByRole("button", { name: "Plan a company", includeHidden: true }),
@@ -597,7 +607,8 @@ test("a side company can be founded, configured, and developed while retaining a
   const r = await saved(page);
   expect(r.company.name).toBe("Northstar Labs");
   expect(r.company.strategy).toBe("reinvest");
-  expect(r.employment.jobId).toBe("office-0");
+  expect(r.employment).toBeNull();
+  expect(r.career).toBe("business");
   expect(r.company.revenue).not.toBe(400);
 });
 test("v1 lives migrate in the browser with a downloadable pre-update backup", async ({
@@ -630,7 +641,7 @@ test("v1 lives migrate in the browser with a downloadable pre-update backup", as
     "click",
   );
   expect((await downloaded).suggestedFilename()).toBe(
-    "lifesim-before-v15.json",
+    "lifesim-before-v16.json",
   );
 });
 test("export/import and unreadable-save recovery remain usable", async ({
