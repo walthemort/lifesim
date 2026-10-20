@@ -1,3 +1,5 @@
+import { knownCity } from "./geography.js";
+import { localMusicDemand, recordLocalShow } from './simulation/creativity.js';
 import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { placeCountry, immigrationRule } from "./geography.js";
 import { checkMusicOutsideWork } from "./contracts.js";
@@ -725,7 +727,7 @@ export function validateCareerWorld(s) {
       t.stops.some(
         (x) =>
           !int(x.week, t.startedWeek + 1) ||
-          !["London", "Copenhagen", "New York", "Monaco"].includes(x.city) ||
+          !knownCity(x.city) ||
           !["scheduled", "performed", "missed", "cancelled"].includes(
             x.status,
           ) ||
@@ -737,7 +739,7 @@ export function validateCareerWorld(s) {
       ) ||
       round(t.stops.reduce((n, x) => n + x.gross, 0)) !== t.gross ||
       round(
-        t.setup +
+        t.setup + (s.simulation?.creativity.tourPlans[t.id]?.cost || 0) +
           t.stops.reduce(
             (n, x) =>
               n +
@@ -1278,7 +1280,7 @@ export function advanceMusicWorld(s) {
               Math.round(
                 ((s.music.fans * 0.12) / r.shows) *
                   (0.6 + rng(s) * 0.8) *
-                  (1 + quality / 200),
+                  (1 + quality / 200) * localMusicDemand(s, stop.city),
               ),
             )
           : 0;
@@ -1289,6 +1291,7 @@ export function advanceMusicWorld(s) {
         s.energy = clamp(s.energy - (r.id === "local" ? 8 : 14));
         if (success) {
           s.music.fans += Math.floor(stop.tickets * 0.05);
+          recordLocalShow(s, stop.city, stop.tickets);
           s.fame.recognition = clamp(s.fame.recognition + 0.2);
         }
         remember(

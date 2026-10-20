@@ -82,16 +82,16 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 78. Super Licence qualification
 - [x] 79. Reserve-driver duties
 - [x] 80. Other motorsport disciplines
-- [ ] 81. Publishing and master rights
-- [ ] 82. Sample clearance
-- [ ] 83. Recording versions
-- [ ] 84. Bands and groups
-- [ ] 85. Geographical tour planning
-- [ ] 86. Music-video production
-- [ ] 87. Local fanbases
-- [ ] 88. Recommendation systems
-- [ ] 89. Live-stream communities
-- [ ] 90. Creative production teams
+- [x] 81. Publishing and master rights
+- [x] 82. Sample clearance
+- [x] 83. Recording versions
+- [x] 84. Bands and groups
+- [x] 85. Geographical tour planning
+- [x] 86. Music-video production
+- [x] 87. Local fanbases
+- [x] 88. Recommendation systems
+- [x] 89. Live-stream communities
+- [x] 90. Creative production teams
 - [ ] 91. Connected economic cycles
 - [ ] 92. Company earnings announcements
 - [ ] 93. Corporate actions
@@ -122,3 +122,7 @@ Items 51–60 have named additional specialists, funded supply orders, persisten
 ## Sport and race engineering batch
 
 Items 61–80 have persistent passing links, selected substitute minutes, suspensions, possession-based basketball reports, salary limits and development games, point-by-point tennis sets/tiebreaks and paid tournament entry, rolling rankings, supervised boxing progression, and funded race engineering. Sixteen focused simulation tests and three phone-browser flows passed. Race preparation feeds the same fixture classification and championship points. Karting escrow uses the actual parent/player payer and refunds unused funds; component wear follows sessions and laps. Formula, endurance and rally are compact fictional formats, not licensed rulebook reproductions. Three-season Super Licence points supplement existing course, experience and vacancy requirements.
+
+## Creative production batch
+
+Items 81–90 include composition shares separate from master agreements, sample applications with release gates, funded alternate masters, group ownership and availability, paid city-by-city routing, staged videos, persistent city fanbases, retention/satisfaction signals, live communities with renewals, and paid staff proposals requiring approval. Ten simulation tests and two phone-browser flows passed. Versions inherit exclusive master/collaboration obligations and share their composition; videos boost the existing release rather than issuing duplicate royalties. Touring entry uses a simplified citizenship/permission check, not individual national performance-visa law.

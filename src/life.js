@@ -1,3 +1,4 @@
+import { creativeDiscovery } from './simulation/creativity.js';
 import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { contentCampaignBoost } from "./pressure-effects.js";
 import { personalityModifier } from "./personality.js";
@@ -783,7 +784,7 @@ function socialTick(s) {
         (30 + post.quality * 3 + p.followers * (0.08 + rng(s) * 0.14)) *
         (post.approach === "clickbait" ? 1.7 : 1) *
         contentCampaignBoost(s, post.id) *
-        seriesAudienceBonus(s, post);
+        seriesAudienceBonus(s, post) * creativeDiscovery(s, post.id, "social");
       post.views = Math.round(
         discoverable
           ? viral

@@ -1,3 +1,4 @@
+import { creativeStudioScreen } from "./simulation/creative-screens.js";
 import { raceEngineeringScreen } from "./simulation/racing-screens.js";
 import { detailedSportScreen } from "./simulation/sport-screens.js";
 import { businessSimulationScreen } from "./simulation/business-screens.js";
@@ -619,6 +620,7 @@ const nav = [
   ["business-operations", "rocket", "Business operations"],
   ["sport-lab", "football", "Inside your sport"],
   ["race-engineering", "flag", "Race engineering"],
+  ["creative-production", "spark", "Creative production"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -840,6 +842,7 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  "creative-production": () => creativeStudioScreen(state, ui()),
   "race-engineering": () => raceEngineeringScreen(state, ui()),
   "sport-lab": () => detailedSportScreen(state, ui()),
   "business-operations": () => businessSimulationScreen(state, ui()),
@@ -970,6 +973,8 @@ function render() {
     ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
     relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
     family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
+    music: ["creative-production", "Creative production", "Composition rights, videos, group agreements and audiences."],
+    social: ["creative-production", "Audience & production team", "Live communities, audience metrics and support staff."],
     sports: ["sport-lab", "Inside your sport", "Passing, possessions, tournament draws and boxing."],
     company: ["business-operations", "Business operations", "Named staff, supplies, investors and branches."],
     teams: ["business-operations", "Boardroom & specialist clubs", "Diligence, matchday stands and more ownership formats."],

@@ -1,3 +1,4 @@
+import { creativeRecordingReady } from './simulation/creativity.js';
 import { recordTrackRights } from "./realism.js";
 import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { localPrice } from "./economy.js";
@@ -637,6 +638,7 @@ export function releaseTrack(state, id) {
     throw new Error(
       "Finish production and mixing before releasing this track.",
     );
+  if (!creativeRecordingReady(state, project.id)) throw new Error("Clear or remove samples and finish alternate sessions before release.");
   if (state.careerWorld.music.albums.some((a) => a.tracks.includes(project.id)))
     throw new Error("This track is already scheduled on an album.");
   const s = acting(state, 1, 6),

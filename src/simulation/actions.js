@@ -1,3 +1,4 @@
+import * as creative from './creativity.js';
 import * as racing from './racing.js';
 import * as sport from './sports.js';
 import * as firms from './businesses.js';
@@ -9,6 +10,25 @@ import * as home from "./home.js";
 import * as work from "./professions.js";
 export function simulationCommand(s, operation, p = {}) {
   const actions = {
+    'creative-open':()=>creative.openCreativeStudio(s),
+    'writing-split':()=>creative.agreeWritingSplit(s,p.project,Number(p.share)),
+    'publishing':()=>creative.assignPublishing(s,p.project),
+    'sample-request':()=>creative.requestSampleClearance(s,p.project,p.source),
+    'sample-resolve':()=>creative.resolveSample(s,p.sample,p.decision),
+    'record-version':()=>creative.createRecordingVersion(s,p.project,p.kind),
+    'version-session':()=>creative.workRecordingVersion(s,p.project),
+    'version-release':()=>creative.scheduleCreativeVersion(s,p.project),
+    'group-form':()=>creative.formMusicGroup(s,p.name),
+    'group-rehearse':()=>creative.rehearseGroup(s),
+    'group-leave':()=>creative.leaveMusicGroup(s),
+    'tour-geography':()=>creative.planTourGeography(s,p.tour,String(p.cities||'').split(',').map(c=>c.trim())),
+    'video-start':()=>creative.startMusicVideo(s,p.project,p.budget),
+    'video-work':()=>creative.workMusicVideo(s,p.video,p.method),
+    'audience-review':()=>creative.reviewAudience(s,p.kind,p.project),
+    'go-live':()=>creative.goLive(s,p.topic),
+    'creative-hire':()=>creative.hireCreativeTeam(s,p.role),
+    'creative-dismiss':()=>creative.dismissCreativeTeam(s,p.employee),
+    'creative-approve':()=>creative.approveCreativeProposal(s,p.employee),
     'racing-detail':()=>racing.openRaceEngineering(s),
     'kart-budget':()=>racing.fundKartSeason(s),
     'kart-equipment':()=>racing.chooseKartEquipment(s,p.chassis,p.engine),
