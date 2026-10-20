@@ -469,7 +469,7 @@ test("existing professional players retain their wages and can export a pre-upgr
     }),
     "click",
   );
-  expect((await pending).suggestedFilename()).toBe("lifesim-before-v16.json");
+  expect((await pending).suggestedFilename()).toBe("lifesim-before-v17.json");
 });
 test("sport, music, social, and shopping screens fit a phone with established careers and large audiences", async ({
   page,

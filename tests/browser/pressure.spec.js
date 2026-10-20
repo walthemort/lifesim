@@ -348,7 +348,7 @@ test("v11 imports preserve all prior fields and export an exact pre-v15 backup",
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v16.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v17.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("ownership standings and inbox fit a phone without browser errors", async ({

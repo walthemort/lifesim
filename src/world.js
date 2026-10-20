@@ -17,6 +17,7 @@ import { allocationRatio, spendTime } from "./calendar.js";
 import { beginEmployment } from "./careers.js";
 import { orderCashReserved } from "./profession-effects.js";
 import { assertCareerPath, careerPathReason } from "./career-commitment.js";
+import { eraIndex, subjectAdmissionReason, historicalJobReason } from "./simulation/effects.js";
 
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
@@ -839,6 +840,8 @@ export function jobEligibility(s, vacancy) {
   const j = jobDefinition(vacancy.jobId),
     missing = [];
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
+  const eraReason = historicalJobReason(s, j);
+  if (eraReason) missing.push(eraReason);
   const locked = careerPathReason(s, j.track);
   if (locked) missing.push(locked);
   if (s.globalLife?.crime.prison) missing.push("release from custody");
@@ -996,6 +999,8 @@ export function requestRaise(state) {
 }
 export function enrolEducation(state, id) {
   writable(state);
+  const subjectReason = subjectAdmissionReason(state, id);
+  if (subjectReason) throw new Error(subjectReason);
   if (state.startAge + Math.floor(state.week / 52) < 12)
     throw new Error(
       "Your family handles preschool and primary school. Independent courses start from age twelve.",
@@ -1385,7 +1390,7 @@ function employmentTick(s) {
         a.offeredPay = Math.round(
           j.pay *
             (1 + rng(s) * 0.06) *
-            (s.realWorld ? localProfile(s).wage : 1),
+            (s.realWorld ? localProfile(s).wage : 1) * eraIndex(s),
         );
         a.expiresWeek = s.week + 4;
         log(

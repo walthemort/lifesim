@@ -140,7 +140,7 @@ import {
   jobDefinition,
 } from "./world.js";
 export * from "./world.js";
-export const VERSION = 16;
+export const VERSION = 17;
 import {
   initializeBanking,
   validateBanking,
@@ -216,6 +216,9 @@ export * from "./everyday.js";
 export * from "./debug.js";
 import { EXTRA_SHOP, STUDIO_ITEMS } from "./catalogue.js";
 import { RETAIL_PRODUCTS } from "./retail-data.js";
+import { initializeSimulation, advanceSimulation, validateSimulation } from "./simulation/index.js";
+import { simulationCosts, historicalAvailability, eraIndex } from "./simulation/effects.js";
+export * from "./simulation/index.js";
 import {
   initializeLife,
   advanceLife,
@@ -654,7 +657,7 @@ export const salary = (s) =>
   s.globalLife?.crime.prison
     ? 0
     : age(s) < 18 && !s.employment && s.career !== "business"
-      ? childhoodAllowance(s)
+      ? Math.round(childhoodAllowance(s) * eraIndex(s) * 100) / 100
       : s.employment
         ? employmentIncome(s)
         : s.career === "business" && s.company
@@ -672,7 +675,7 @@ export const salary = (s) =>
           : 0;
 export const expenses = (
   s,
-  { education = true, sports = true, properties = true, banking = true } = {},
+  { education = true, sports = true, properties = true, banking = true, simulation = true } = {},
 ) =>
   personalLivingCosts(
     s,
@@ -691,6 +694,7 @@ export const expenses = (
   careerSupportCosts(s) +
   lifeCourseCosts(s) +
   careerWorldCosts(s) +
+  (simulation ? simulationCosts(s) : 0) +
   (banking ? bankWeeklyCosts(s) : 0) +
   (properties ? propertyCosts(s) : 0) +
   (s.money < 0 ? Math.ceil(-s.money * 0.005) : 0) +
@@ -729,6 +733,7 @@ function changeStats(s, changes) {
 export function createGame({
   name = "Alex Morgan",
   startingYear = 2026,
+  historical = false,
   age: startAge = 0,
   footballPosition = "Midfielder",
   city = "London",
@@ -873,6 +878,19 @@ export function createGame({
   initializeRealism(s);
   initializeExperience(s);
   initializeProfession(s);
+  initializeSimulation(s);
+  if (typeof historical !== "boolean") throw new Error("Choose whether historical-world rules are enabled.");
+  s.simulation.era.enabled = historical;
+  if (historical) {
+    const scale = eraIndex(s);
+    s.money = Math.round(s.money * scale * 100) / 100;
+    for (const p of Object.values(s.connections.profiles)) {
+      p.wealth = Math.round(p.wealth * scale * 100) / 100;
+      p.weeklyPay = Math.round(p.weeklyPay * scale * 100) / 100;
+    }
+    for (const [id, p] of Object.entries(s.simulation.education.parents)) p.lastPay = s.connections.profiles[id]?.weeklyPay || 0;
+    s.history[0].value = netWorth(s);
+  }
   addLog(
     s,
     "A new chapter begins. Your future is yours to shape.",
@@ -952,6 +970,8 @@ export function setActivity(state, id) {
   return s;
 }
 export function invest(state, id, quantity) {
+  const eraReason = historicalAvailability(state, id, "market");
+  if (eraReason) throw new Error(eraReason);
   writable(state);
   if (age(state) < 18)
     throw new Error("Independent investing requires age 18+.");
@@ -1000,6 +1020,8 @@ export function invest(state, id, quantity) {
 }
 export function buy(state, id) {
   writable(state);
+  const eraReason = historicalAvailability(state, id);
+  if (eraReason) throw new Error(eraReason);
   const item = SHOP.find((i) => i.id === id);
   if (!item) throw new Error("This item is unavailable.");
   if (item.category === "Ownership")
@@ -1647,6 +1669,7 @@ export function advanceWeek(state) {
     advanceRealism(s);
     advanceExperience(s);
     advanceProfession(s, { trade: invest, markets: MARKETS });
+    advanceSimulation(s);
     for (const r of s.relationships) r.bond = clamp(r.bond - 0.1);
     applyGodMode(s);
     if (s.health <= 0) s.ended = true;
@@ -1679,6 +1702,7 @@ export function advanceWeek(state) {
       sports: false,
       properties: false,
       banking: false,
+      simulation: false,
     });
   pensionContribution(s, income);
   if (s.career === "business" && s.company) s.company.cash -= income;
@@ -1845,6 +1869,7 @@ export function advanceWeek(state) {
   advanceRealism(s);
   advanceExperience(s);
   advanceProfession(s, { trade: invest, markets: MARKETS });
+  advanceSimulation(s);
   finishCalendar(s);
   recordMilestones(s, netWorth(s));
   s.history.push({ week: s.week, value: Math.round(netWorth(s)) });
@@ -1867,7 +1892,7 @@ export function restoreGame(raw) {
     typeof n === "number" && Number.isFinite(n) && n >= min && n <= max;
   if (
     !s ||
-    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, VERSION].includes(
+    ![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, VERSION].includes(
       s.version,
     ) ||
     typeof s.name !== "string" ||
@@ -1887,6 +1912,7 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  const needsSimulation = s.version < 17;
   const needsProfession = s.version < 16;
   const needsExperience = s.version < 15;
   const needsRealism = s.version < 14;
@@ -2100,6 +2126,11 @@ export function restoreGame(raw) {
     initializeProfession(s);
     s.version = VERSION;
   }
+  if (needsSimulation) {
+    if (!s.simulation) initializeSimulation(s);
+    s.version = VERSION;
+  }
+  validateSimulation(s);
   validateProfession(s, MARKETS);
   validateExperience(s);
   validateRealism(s);
@@ -2292,7 +2323,7 @@ export function createCustomCharacter(current, options = {}) {
 }
 export function createRandomCharacter(
   seed = Date.now() >>> 0,
-  { startingYear = 2026 } = {},
+  { startingYear = 2026, historical = false } = {},
 ) {
   if (!Number.isInteger(seed) || seed < 0 || seed > 4294967295)
     throw new Error("Choose a valid random-life seed.");
@@ -2301,6 +2332,7 @@ export function createRandomCharacter(
   const s = createGame({
     seed,
     startingYear,
+    historical,
     name: `${pick(["Alex", "Riley", "Jamie", "Robin", "Morgan", "Casey", "Taylor", "Jordan"])} ${pick(["Andersen", "Morgan", "Chen", "Silva", "Rossi", "Taylor", "Patel", "Martin"])}`,
     city: pick(
       COUNTRIES.map((c) => CITY_CATALOGUE[c.code]?.[0] || c.capital).filter(

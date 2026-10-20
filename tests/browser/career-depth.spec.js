@@ -407,7 +407,7 @@ test("authentic v9 migration keeps the original life records and an exact pre-v1
   const pending = page.waitForEvent("download");
   await nav(page, "Export pre-update save");
   const d = await pending;
-  expect(d.suggestedFilename()).toBe("lifesim-before-v16.json");
+  expect(d.suggestedFilename()).toBe("lifesim-before-v17.json");
   expect(JSON.parse(fs.readFileSync(await d.path(), "utf8"))).toEqual(old);
 });
 test("contract, milestone and evolving-contact panels fit phones without browser errors", async ({

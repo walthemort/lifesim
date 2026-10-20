@@ -10,6 +10,7 @@ import { careerSupportHours } from "./career-support.js";
 import { storyWeeklyHours } from "./stories.js";
 import { professionHours } from "./profession-effects.js";
 import { careerPathReason } from "./career-commitment.js";
+import { simulationHours } from "./simulation/effects.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
@@ -89,7 +90,7 @@ export function requiredHours(s, week = s.week) {
     milestoneHours(s, week) +
     identityHours(s, week) +
     chapterHours(s, week) +
-    professionHours(s, week);
+    professionHours(s, week) + simulationHours(s, week);
   return {
     sleep: s.calendar.sleep * 7,
     everyday: age(s) < 5 ? 14 : age(s) < 12 ? 21 : 28,

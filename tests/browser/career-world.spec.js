@@ -460,7 +460,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
     "click",
   );
   const file = await download;
-  expect(file.suggestedFilename()).toBe("lifesim-before-v16.json");
+  expect(file.suggestedFilename()).toBe("lifesim-before-v17.json");
   expect(JSON.parse(fs.readFileSync(await file.path(), "utf8"))).toEqual(old);
 });
 test("expanded sport and music panels fit a phone and load without browser errors", async ({

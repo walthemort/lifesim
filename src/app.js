@@ -1,4 +1,6 @@
 import { retailScreen } from "./retail-screens.js";
+import { educationScreen, healthScreen, socialLifeScreen } from "./simulation/screens.js";
+import { simulationCommand } from "./simulation/index.js";
 import { RETAIL_BUSINESSES, RETAIL_CATEGORIES } from "./retail-data.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
 import { organizeWorkspace } from "./phone-workspaces.js";
@@ -602,6 +604,9 @@ const nav = [
   ["realism", "chart", "Living world & finances"],
   ["inbox", "mail", "Messages & decisions"],
   ["childhood", "heart", "Childhood & school"],
+  ["school-life", "briefcase", "School record"],
+  ["health-record", "heart", "Medical record"],
+  ["social-life", "users", "Connected life"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -823,6 +828,9 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  "school-life": () => educationScreen(state, ui()),
+  "health-record": () => healthScreen(state, ui()),
+  "social-life": () => socialLifeScreen(state, ui()),
   overview,
   world: worldView,
   activities: activitiesView,
@@ -938,6 +946,14 @@ function render() {
       );
   }
   const footer = main.querySelector(":scope > footer");
+  const detailed = {
+    childhood: ["school-life", "School record", "Subjects, teachers, admissions and support."],
+    career: ["school-life", "Subject entrance records", "School results and adult catch-up classes."],
+    ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
+    relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
+    family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
+  }[view];
+  if (detailed) footer.insertAdjacentHTML("beforebegin", `<section class="panel" data-detailed-shortcut><h3>${detailed[1]}</h3><p>${detailed[2]}</p><button class="button primary" data-view="${detailed[0]}">Open ${detailed[1].toLowerCase()}</button></section>`);
   if (view === "career")
     footer.insertAdjacentHTML(
       "beforebegin",
@@ -1002,7 +1018,7 @@ function newGameDialog() {
     return;
   }
   dialog(
-    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>A new life awaits.</h2><p>Begin at birth with a random name, hometown, family background and personality. Discover your interests as you grow. Starting a new life replaces your current save; export it first to keep both.</p><label class="field-label">Starting year<input name="startingYear" type="number" min="1900" max="2100" step="1" value="${state.startingYear}" required></label><button class="button primary full-width" data-action="identity-random-life">Begin random life</button><p class="muted">The character creator is available with Debug or Pro access. It lets you choose a name, appearance, birthplace, family and starting interests.</p><button class="button secondary full-width" data-action="settings">Open Save & settings</button>`,
+    `<div class="eyebrow">A WHOLE LIFE AHEAD</div><h2>A new life awaits.</h2><p>Begin at birth with a random name, hometown, family background and personality. Discover your interests as you grow. Starting a new life replaces your current save; export it first to keep both.</p><label class="field-label">Starting year<input name="startingYear" type="number" min="1900" max="2100" step="1" value="${state.startingYear}" required></label><label class="check-label"><input name="historical" type="checkbox"> Historical-world rules: technology unlocks and approximate era prices</label><button class="button primary full-width" data-action="identity-random-life">Begin random life</button><p class="muted">The character creator is available with Debug or Pro access. It lets you choose a name, appearance, birthplace, family and starting interests.</p><button class="button secondary full-width" data-action="settings">Open Save & settings</button>`,
   );
 }
 function beginLife(next) {
@@ -1570,6 +1586,7 @@ document.addEventListener("click", (event) => {
             startingYear: Number(
               modal.querySelector('[name="startingYear"]').value,
             ),
+            historical: modal.querySelector('[name="historical"]')?.checked || false,
           }),
         );
       } catch (error) {
@@ -2449,6 +2466,7 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
+    "simulation-action": (s, data, form) => simulationCommand(s, form.dataset.operation, Object.fromEntries(data)),
     "sport-identity": (s, data, form) =>
       setSportRole(s, form.dataset.path, data.get("role")),
     "sport-block": (s, data, form) =>
@@ -2692,6 +2710,7 @@ document.addEventListener("submit", (event) => {
     );
     options.age = Number(data.get("age") || 0);
     options.startingYear = Number(data.get("startingYear"));
+    options.historical = data.has("historical");
     if (options.money === "") delete options.money;
     else if (options.money !== undefined) options.money = Number(options.money);
     options.personality = Object.fromEntries(

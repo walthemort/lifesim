@@ -32,6 +32,7 @@ export * from "./music.js";
 export { EXPERIENCES } from "./catalogue.js";
 import { seriesAudienceBonus } from "./profession-effects.js";
 import { assertCareerPath, careerPathReason } from "./career-commitment.js";
+import { historicalAvailability } from "./simulation/effects.js";
 
 export const PLATFORMS = [
   {
@@ -585,6 +586,8 @@ export const fameLabel = (s) =>
 export const totalFollowers = (s) =>
   Object.values(s.social.profiles).reduce((n, p) => n + p.followers, 0);
 export function openSocialAccount(state, id) {
+  const eraReason = historicalAvailability(state, id, "social");
+  if (eraReason) throw new Error(eraReason);
   action(state);
   const p = state.social.profiles[id];
   if (!p) throw new Error("Platform unavailable.");

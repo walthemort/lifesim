@@ -369,7 +369,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     page.waitForEvent("download"),
     nav(page, "Export pre-update save"),
   ]);
-  expect(download.suggestedFilename()).toBe("lifesim-before-v16.json");
+  expect(download.suggestedFilename()).toBe("lifesim-before-v17.json");
 });
 test("expanded character, retail, company and career interfaces fit a phone without browser errors", async ({
   page,

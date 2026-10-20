@@ -1,5 +1,6 @@
 import currencies from "./currencies.json" with { type: "json" };
 import { country } from "./geography.js";
+import { eraIndex } from "./simulation/effects.js";
 const PROFILES = {
   GB: {
     wage: 1,
@@ -162,7 +163,7 @@ export function economyProfile(code = "GB") {
 export const residenceCode = (s) => s.globalLife?.residence.country || "GB";
 export const localProfile = (s) => economyProfile(residenceCode(s));
 export const localPrice = (s, amount, kind = "retail") =>
-  Math.round(amount * (s.realWorld ? localProfile(s)[kind] || 1 : 1) * 100) /
+  Math.round(amount * (s.realWorld ? localProfile(s)[kind] || 1 : 1) * eraIndex(s) * 100) /
   100;
 export function localCurrency(s, amount) {
   const c = localProfile(s).currency,

@@ -227,12 +227,15 @@ export function organizeWorkspace(main, view, s, selections) {
         const h = heading(n);
         if (h === "Your applications" || n.querySelector("[data-vacancy]"))
           return "Find a job";
-        if (h === "Education & qualifications" || h.includes("School life"))
+        if (h === "Education & qualifications" || h.includes("School life") || n.matches("[data-detailed-shortcut]"))
           return "Education";
         return "Your work";
       },
       selections,
     );
+  } else if (["school-life", "health-record", "social-life"].includes(view)) {
+    const labels = view === "school-life" ? ["Subjects", "School", "Support", "Home life"] : view === "health-record" ? ["Overview", "Care", "Recovery", "Habits"] : ["People", "Plans", "Family", "Agreements"];
+    makeWorkspace(main, view, labels, (n) => n.dataset.simulationTab || labels[0], selections);
   } else if (view === "debug" && s.debug.enabled) {
     makeWorkspace(
       main,

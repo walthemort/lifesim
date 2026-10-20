@@ -19,6 +19,7 @@ import {
   storeProducts,
 } from "./retail-data.js";
 import { retailIllustration } from "./retail-art.js";
+import { historicalAvailability } from "./simulation/effects.js";
 const disabled = (s) =>
   !s.actions || s.event || s.ended || s.globalLife.crime.prison
     ? "disabled"
@@ -106,7 +107,7 @@ function productCards(s, u, stock, filters = {}, onlyOwned = false) {
             i.minAge ||
             (["Garage", "Property", "Travel"].includes(i.category) ? 18 : 12),
           young = age(s) < minAge,
-          requirements = equipmentRequirements(s, i.id),
+          requirements = [...equipmentRequirements(s, i.id), ...[historicalAvailability(s, i.id)].filter(Boolean)],
           blocked =
             s.ended ||
             s.event ||

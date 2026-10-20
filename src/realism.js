@@ -6,6 +6,7 @@ import { rng, availableCash, jobDefinition } from "./world.js";
 import { spendTime } from "./calendar.js";
 import { receiveIncome } from "./banking.js";
 import { assertCareerPath } from "./career-commitment.js";
+import { agreedJointShare } from "./simulation/social.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   round = (n) => Math.round(n * 100) / 100,
@@ -175,7 +176,7 @@ export function settleSeparation(
   let yours = 0,
     theirs = 0;
   if (j) {
-    yours = jointShare(s);
+    yours = agreedJointShare(s, id, j.balance, jointShare(s), spouse);
     theirs = round(j.balance - yours);
     s.money = round(s.money + yours);
     if (s.connections.profiles[j.partnerId])

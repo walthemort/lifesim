@@ -21,6 +21,7 @@ import {
   trainingRisk,
 } from "./profession-effects.js";
 import { careerPathReason } from "./career-commitment.js";
+import { simulationPerformance } from "./simulation/effects.js";
 
 const age = (s) => s.startAge + Math.floor(s.week / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
@@ -661,6 +662,7 @@ function result(s, id, path, f) {
         detailedTacticBonus(s, id, f) +
         sportChemistryBonus(s, id) +
         physicalPerformance(s, id) +
+        simulationPerformance(s) +
         p.discipline * 0.15 +
         s.energy * 0.2 +
         (rng(s) * 2 - 1) * 15,
