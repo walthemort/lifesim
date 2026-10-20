@@ -1,41 +1,371 @@
 import { age } from "./common.js";
-import { SUBJECTS, SCHOOL_TYPES, SUBJECT_ROUTES, schoolAdmissions } from "./education.js";
+import {
+  SUBJECTS,
+  SCHOOL_TYPES,
+  SUBJECT_ROUTES,
+  schoolAdmissions,
+} from "./education.js";
 import { CONDITIONS, TREATMENTS, NUTRITION, HABITS } from "./health.js";
 import { AFFECTION, LIFE_PLANS } from "./social.js";
 import { gameDate } from "../dates.js";
-const off = (s, min = 6) => s.ended || s.event || !s.actions || s.globalLife.crime.prison || age(s) < min ? "disabled" : "";
-const select = (u, name, label, values, chosen = null) => `<label class="field-label">${u.e(label)}<select name="${name}">${Object.entries(values).map(([id, title]) => `<option value="${u.e(id)}" ${id === chosen ? "selected" : ""}>${u.e(title)}</option>`).join("")}</select></label>`;
-const form = (s, operation, body, label, min = 6) => `<form data-form="simulation-action" data-operation="${operation}" class="simulation-form">${body}<button class="button secondary" ${off(s, min)}>${label}</button></form>`;
-const panel = (u, tab, heading, description, body) => `<section class="panel" data-simulation-tab="${tab}">${u.panelHeading(heading, description)}${body}</section>`;
+const off = (s, min = 6) =>
+  s.ended || s.event || !s.actions || s.globalLife.crime.prison || age(s) < min
+    ? "disabled"
+    : "";
+const select = (u, name, label, values, chosen = null) =>
+  `<label class="field-label">${u.e(label)}<select name="${name}">${Object.entries(
+    values,
+  )
+    .map(
+      ([id, title]) =>
+        `<option value="${u.e(id)}" ${id === chosen ? "selected" : ""}>${u.e(title)}</option>`,
+    )
+    .join("")}</select></label>`;
+const form = (s, operation, body, label, min = 6) =>
+  `<form data-form="simulation-action" data-operation="${operation}" class="simulation-form">${body}<button class="button secondary" ${off(s, min)}>${label}</button></form>`;
+const panel = (u, tab, heading, description, body) =>
+  `<section class="panel" data-simulation-tab="${tab}">${u.panelHeading(heading, description)}${body}</section>`;
 export { off, select, form, panel };
 export function educationScreen(s, u) {
-  const e = s.simulation.education, student = age(s) >= 5 && age(s) < 18;
-  return u.title("GROW INTO YOUR OWN LIFE", "Your school record.", "Aptitudes, teachers and subject results shape opportunities. Qualifications still need their normal courses.") +
-    panel(u, "Subjects", "Subjects & aptitudes", e.active ? "Your detailed record is active. School results are reviewed every thirteen weeks." : "Begin subject study to maintain a detailed record. Unexplored aptitudes stay hidden.", `<div class="specialty-grid">${Object.entries(SUBJECTS).map(([id, name]) => `<article><span>${name}</span><strong>${e.subjects[id].grade.toFixed(1)}/100</strong><small>Aptitude: ${e.subjects[id].discovered ? e.subjects[id].aptitude : "undiscovered"} · preparation ${e.subjects[id].preparation}</small></article>`).join("")}</div>${form(s, "explore", select(u, "subject", "Interest to explore", SUBJECTS), "Explore an aptitude · 1 hour", 3)}${form(s, "study", select(u, "subject", "Subject to study", SUBJECTS), age(s) >= 18 ? "Attend catch-up class · $20 / 3 hours" : "Study a subject · 3 hours", 5)}`) +
-    panel(u, "Subjects", "Exams & entrance records", "Results combine sustained learning, preparation and teaching. Resits are available every thirteen weeks. Adults pay $50 per sitting.", `${form(s, "exams", "", "Sit subject examinations", 12)}<div class="application-list">${e.exams.slice(0, 4).map((x) => `<article class="career-brief"><strong>${gameDate(x.week, s)}</strong><p>${Object.entries(x.grades).map(([k, v]) => `${SUBJECTS[k]} ${v}`).join(" · ")}</p></article>`).join("")}</div>${Object.entries(SUBJECT_ROUTES).map(([id, r]) => `<p>${e.certificates.includes(id) ? "✓" : "○"} ${r.name}: ${r.subjects.map((k) => SUBJECTS[k]).join(" & ")} at ${r.grade}+. This is an entrance record, not a professional licence.</p>`).join("")}`) +
-    panel(u, "School", "Your institution", `Current school: ${SCHOOL_TYPES[e.school].name}. Applications take two weeks. Capacity and entry grades are checked again at admission.`, `${e.applied ? `<p>Application pending: ${SCHOOL_TYPES[e.applied.id].name} · ${gameDate(e.applied.decisionWeek, s)}</p>` : ""}<div class="education-grid">${Object.entries(SCHOOL_TYPES).map(([id, d]) => { const q = schoolAdmissions(s, id); return `<article class="education-card"><h3>${d.name}</h3><p>Teaching ${d.quality}/100 · ${q.capacity} available places · entry average ${d.entry}</p><p>${u.money(d.fee)}/week. A thirteen-week fee reserve is required; parents pay when able.</p>${form(s, "school", `<input type="hidden" name="school" value="${id}">`, q.eligible && student ? "Apply to school" : "Review entry requirements", 5)}</article>`; }).join("")}</div>`) +
-    panel(u, "School", "Your teachers", "A teacher conversation uses an action and one hour, with a four-week review interval.", `${Object.entries(e.teachers).map(([id, t]) => `<p><strong>${u.e(t.name)}</strong> · ${SUBJECTS[id]} · teaching ${t.quality}/100 · relationship ${t.relationship}/100</p>`).join("")}${form(s, "teacher", select(u, "subject", "Teacher to speak with", SUBJECTS), "Discuss your progress", 5)}`) +
-    panel(u, "Support", "Learning support", "Support changes study conditions; it never reduces your natural aptitude. Agreed accommodations reserve two weekly hours.", `<p>Assessment: ${e.support.assessed ? u.e(e.support.need) : "not arranged"} · plan: ${u.e(e.support.plan)}</p>${form(s, "assess", "", "Arrange a learning assessment", 5)}${e.support.assessed ? form(s, "support-plan", select(u, "plan", "Accommodation plan", { none: "No additional plan", reading: "Reading support", attention: "Attention & organisation support", sensory: "Sensory accommodations" }, e.support.plan), "Agree support plan", 5) : ""}`) +
-    panel(u, "Support", "School incidents", "Repeated incidents remain open until a safety plan and support resolve them.", e.bullying ? `<p>${u.e(e.bullying.name)} · ${e.bullying.status} · severity ${e.bullying.severity} / support ${e.bullying.support}</p>${e.bullying.status === "open" ? form(s, "bullying", select(u, "response", "Who can help?", { teacher: "Report to a teacher", parent: "Involve a parent", friend: "Ask a trusted friend" }), "Ask for help", 5) : "<p>Your safety plan has resolved the case.</p>"}` : "<p>No recorded ongoing incident.</p>") +
-    panel(u, "Home life", "Growing up at home", "Parents have different approaches and availability. Income loss can disrupt the household routine without changing your aptitude.", `${Object.entries(e.parents).map(([id, p]) => `<p><strong>${u.e(s.relationships.find((r) => r.id === id)?.name || "Parent")}</strong> · ${p.style} · support availability ${p.availability}/100</p>`).join("")}${e.disruption ? `<p class="warning">Household disruption through ${gameDate(e.disruption.until, s)}.</p>` : ""}${form(s, "parent", select(u, "person", "Parent", Object.fromEntries(s.relationships.filter((r) => r.role === "Parent").map((r) => [r.id, r.name]))) + select(u, "topic", "Conversation", { support: "Ask for practical support", independence: "Discuss independence", pressure: "Discuss expectations" }), "Have a family conversation", 6)}`);
+  const e = s.simulation.education,
+    student = age(s) >= 5 && age(s) < 18;
+  return (
+    u.title(
+      "GROW INTO YOUR OWN LIFE",
+      "Your school record.",
+      "Aptitudes, teachers and subject results shape opportunities. Qualifications still need their normal courses.",
+    ) +
+    panel(
+      u,
+      "Subjects",
+      "Subjects & aptitudes",
+      e.active
+        ? "Your detailed record is active. School results are reviewed every thirteen weeks."
+        : "Begin subject study to maintain a detailed record. Unexplored aptitudes stay hidden.",
+      `<div class="specialty-grid">${Object.entries(SUBJECTS)
+        .map(
+          ([id, name]) =>
+            `<article><span>${name}</span><strong>${e.subjects[id].grade.toFixed(1)}/100</strong><small>Aptitude: ${e.subjects[id].discovered ? e.subjects[id].aptitude : "undiscovered"} · preparation ${e.subjects[id].preparation}</small></article>`,
+        )
+        .join(
+          "",
+        )}</div>${form(s, "explore", select(u, "subject", "Interest to explore", SUBJECTS), "Explore an aptitude · 1 hour", 3)}${form(s, "study", select(u, "subject", "Subject to study", SUBJECTS), age(s) >= 18 ? "Attend catch-up class · $20 / 3 hours" : "Study a subject · 3 hours", 5)}`,
+    ) +
+    panel(
+      u,
+      "Subjects",
+      "Exams & entrance records",
+      "Results combine sustained learning, preparation and teaching. Resits are available every thirteen weeks. Adults pay $50 per sitting.",
+      `${form(s, "exams", "", "Sit subject examinations", 12)}<div class="application-list">${e.exams
+        .slice(0, 4)
+        .map(
+          (x) =>
+            `<article class="career-brief"><strong>${gameDate(x.week, s)}</strong><p>${Object.entries(
+              x.grades,
+            )
+              .map(([k, v]) => `${SUBJECTS[k]} ${v}`)
+              .join(" · ")}</p></article>`,
+        )
+        .join("")}</div>${Object.entries(SUBJECT_ROUTES)
+        .map(
+          ([id, r]) =>
+            `<p>${e.certificates.includes(id) ? "✓" : "○"} ${r.name}: ${r.subjects.map((k) => SUBJECTS[k]).join(" & ")} at ${r.grade}+. This is an entrance record, not a professional licence.</p>`,
+        )
+        .join("")}`,
+    ) +
+    panel(
+      u,
+      "School",
+      "Your institution",
+      `Current school: ${SCHOOL_TYPES[e.school].name}. Applications take two weeks. Capacity and entry grades are checked again at admission.`,
+      `${e.applied ? `<p>Application pending: ${SCHOOL_TYPES[e.applied.id].name} · ${gameDate(e.applied.decisionWeek, s)}</p>` : ""}<div class="education-grid">${Object.entries(
+        SCHOOL_TYPES,
+      )
+        .map(([id, d]) => {
+          const q = schoolAdmissions(s, id);
+          return `<article class="education-card"><h3>${d.name}</h3><p>Teaching ${d.quality}/100 · ${q.capacity} available places · entry average ${d.entry}</p><p>${u.money(d.fee)}/week. A thirteen-week fee reserve is required; parents pay when able.</p>${form(s, "school", `<input type="hidden" name="school" value="${id}">`, q.eligible && student ? "Apply to school" : "Review entry requirements", 5)}</article>`;
+        })
+        .join("")}</div>`,
+    ) +
+    panel(
+      u,
+      "School",
+      "Your teachers",
+      "A teacher conversation uses an action and one hour, with a four-week review interval.",
+      `${Object.entries(e.teachers)
+        .map(
+          ([id, t]) =>
+            `<p><strong>${u.e(t.name)}</strong> · ${SUBJECTS[id]} · teaching ${t.quality}/100 · relationship ${t.relationship}/100</p>`,
+        )
+        .join(
+          "",
+        )}${form(s, "teacher", select(u, "subject", "Teacher to speak with", SUBJECTS), "Discuss your progress", 5)}`,
+    ) +
+    panel(
+      u,
+      "Support",
+      "Learning support",
+      "Support changes study conditions; it never reduces your natural aptitude. Agreed accommodations reserve two weekly hours.",
+      `<p>Assessment: ${e.support.assessed ? u.e(e.support.need) : "not arranged"} · plan: ${u.e(e.support.plan)}</p>${form(s, "assess", "", "Arrange a learning assessment", 5)}${e.support.assessed ? form(s, "support-plan", select(u, "plan", "Accommodation plan", { none: "No additional plan", reading: "Reading support", attention: "Attention & organisation support", sensory: "Sensory accommodations" }, e.support.plan), "Agree support plan", 5) : ""}`,
+    ) +
+    panel(
+      u,
+      "Support",
+      "School incidents",
+      "Repeated incidents remain open until a safety plan and support resolve them.",
+      e.bullying
+        ? `<p>${u.e(e.bullying.name)} · ${e.bullying.status} · severity ${e.bullying.severity} / support ${e.bullying.support}</p>${e.bullying.status === "open" ? form(s, "bullying", select(u, "response", "Who can help?", { teacher: "Report to a teacher", parent: "Involve a parent", friend: "Ask a trusted friend" }), "Ask for help", 5) : "<p>Your safety plan has resolved the case.</p>"}`
+        : "<p>No recorded ongoing incident.</p>",
+    ) +
+    panel(
+      u,
+      "Home life",
+      "Growing up at home",
+      "Parents have different approaches and availability. Income loss can disrupt the household routine without changing your aptitude.",
+      `${Object.entries(e.parents)
+        .map(
+          ([id, p]) =>
+            `<p><strong>${u.e(s.relationships.find((r) => r.id === id)?.name || "Parent")}</strong> · ${p.style} · support availability ${p.availability}/100</p>`,
+        )
+        .join(
+          "",
+        )}${e.disruption ? `<p class="warning">Household disruption through ${gameDate(e.disruption.until, s)}.</p>` : ""}${form(s, "parent", select(u, "person", "Parent", Object.fromEntries(s.relationships.filter((r) => r.role === "Parent").map((r) => [r.id, r.name]))) + select(u, "topic", "Conversation", { support: "Ask for practical support", independence: "Discuss independence", pressure: "Discuss expectations" }), "Have a family conversation", 6)}`,
+    )
+  );
 }
 export function healthScreen(s, u) {
   const h = s.simulation.health;
-  return u.title("LOOK AFTER YOURSELF", "Your health record.", "Appointments, symptoms, sleep and recovery have their own histories. New recurring plans only begin when you choose them.") +
-    panel(u, "Overview", "Wellbeing over time", h.active ? "Detailed monitoring is active." : "Start monitoring or book an appointment to activate this record.", `<div class="specialty-grid"><article><span>Sleep debt</span><strong>${h.sleepDebt.toFixed(1)}/100</strong></article><article><span>Stress</span><strong>${h.stress.toFixed(1)}/100</strong></article><article><span>Burnout</span><strong>${h.burnout.toFixed(1)}/100</strong></article></div><p>${u.money(h.paid)} spent on detailed care and nutrition · ${u.money(h.lastCost)} last week.</p>${!h.active ? form(s, "health-start", "", "Start health monitoring") : ""}<button class="text-button" data-view="calendar">Adjust sleep & weekly commitments</button>${h.household.filter((p) => p.until >= s.week).map((p) => `<p>${u.e(p.name)} is recovering from a household illness through ${gameDate(p.until, s)}. Extra care takes two hours/week.</p>`).join("")}`) +
-    panel(u, "Care", "Arrange an assessment", "Public appointments usually take three to four weeks; private appointments cost $120 and take one week. Attendance reserves two hours. Missed booking fees are retained.", form(s, "appointment", select(u, "concern", "Healthcare concern", { general: "General health", dental: "Dental care", vision: "Vision", hearing: "Hearing", mental: "Mental wellbeing", injury: "Sporting injury" }) + select(u, "provider", "Provider", { public: "Public service · no booking fee", private: "Private clinic · $120" }), "Book healthcare appointment")) +
-    panel(u, "Care", "Appointments & findings", "Treatments are available for assessed conditions, with specific costs and recurring commitments.", `${h.appointments.slice(0, 8).map((a) => `<article class="career-brief"><h3>${a.concern} · ${a.status}</h3><p>${gameDate(a.week, s)} · ${u.e(a.result)}</p></article>`).join("") || "<p>No appointments yet.</p>"}${h.conditions.filter((c) => c.status === "active").map((c) => `<article class="career-brief"><h3>${CONDITIONS[c.type].name}</h3><p>Severity ${c.severity.toFixed(1)} · ${c.treatment ? TREATMENTS[c.treatment].name : "no current treatment"}</p>${form(s, "treatment", `<input type="hidden" name="condition" value="${c.id}">` + select(u, "treatment", "Care option", Object.fromEntries(Object.entries(TREATMENTS).filter(([, t]) => t.types.includes(c.type)).map(([id, t]) => [id, `${t.name} · ${u.money(t.fee)} upfront / ${u.money(t.weekly)} per week`]))), "Begin selected treatment")}</article>`).join("")}`) +
-    panel(u, "Recovery", "Return to activity", "A diagnosis unlocks targeted rehabilitation. A session costs $35 and three hours, once weekly. An early return can cause a setback.", h.injuries.map((i) => `<article class="career-brief"><h3>${i.path} · ${i.type}</h3><p>${i.status} · ${i.diagnosed ? "assessed" : "assessment needed"} · rehabilitation ${i.progress}/100</p>${i.diagnosed && i.status !== "recovered" ? form(s, "rehab", `<input type="hidden" name="injury" value="${i.id}">`, "Attend rehabilitation · $35", 8) : ""}</article>`).join("") || "<p>No detailed injury records.</p>") +
-    panel(u, "Habits", "Meals & everyday habits", "Meal budgets are additional to basic living costs. Unfunded plans pause. Habits build with repeated practice and fade when neglected.", `${form(s, "nutrition", select(u, "plan", "Meal plan", Object.fromEntries(Object.entries(NUTRITION).map(([id, p]) => [id, `${p.name} · ${u.money(p.cost)}/week`])), h.nutrition), "Choose meal plan")}${Object.entries(h.habits).map(([id, p]) => `<p>${HABITS[id]} · strength ${p.strength.toFixed(1)} · ${p.streak}-week streak</p>`).join("")}${form(s, "habit", select(u, "habit", "Practice this week", HABITS), "Make time for a habit")}`);
+  return (
+    u.title(
+      "LOOK AFTER YOURSELF",
+      "Your health record.",
+      "Appointments, symptoms, sleep and recovery have their own histories. New recurring plans only begin when you choose them.",
+    ) +
+    panel(
+      u,
+      "Overview",
+      "Wellbeing over time",
+      h.active
+        ? "Detailed monitoring is active."
+        : "Start monitoring or book an appointment to activate this record.",
+      `<div class="specialty-grid"><article><span>Sleep debt</span><strong>${h.sleepDebt.toFixed(1)}/100</strong></article><article><span>Stress</span><strong>${h.stress.toFixed(1)}/100</strong></article><article><span>Burnout</span><strong>${h.burnout.toFixed(1)}/100</strong></article></div><p>${u.money(h.paid)} spent on detailed care and nutrition · ${u.money(h.lastCost)} last week.</p>${!h.active ? form(s, "health-start", "", "Start health monitoring") : ""}<button class="text-button" data-view="calendar">Adjust sleep & weekly commitments</button>${h.household
+        .filter((p) => p.until >= s.week)
+        .map(
+          (p) =>
+            `<p>${u.e(p.name)} is recovering from a household illness through ${gameDate(p.until, s)}. Extra care takes two hours/week.</p>`,
+        )
+        .join("")}`,
+    ) +
+    panel(
+      u,
+      "Care",
+      "Arrange an assessment",
+      "Public appointments usually take three to four weeks; private appointments cost $120 and take one week. Attendance reserves two hours. Missed booking fees are retained.",
+      form(
+        s,
+        "appointment",
+        select(u, "concern", "Healthcare concern", {
+          general: "General health",
+          dental: "Dental care",
+          vision: "Vision",
+          hearing: "Hearing",
+          mental: "Mental wellbeing",
+          injury: "Sporting injury",
+        }) +
+          select(u, "provider", "Provider", {
+            public: "Public service · no booking fee",
+            private: "Private clinic · $120",
+          }),
+        "Book healthcare appointment",
+      ),
+    ) +
+    panel(
+      u,
+      "Care",
+      "Appointments & findings",
+      "Treatments are available for assessed conditions, with specific costs and recurring commitments.",
+      `${
+        h.appointments
+          .slice(0, 8)
+          .map(
+            (a) =>
+              `<article class="career-brief"><h3>${a.concern} · ${a.status}</h3><p>${gameDate(a.week, s)} · ${u.e(a.result)}</p></article>`,
+          )
+          .join("") || "<p>No appointments yet.</p>"
+      }${h.conditions
+        .filter((c) => c.status === "active")
+        .map(
+          (c) =>
+            `<article class="career-brief"><h3>${CONDITIONS[c.type].name}</h3><p>Severity ${c.severity.toFixed(1)} · ${c.treatment ? TREATMENTS[c.treatment].name : "no current treatment"}</p>${form(
+              s,
+              "treatment",
+              `<input type="hidden" name="condition" value="${c.id}">` +
+                select(
+                  u,
+                  "treatment",
+                  "Care option",
+                  Object.fromEntries(
+                    Object.entries(TREATMENTS)
+                      .filter(([, t]) => t.types.includes(c.type))
+                      .map(([id, t]) => [
+                        id,
+                        `${t.name} · ${u.money(t.fee)} upfront / ${u.money(t.weekly)} per week`,
+                      ]),
+                  ),
+                ),
+              "Begin selected treatment",
+            )}</article>`,
+        )
+        .join("")}`,
+    ) +
+    panel(
+      u,
+      "Recovery",
+      "Return to activity",
+      "A diagnosis unlocks targeted rehabilitation. A session costs $35 and three hours, once weekly. An early return can cause a setback.",
+      h.injuries
+        .map(
+          (i) =>
+            `<article class="career-brief"><h3>${i.path} · ${i.type}</h3><p>${i.status} · ${i.diagnosed ? "assessed" : "assessment needed"} · rehabilitation ${i.progress}/100</p>${i.diagnosed && i.status !== "recovered" ? form(s, "rehab", `<input type="hidden" name="injury" value="${i.id}">`, "Attend rehabilitation · $35", 8) : ""}</article>`,
+        )
+        .join("") || "<p>No detailed injury records.</p>",
+    ) +
+    panel(
+      u,
+      "Habits",
+      "Meals & everyday habits",
+      "Meal budgets are additional to basic living costs. Unfunded plans pause. Habits build with repeated practice and fade when neglected.",
+      `${form(s, "nutrition", select(u, "plan", "Meal plan", Object.fromEntries(Object.entries(NUTRITION).map(([id, p]) => [id, `${p.name} · ${u.money(p.cost)}/week`])), h.nutrition), "Choose meal plan")}${Object.entries(
+        h.habits,
+      )
+        .map(
+          ([id, p]) =>
+            `<p>${HABITS[id]} · strength ${p.strength.toFixed(1)} · ${p.streak}-week streak</p>`,
+        )
+        .join(
+          "",
+        )}${form(s, "habit", select(u, "habit", "Practice this week", HABITS), "Make time for a habit")}`,
+    )
+  );
 }
 export function socialLifeScreen(s, u) {
-  const n = s.simulation.social, people = Object.fromEntries(s.relationships.filter((r) => s.lifeCourse.relatives[r.id]?.deceasedWeek == null).map((r) => [r.id, r.name]));
-  return u.title("PEOPLE REMEMBER", "Your connected life.", "Specific promises, shared plans and family choices stay with the people involved.") +
-    panel(u, "People", "Beyond a relationship score", "Conversations reveal preferences and existing friendships. Gifts cost $20; practical help and quality time take calendar hours.", `${form(s, "network", select(u, "person", "Person to catch up with", people), "Learn about their connections", 8)}${form(s, "introduction", select(u, "person", "Friend who could introduce you", people), "Ask for a personal introduction", 12)}${form(s, "affection", select(u, "person", "Someone you care about", people) + select(u, "kind", "Your gesture", AFFECTION), "Show you care")}${Object.entries(n.people).filter(([, p]) => p.known).map(([id, p]) => `<article class="career-brief"><h3>${u.e(people[id] || "A past connection")}</h3><p>Appreciates ${AFFECTION[p.preference].toLowerCase()}.</p>${p.memories.slice(0, 3).map((m) => `<p>${gameDate(m.week, s)} · ${u.e(m.text)}</p>`).join("")}</article>`).join("")}${n.edges.filter((e) => e.known).map((e) => `<p>${u.e(people[e.a] || "A contact")} and ${u.e(people[e.b] || "a contact")} know one another · connection ${e.bond}/100.</p>`).join("")}`) +
-    panel(u, "People", "Promises & disagreements", "Promises need a matching gesture within four weeks. Apologies help, but trust takes time to rebuild.", `${form(s, "promise", select(u, "person", "Who are you promising?", people) + select(u, "kind", "Promise", AFFECTION), "Make a specific promise", 8)}${n.promises.slice(0, 8).map((p) => `<p>${u.e(people[p.personId] || "Past contact")} · ${AFFECTION[p.kind]} · ${p.status} · due ${gameDate(p.deadline, s)}</p>`).join("")}${n.grievances.filter((g) => g.status === "open").map((g) => `<article class="career-brief"><p>${u.e(people[g.personId] || "Past contact")}: ${u.e(g.reason)} · severity ${g.severity}</p>${form(s, "grievance", `<input type="hidden" name="grievance" value="${g.id}">`, "Address this disagreement", 8)}</article>`).join("")}`) +
-    panel(u, "Plans", "Shared life plans", "Agreement is mutual. A conversation does not automatically move your family, create a child or spend their savings.", `${Object.entries(LIFE_PLANS).map(([topic, choices]) => form(s, "plan", `<input type="hidden" name="topic" value="${topic}">` + select(u, "choice", `${topic[0].toUpperCase() + topic.slice(1)} plans`, Object.fromEntries(choices.map((choice) => [choice, choice]))), "Discuss together", 18)).join("")}${n.plans.map((p) => `<p>${u.e(p.topic)}: ${u.e(p.choice)} · ${p.agreed ? "agreed" : `different preference: ${u.e(p.preferred)}`}</p>`).join("")}`) +
-    panel(u, "Plans", "Relationship counselling", "Both people must agree. Four sessions cost $60 each, take two hours and must be attended within eight weeks.", `${n.counselling ? `<p>${n.counselling.status} · ${n.counselling.sessions}/4 sessions · deadline ${gameDate(n.counselling.deadline, s)}</p>` : ""}${form(s, "counselling-start", "", "Discuss counselling", 18)}${n.counselling?.status === "active" ? form(s, "counselling", "", "Attend counselling · $60", 18) : ""}`) +
-    panel(u, "Family", "Extended & blended families", "Get to know your partner's relatives. Minor stepchildren living with you require $25 and four care hours each week.", `${form(s, "family-intro", "", "Meet your partner's family", 18)}${[...n.extended, ...n.stepChildren].map((p) => `<article class="career-brief"><h3>${u.e(p.name)}</h3><p>Family connection ${p.bond}/100</p>${form(s, "family-visit", `<input type="hidden" name="person" value="${p.id}">`, "Spend time together · $15", 18)}</article>`).join("")}`) +
-    panel(u, "Family", "Their ambitions, their lives", "Your children develop their own interests. Support changes your relationship; it does not guarantee a career.", `${s.family.children.map((c) => { const r = n.children[c.id]; return !r ? "" : `<article class="career-brief"><h3>${u.e(c.name)}</h3><p>Ambition: ${u.e(r.ambition)} · autonomy ${r.autonomy}/100</p>${form(s, "ambition", `<input type="hidden" name="child" value="${c.id}">` + select(u, "support", "Your response", { yes: "Support their interest", no: "Insist on another direction" }), "Discuss their future", 18)}${r.adult ? `<p>Independent ${r.adult.role} · personal savings ${u.money(r.adult.savings)} · ${r.adult.children.length} children of their own.</p>${form(s, "adult-support", `<input type="hidden" name="child" value="${c.id}"><label class="field-label">Support amount<input name="amount" type="number" min="10" max="100000" value="100" required></label>`, "Send financial support", 18)}` : ""}</article>`; }).join("") || "<p>Children's own ambitions appear as your family grows.</p>"}`) +
-    panel(u, "Agreements", "Before marriage", "Independent advice costs each partner $200 even if they decline. An agreed policy affects only the actual joint-account settlement; child support and personal ownership retain their own rules.", `${form(s, "prenup", select(u, "policy", "Joint-account settlement", { contributions: "Keep recorded contribution shares", equal: "Share the joint balance equally" }), "Seek independent advice & agreement", 18)}${n.prenups.map((p) => `<p>${u.e(people[p.partnerId] || "Past partner")} · ${p.policy} · ${p.status} · ${gameDate(p.week, s)}</p>`).join("")}`);
+  const n = s.simulation.social,
+    people = Object.fromEntries(
+      s.relationships
+        .filter((r) => s.lifeCourse.relatives[r.id]?.deceasedWeek == null)
+        .map((r) => [r.id, r.name]),
+    );
+  return (
+    u.title(
+      "PEOPLE REMEMBER",
+      "Your connected life.",
+      "Specific promises, shared plans and family choices stay with the people involved.",
+    ) +
+    panel(
+      u,
+      "People",
+      "Beyond a relationship score",
+      "Conversations reveal preferences and existing friendships. Gifts cost $20; practical help and quality time take calendar hours.",
+      `${form(s, "network", select(u, "person", "Person to catch up with", people), "Learn about their connections", 8)}${form(s, "introduction", select(u, "person", "Friend who could introduce you", people), "Ask for a personal introduction", 12)}${form(s, "affection", select(u, "person", "Someone you care about", people) + select(u, "kind", "Your gesture", AFFECTION), "Show you care")}${Object.entries(
+        n.people,
+      )
+        .filter(([, p]) => p.known)
+        .map(
+          ([id, p]) =>
+            `<article class="career-brief"><h3>${u.e(people[id] || "A past connection")}</h3><p>Appreciates ${AFFECTION[p.preference].toLowerCase()}.</p>${p.memories
+              .slice(0, 3)
+              .map((m) => `<p>${gameDate(m.week, s)} · ${u.e(m.text)}</p>`)
+              .join("")}</article>`,
+        )
+        .join("")}${n.edges
+        .filter((e) => e.known)
+        .map(
+          (e) =>
+            `<p>${u.e(people[e.a] || "A contact")} and ${u.e(people[e.b] || "a contact")} know one another · connection ${e.bond}/100.</p>`,
+        )
+        .join("")}`,
+    ) +
+    panel(
+      u,
+      "People",
+      "Promises & disagreements",
+      "Promises need a matching gesture within four weeks. Apologies help, but trust takes time to rebuild.",
+      `${form(s, "promise", select(u, "person", "Who are you promising?", people) + select(u, "kind", "Promise", AFFECTION), "Make a specific promise", 8)}${n.promises
+        .slice(0, 8)
+        .map(
+          (p) =>
+            `<p>${u.e(people[p.personId] || "Past contact")} · ${AFFECTION[p.kind]} · ${p.status} · due ${gameDate(p.deadline, s)}</p>`,
+        )
+        .join("")}${n.grievances
+        .filter((g) => g.status === "open")
+        .map(
+          (g) =>
+            `<article class="career-brief"><p>${u.e(people[g.personId] || "Past contact")}: ${u.e(g.reason)} · severity ${g.severity}</p>${form(s, "grievance", `<input type="hidden" name="grievance" value="${g.id}">`, "Address this disagreement", 8)}</article>`,
+        )
+        .join("")}`,
+    ) +
+    panel(
+      u,
+      "Plans",
+      "Shared life plans",
+      "Agreement is mutual. A conversation does not automatically move your family, create a child or spend their savings.",
+      `${Object.entries(LIFE_PLANS)
+        .map(([topic, choices]) =>
+          form(
+            s,
+            "plan",
+            `<input type="hidden" name="topic" value="${topic}">` +
+              select(
+                u,
+                "choice",
+                `${topic[0].toUpperCase() + topic.slice(1)} plans`,
+                Object.fromEntries(choices.map((choice) => [choice, choice])),
+              ),
+            "Discuss together",
+            18,
+          ),
+        )
+        .join(
+          "",
+        )}${n.plans.map((p) => `<p>${u.e(p.topic)}: ${u.e(p.choice)} · ${p.agreed ? "agreed" : `different preference: ${u.e(p.preferred)}`}</p>`).join("")}`,
+    ) +
+    panel(
+      u,
+      "Plans",
+      "Relationship counselling",
+      "Both people must agree. Four sessions cost $60 each, take two hours and must be attended within eight weeks.",
+      `${n.counselling ? `<p>${n.counselling.status} · ${n.counselling.sessions}/4 sessions · deadline ${gameDate(n.counselling.deadline, s)}</p>` : ""}${form(s, "counselling-start", "", "Discuss counselling", 18)}${n.counselling?.status === "active" ? form(s, "counselling", "", "Attend counselling · $60", 18) : ""}`,
+    ) +
+    panel(
+      u,
+      "Family",
+      "Extended & blended families",
+      "Get to know your partner's relatives. Minor stepchildren living with you require $25 and four care hours each week.",
+      `${form(s, "family-intro", "", "Meet your partner's family", 18)}${[...n.extended, ...n.stepChildren].map((p) => `<article class="career-brief"><h3>${u.e(p.name)}</h3><p>Family connection ${p.bond}/100</p>${form(s, "family-visit", `<input type="hidden" name="person" value="${p.id}">`, "Spend time together · $15", 18)}</article>`).join("")}`,
+    ) +
+    panel(
+      u,
+      "Family",
+      "Their ambitions, their lives",
+      "Your children develop their own interests. Support changes your relationship; it does not guarantee a career.",
+      `${
+        s.family.children
+          .map((c) => {
+            const r = n.children[c.id];
+            return !r
+              ? ""
+              : `<article class="career-brief"><h3>${u.e(c.name)}</h3><p>Ambition: ${u.e(r.ambition)} · autonomy ${r.autonomy}/100</p>${form(s, "ambition", `<input type="hidden" name="child" value="${c.id}">` + select(u, "support", "Your response", { yes: "Support their interest", no: "Insist on another direction" }), "Discuss their future", 18)}${r.adult ? `<p>Independent ${r.adult.role} · personal savings ${u.money(r.adult.savings)} · ${r.adult.children.length} children of their own.</p>${form(s, "adult-support", `<input type="hidden" name="child" value="${c.id}"><label class="field-label">Support amount<input name="amount" type="number" min="10" max="100000" value="100" required></label>`, "Send financial support", 18)}` : ""}</article>`;
+          })
+          .join("") ||
+        "<p>Children's own ambitions appear as your family grows.</p>"
+      }`,
+    ) +
+    panel(
+      u,
+      "Agreements",
+      "Before marriage",
+      "Independent advice costs each partner $200 even if they decline. An agreed policy affects only the actual joint-account settlement; child support and personal ownership retain their own rules.",
+      `${form(s, "prenup", select(u, "policy", "Joint-account settlement", { contributions: "Keep recorded contribution shares", equal: "Share the joint balance equally" }), "Seek independent advice & agreement", 18)}${n.prenups.map((p) => `<p>${u.e(people[p.partnerId] || "Past partner")} · ${p.policy} · ${p.status} · ${gameDate(p.week, s)}</p>`).join("")}`,
+    )
+  );
 }

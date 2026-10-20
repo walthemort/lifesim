@@ -1,4 +1,9 @@
 import {
+  courtProtectedLoan,
+  impairedCredit,
+  recordBudget,
+} from "./simulation/effects.js";
+import {
   countryIncomeTax,
   residenceCode,
   localProfile,
@@ -102,7 +107,10 @@ export function receiveIncome(
   t.lastNet = round(t.lastNet + gross - tax);
   const net = round(gross - tax);
   if (to === "savings") s.banking.savings = round(s.banking.savings + net);
-  else s.money = round(s.money + net);
+  else {
+    s.money = round(s.money + net);
+    recordBudget(s, "income", net, `${kind} income after tax`);
+  }
   return net;
 }
 export function estimatedPayTax(s) {
@@ -236,6 +244,7 @@ export function loanQuote(s, amount, term) {
       reasons.push("At least 26 weeks left on your sporting contract");
   }
   if (s.banking.credit < 600) reasons.push("Credit score of at least 600");
+  if (impairedCredit(s)) reasons.push(impairedCredit(s));
   if (s.banking.loans.filter((l) => l.status !== "repaid").length >= 2)
     reasons.push("At most two outstanding personal loans");
   if (
@@ -395,6 +404,7 @@ export function advanceBanking(s, employmentIncome) {
   }
   for (const l of b.loans.filter((l) => l.status !== "repaid")) {
     l.balance = round(l.balance * (1 + l.apr / 52));
+    if (courtProtectedLoan(s, l.id)) continue;
     const due = l.weeks === 1 ? l.balance : Math.min(l.payment, l.balance);
     if (availableCash(s) >= due) {
       s.money = round(s.money - due);

@@ -92,16 +92,16 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 88. Recommendation systems
 - [x] 89. Live-stream communities
 - [x] 90. Creative production teams
-- [ ] 91. Connected economic cycles
-- [ ] 92. Company earnings announcements
-- [ ] 93. Corporate actions
-- [ ] 94. Deeper cryptocurrency markets
-- [ ] 95. Household budgets
-- [ ] 96. Personal bankruptcy
-- [ ] 97. Criminal investigations
-- [ ] 98. Probation and parole
-- [ ] 99. Wills and estate planning
-- [ ] 100. Multigenerational play
+- [x] 91. Connected economic cycles
+- [x] 92. Company earnings announcements
+- [x] 93. Corporate actions
+- [x] 94. Deeper cryptocurrency markets
+- [x] 95. Household budgets
+- [x] 96. Personal bankruptcy
+- [x] 97. Criminal investigations
+- [x] 98. Probation and parole
+- [x] 99. Wills and estate planning
+- [x] 100. Multigenerational play
 
 ## First connected batch
 
@@ -126,3 +126,13 @@ Items 61–80 have persistent passing links, selected substitute minutes, suspen
 ## Creative production batch
 
 Items 81–90 include composition shares separate from master agreements, sample applications with release gates, funded alternate masters, group ownership and availability, paid city-by-city routing, staged videos, persistent city fanbases, retention/satisfaction signals, live communities with renewals, and paid staff proposals requiring approval. Ten simulation tests and two phone-browser flows passed. Versions inherit exclusive master/collaboration obligations and share their composition; videos boost the existing release rather than issuing duplicate royalties. Touring entry uses a simplified citizenship/permission check, not individual national performance-visa law.
+
+## Economy, justice and continuity batch
+
+Items 91–100 connect economic cycles, actual quarterly earnings, value-preserving splits (including client units and open orders), exchange/self-custody crypto, cash-reconciled budgets, supervised unsecured-debt plans, investigations and court hearings, parole/probation, wills/trusts, and adult-heir continuation. Fifteen focused simulation checks and four phone-browser flows passed before further integration checks. Estate continuation explicitly liquidates personal assets, applies sale discounts and the fictional estate tax, pays liabilities, and distributes the remaining actual value once. The next character retains their own birthday and the same world date. The most recent full completed life remains exportable; up to fifty generations and twenty former founded companies persist. Markets, listed companies, sporting standings and named family continue. These are compact fictional models, not national legal, medical, financial or motorsport rulebooks.
+
+## Navigation and saves
+
+Open School record from Childhood/Work; Medical record from Health; Connected life from Relationships/Family; Garage from Vehicles; Rooms from Property/Home; Professional practice from Your work; Business operations from Company/Ownership; Inside your sport and Race engineering from Sports; Creative production from Music/Social; Economy & resilience from Investments/Banking; and Legal & family affairs from Crime/Family or the completed-life banner. New deadlines reach the existing inbox and notification bell.
+
+Version 16 and earlier saves migrate additively to save schema 17 with an exact pre-update backup. Most detailed systems begin through an explicit control; the migration does not invent past mileage, credentials, payments, contracts or inherited wealth. Existing starting years retain modern fictional-world rules unless historical mode was explicitly selected. Newborn children in future family lines and heirs use independent character age clocks while the world calendar continues. Save imports accept up to 4 MB to allow the previous-life snapshot.

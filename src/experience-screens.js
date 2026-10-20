@@ -8,7 +8,8 @@ import {
 import { gameDate } from "./dates.js";
 import { characterPortrait } from "./portraits.js";
 import { HOBBIES } from "./everyday.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   count = (n) => Math.round(n).toLocaleString("en-US");
 const off = (s) =>
   !s.actions || s.event || s.ended || s.globalLife.crime.prison

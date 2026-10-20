@@ -23,7 +23,8 @@ import {
 import { jobDefinition, isSportingJob } from "./world.js";
 import { gameDate } from "./dates.js";
 import { careerPathReason } from "./career-commitment.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   off = (s) =>
     !s.actions || s.ended || s.event || s.globalLife.crime.prison
       ? "disabled"

@@ -1,7 +1,8 @@
 import { availableCash, rng, PROGRAMS, jobDefinition } from "./world.js";
 import { spendTime, allocationRatio } from "./calendar.js";
 import { receiveIncome } from "./banking.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const log = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });

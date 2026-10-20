@@ -4,17 +4,14 @@ import {
   country,
   immigrationRule,
 } from "./geography.js";
-import {
-  INDUSTRIES,
-  CRIMES,
-  RACING_TIERS,
-} from "./expansion-data.js";
+import { INDUSTRIES, CRIMES, RACING_TIERS } from "./expansion-data.js";
 import { creatorAvailable } from "./identity.js";
 import { immigrationEligibility } from "./expansion.js";
 import { gameDate } from "./dates.js";
 import { founderPanel } from "./screens.js";
 import { ownershipDashboardScreen } from "./pressure-screens.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const disabled = (s) =>
   !s.actions || s.event || s.ended || s.globalLife.crime.prison
     ? "disabled"

@@ -1,4 +1,8 @@
-import { creativeRecordingReady } from './simulation/creativity.js';
+import {
+  investigatedCrime,
+  supervisionTravelReason,
+} from "./simulation/justice.js";
+import { creativeRecordingReady } from "./simulation/creativity.js";
 import { recordTrackRights } from "./realism.js";
 import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { localPrice } from "./economy.js";
@@ -19,7 +23,8 @@ import { startMusicProject } from "./music.js";
 import { gameDate } from "./dates.js";
 import { assertCareerPath } from "./career-commitment.js";
 
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const note = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });
@@ -190,6 +195,8 @@ export function studyLanguage(state) {
   return s;
 }
 export function moveCountry(state, { country: code, city, contact = false }) {
+  const supervision = supervisionTravelReason(state, code);
+  if (supervision) throw new Error(supervision);
   if (!validPlace(code, city))
     throw new Error("Choose a city in the destination country.");
   const g = state.globalLife;
@@ -373,6 +380,7 @@ export function visitBarber(state, { hairstyle, hair, tier = "local" }) {
   return s;
 }
 export function commitCrime(state, id) {
+  if (state.simulation?.justice.active) return investigatedCrime(state, id);
   const d = CRIMES[id];
   if (!d) throw new Error("Choose a crime scenario.");
   const s = acting(state, 3, d.age),
@@ -638,7 +646,10 @@ export function releaseTrack(state, id) {
     throw new Error(
       "Finish production and mixing before releasing this track.",
     );
-  if (!creativeRecordingReady(state, project.id)) throw new Error("Clear or remove samples and finish alternate sessions before release.");
+  if (!creativeRecordingReady(state, project.id))
+    throw new Error(
+      "Clear or remove samples and finish alternate sessions before release.",
+    );
   if (state.careerWorld.music.albums.some((a) => a.tracks.includes(project.id)))
     throw new Error("This track is already scheduled on an album.");
   const s = acting(state, 1, 6),
@@ -784,7 +795,11 @@ function racingAdvance(s) {
   };
   r.history.push(entry);
   r.history = r.history.slice(-20);
-  if (s.simulation?.racing.active && s.simulation.racing.discipline !== "formula") return;
+  if (
+    s.simulation?.racing.active &&
+    s.simulation.racing.discipline !== "formula"
+  )
+    return;
   const i = RACING_TIERS.findIndex((t) => t.id === r.tier),
     target = RACING_TIERS[i + 1];
   if (!target) return;

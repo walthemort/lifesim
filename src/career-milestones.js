@@ -105,7 +105,8 @@ export const MILESTONE_LABELS = {
   "music:showcase": "Successful audition or showcase",
   "music:festival": "Festival performance",
 };
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const actor = (s, id) => (id === "football" ? s.football : s.sports[id]);
 const clamp = (n) => Math.max(0, Math.min(100, n));
 const skillKey = (role) =>

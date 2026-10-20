@@ -2,7 +2,8 @@ import { availableCash } from "./world.js";
 import { spendTime } from "./calendar.js";
 import { ensurePeople } from "./connections.js";
 import { receiveIncome } from "./banking.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const log = (s, text) => {
   s.log.unshift({ week: s.week, text, kind: "milestone" });
@@ -903,7 +904,8 @@ export function validateLifeCourse(s) {
       (e, i) =>
         !int(e.week, 0, s.week) ||
         !int(e.age, 12, 17) ||
-        e.age !== s.startAge + Math.floor(e.week / 52) ||
+        e.age !==
+          s.startAge + Math.floor((e.week - (s.ageEpochWeek || 0)) / 52) ||
         e.week % 52 !== 48 ||
         (i > 0 && e.week <= d.exams[i - 1].week) ||
         !n(e.score, 0, 100),

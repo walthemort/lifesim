@@ -1,7 +1,10 @@
 import { onParentalLeave, leavePayFactor } from "./realism.js";
 import { personalityModifier } from "./personality.js";
 import { outfitSuitability } from "./simulation/effects.js";
-import { professionalPromotionReason, promotionCompetition } from "./simulation/professions.js";
+import {
+  professionalPromotionReason,
+  promotionCompetition,
+} from "./simulation/professions.js";
 import {
   JOBS,
   TRACK_SKILLS,
@@ -225,7 +228,8 @@ export function pensionContribution(s, income) {
 export function withdrawPension(state) {
   if (
     state.ended ||
-    state.startAge + Math.floor(state.week / 52) < 60 ||
+    state.startAge + Math.floor((state.week - (state.ageEpochWeek || 0)) / 52) <
+      60 ||
     !state.workLife.pension
   )
     throw new Error("Pension savings can be withdrawn from age 60.");
@@ -304,7 +308,16 @@ export function advanceWorkLife(s) {
       eligible &&
       p.performance >= 70 &&
       rng(s) <
-        Math.max(.02, Math.min(0.92, 0.35 + p.performance * 0.003 + w.managerBond * 0.003 + promotionCompetition(s)))
+        Math.max(
+          0.02,
+          Math.min(
+            0.92,
+            0.35 +
+              p.performance * 0.003 +
+              w.managerBond * 0.003 +
+              promotionCompetition(s),
+          ),
+        )
     ) {
       Object.assign(w.promotion, {
         status: "offer",

@@ -5,7 +5,8 @@ import {
   sportMoveEligibility,
   requestSportMove,
 } from "./career-world.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   round = (n) => Math.round(n * 100) / 100;
 const note = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });

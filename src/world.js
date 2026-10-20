@@ -1,6 +1,13 @@
-import { racingLicenceReason } from './simulation/racing.js';
-import { businessOperations } from './simulation/businesses.js';
-import { founderShare } from './simulation/effects.js';
+import { recordEarnings } from "./simulation/economy.js";
+import {
+  effectiveShares,
+  macroGrowth,
+  macroWages,
+  institutionalUnits,
+} from "./simulation/effects.js";
+import { racingLicenceReason } from "./simulation/racing.js";
+import { businessOperations } from "./simulation/businesses.js";
+import { founderShare } from "./simulation/effects.js";
 import { localProfile } from "./economy.js";
 import { productTrading, onParentalLeave } from "./realism.js";
 import { industry } from "./expansion-data.js";
@@ -20,8 +27,16 @@ import { allocationRatio, spendTime } from "./calendar.js";
 import { beginEmployment } from "./careers.js";
 import { orderCashReserved } from "./profession-effects.js";
 import { assertCareerPath, careerPathReason } from "./career-commitment.js";
-import { eraIndex, subjectAdmissionReason, historicalJobReason } from "./simulation/effects.js";
-import { recordWorkReference, referenceModifier, creditClientDividend } from "./simulation/professions.js";
+import {
+  eraIndex,
+  subjectAdmissionReason,
+  historicalJobReason,
+} from "./simulation/effects.js";
+import {
+  recordWorkReference,
+  referenceModifier,
+  creditClientDividend,
+} from "./simulation/professions.js";
 
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
@@ -673,12 +688,14 @@ export const reservedCash = (s) =>
 export const availableCash = (s) => s.money - reservedCash(s);
 export const assetValue = (s, id) => {
   const b = asset(id);
-  return b.stock ? s.market[b.stock] * b.shares : s.assetValues[id];
+  return b.stock
+    ? s.market[b.stock] * effectiveShares(s, b)
+    : s.assetValues[id];
 };
 export const stakePercent = (s, id) => {
   const b = asset(id);
   return b.stock
-    ? (s.holdings[b.stock] / b.shares) * 100
+    ? (s.holdings[b.stock] / effectiveShares(s, b)) * 100
     : s.ownership[id]?.stake || 0;
 };
 export const privateOwnershipValue = (s) =>
@@ -692,12 +709,13 @@ export const collectibleValue = (s) =>
     0,
   );
 export const positionName = (s) =>
-  s.startAge + Math.floor(s.week / 52) < 18 && !s.employment
-    ? s.startAge + Math.floor(s.week / 52) < 1
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 18 &&
+  !s.employment
+    ? s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 1
       ? "Newborn"
-      : s.startAge + Math.floor(s.week / 52) < 3
+      : s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 3
         ? "Toddler"
-        : s.startAge + Math.floor(s.week / 52) < 5
+        : s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 5
           ? "Preschool child"
           : "School student"
     : s.employment
@@ -780,7 +798,9 @@ export function initializeWorld(
       b.id,
       {
         profit: 0,
-        cash: Math.round((b.value || s.market[b.stock] * b.shares) * 0.03),
+        cash: Math.round(
+          (b.value || s.market[b.stock] * effectiveShares(s, b)) * 0.03,
+        ),
         strategy: "balanced",
         periodProfit: 0,
       },
@@ -846,7 +866,15 @@ export function jobEligibility(s, vacancy) {
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
   const eraReason = historicalJobReason(s, j);
   if (eraReason) missing.push(eraReason);
-  if (s.simulation?.professions.active && j.track === "medicine" && j.level >= 3 && s.simulation.professions.specialisation?.status !== "certified") missing.push("completed supervised medical specialisation and final assessment");
+  if (
+    s.simulation?.professions.active &&
+    j.track === "medicine" &&
+    j.level >= 3 &&
+    s.simulation.professions.specialisation?.status !== "certified"
+  )
+    missing.push(
+      "completed supervised medical specialisation and final assessment",
+    );
   const locked = careerPathReason(s, j.track);
   if (locked) missing.push(locked);
   if (s.globalLife?.crime.prison) missing.push("release from custody");
@@ -857,7 +885,7 @@ export function jobEligibility(s, vacancy) {
     missing.push("a clean serious-conviction record for this regulated role");
   if (isSportingJob(j))
     missing.push("Sporting contracts come through development and scouting");
-  if (s.startAge + Math.floor(s.week / 52) < 18)
+  if (s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 18)
     missing.push("Employment requires age 18+");
   if (vacancy.expiresWeek <= s.week) missing.push("Application window closed");
   if (j.qualification && !hasQualification(s, j.qualification))
@@ -1010,7 +1038,10 @@ export function enrolEducation(state, id) {
   if (racingReason) throw new Error(racingReason);
   const subjectReason = subjectAdmissionReason(state, id);
   if (subjectReason) throw new Error(subjectReason);
-  if (state.startAge + Math.floor(state.week / 52) < 12)
+  if (
+    state.startAge + Math.floor((state.week - (state.ageEpochWeek || 0)) / 52) <
+    12
+  )
     throw new Error(
       "Your family handles preschool and primary school. Independent courses start from age twelve.",
     );
@@ -1022,7 +1053,11 @@ export function enrolEducation(state, id) {
     throw new Error("You already hold this qualification.");
   if (p.requires && !state.education.completed.includes(p.requires))
     throw new Error(`You need ${qualificationName(p.requires)} first.`);
-  if (p.minAge && state.startAge + Math.floor(state.week / 52) < p.minAge)
+  if (
+    p.minAge &&
+    state.startAge + Math.floor((state.week - (state.ageEpochWeek || 0)) / 52) <
+      p.minAge
+  )
     throw new Error(`This programme requires age ${p.minAge}+. `);
   if (p.minimumSkill && state.skills[p.skill] < p.minimumSkill)
     throw new Error(
@@ -1063,7 +1098,10 @@ export function foundCompany(
 ) {
   assertCareerPath(state, "business");
   writable(state);
-  if (state.startAge + Math.floor(state.week / 52) < 18)
+  if (
+    state.startAge + Math.floor((state.week - (state.ageEpochWeek || 0)) / 52) <
+    18
+  )
     throw new Error("Founding a company independently requires age 18+.");
   if (state.company) throw new Error("You already have a founded company.");
   if (state.skills.business < 30)
@@ -1196,8 +1234,13 @@ function transferStake(s, id, stake, price) {
   const b = asset(id);
   s.money -= price;
   if (b.stock) {
-    const units = Math.round((b.shares * stake) / 100);
+    const units = Math.round((effectiveShares(s, b) * stake) / 100);
     recordTrade(s, b.stock, units, price, s.holdings[b.stock]);
+    if (
+      s.holdings[b.stock] + units + institutionalUnits(s, b.stock) >
+      effectiveShares(s, b)
+    )
+      throw new Error("This stake conflicts with institutional holdings.");
     s.holdings[b.stock] += units;
   } else {
     const old = s.ownership[id];
@@ -1394,12 +1437,20 @@ function employmentTick(s) {
           surplus * 0.004 +
           s.skills.charisma * 0.002,
       );
-      if (rng(s) < Math.max(0.05, chance - publicHiringPenalty(s) + referenceModifier(s, j.track))) {
+      if (
+        rng(s) <
+        Math.max(
+          0.05,
+          chance - publicHiringPenalty(s) + referenceModifier(s, j.track),
+        )
+      ) {
         a.status = "offer";
         a.offeredPay = Math.round(
           j.pay *
             (1 + rng(s) * 0.06) *
-            (s.realWorld ? localProfile(s).wage : 1) * eraIndex(s),
+            (s.realWorld ? localProfile(s).wage : 1) *
+            eraIndex(s) *
+            macroWages(s),
         );
         a.expiresWeek = s.week + 4;
         log(
@@ -1556,6 +1607,7 @@ function businessesTick(s) {
       strategy = r.strategy;
     let revenue =
         b.revenue *
+        (1 + macroGrowth(s) * 20) *
         (0.85 + rng(s) * 0.3) *
         (strategy === "commercial" ? 1.08 : 1),
       costs =
@@ -1609,7 +1661,9 @@ function businessesTick(s) {
         Math.max(0, r.cash),
       );
       const dividend = round((distribution * stakePercent(s, b.id)) / 100);
-      if (b.stock) creditClientDividend(s, b.stock, distribution / b.shares);
+      if (b.stock)
+        creditClientDividend(s, b.stock, distribution / effectiveShares(s, b));
+      recordEarnings(s, b, r.periodProfit);
       r.cash -= distribution;
       receiveIncome(s, dividend, "investment");
       r.periodProfit = 0;
@@ -1622,7 +1676,7 @@ function businessesTick(s) {
       if (b.stock && distribution > 0)
         s.market[b.stock] = Math.max(
           1,
-          round(s.market[b.stock] - distribution / b.shares),
+          round(s.market[b.stock] - distribution / effectiveShares(s, b)),
         );
     }
   }
@@ -1632,6 +1686,7 @@ function businessesTick(s) {
       active = s.career === "business";
     const volatility = industry(c.sector)?.volatility || 0.01;
     const growth =
+      macroGrowth(s) +
       0.0005 +
       (s.profession?.company.delegated &&
       !s.ownershipPlay.management.founder?.staff.some(
@@ -1668,7 +1723,12 @@ function businessesTick(s) {
     const product = productTrading(s);
     const detailed = businessOperations(s, "founder");
     c.profit = round(
-      operations.revenue + product.revenue + detailed.revenue - operations.costs - product.costs - detailed.costs,
+      operations.revenue +
+        product.revenue +
+        detailed.revenue -
+        operations.costs -
+        product.costs -
+        detailed.costs,
     );
     c.cash += c.profit;
     c.periodProfit += c.profit;
@@ -1873,7 +1933,15 @@ export function validateWorld(s) {
       !["balanced", "development", "commercial"].includes(r.strategy)
     )
       fail();
-    if (b.stock && !integer(s.holdings[b.stock], 0, b.shares)) fail();
+    if (
+      b.stock &&
+      !integer(
+        s.holdings[b.stock] + institutionalUnits(s, b.stock),
+        0,
+        effectiveShares(s, b),
+      )
+    )
+      fail();
   }
   if (
     !list(s.opportunities, 9) ||

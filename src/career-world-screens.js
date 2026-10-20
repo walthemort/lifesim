@@ -10,7 +10,7 @@ import {
   musicReleaseShare,
 } from "./career-world.js";
 const actor = (s, id) => (id === "football" ? s.football : s.sports[id]),
-  age = (s) => s.startAge + Math.floor(s.week / 52);
+  age = (s) => s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 export function sportWorldScreen(s, u, sport = null) {
   const { panelHeading, e, money, tag } = u;
   return WORLD_SPORTS.filter((id) => !sport || id === sport)

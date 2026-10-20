@@ -1,5 +1,6 @@
+import { supervisionTravelReason } from "./simulation/justice.js";
 import { knownCity } from "./geography.js";
-import { localMusicDemand, recordLocalShow } from './simulation/creativity.js';
+import { localMusicDemand, recordLocalShow } from "./simulation/creativity.js";
 import { canRecruit, bindRivalOffer } from "./rivals.js";
 import { placeCountry, immigrationRule } from "./geography.js";
 import { checkMusicOutsideWork } from "./contracts.js";
@@ -23,7 +24,8 @@ import {
 import { receiveIncome } from "./banking.js";
 import { careerPathReason } from "./career-commitment.js";
 
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100;
 const log = (s, text) => {
@@ -383,6 +385,8 @@ export function checkCareerMoveSigning(s, id, o) {
       "The proposed career level no longer matches your current contract.",
     );
   if (req.missing.length) throw new Error(req.missing.join(", "));
+  const supervisedTravel = supervisionTravelReason(s, placeCountry(meta.city));
+  if (supervisedTravel) throw new Error(supervisedTravel);
   if (meta.familyPlan === "move" && meta.city !== s.city) {
     if (age(s) < 18 || availableCash(s) < 1500)
       throw new Error("Moving your household needs age eighteen and $1,500.");
@@ -739,7 +743,8 @@ export function validateCareerWorld(s) {
       ) ||
       round(t.stops.reduce((n, x) => n + x.gross, 0)) !== t.gross ||
       round(
-        t.setup + (s.simulation?.creativity.tourPlans[t.id]?.cost || 0) +
+        t.setup +
+          (s.simulation?.creativity.tourPlans[t.id]?.cost || 0) +
           t.stops.reduce(
             (n, x) =>
               n +
@@ -1080,6 +1085,12 @@ export function rehearseLive(state) {
   return s;
 }
 export function startMusicTour(state, { route, crew }) {
+  for (const city of route === "local"
+    ? [state.city]
+    : ["London", "Copenhagen", "New York", "Monaco"]) {
+    const reason = supervisionTravelReason(state, placeCountry(city));
+    if (reason) throw new Error(reason);
+  }
   const r = TOUR_ROUTES.find((r) => r.id === route),
     team = LIVE_CREWS.find((t) => t.id === crew),
     m = state.careerWorld.music;
@@ -1280,7 +1291,8 @@ export function advanceMusicWorld(s) {
               Math.round(
                 ((s.music.fans * 0.12) / r.shows) *
                   (0.6 + rng(s) * 0.8) *
-                  (1 + quality / 200) * localMusicDemand(s, stop.city),
+                  (1 + quality / 200) *
+                  localMusicDemand(s, stop.city),
               ),
             )
           : 0;

@@ -20,7 +20,8 @@ import {
 } from "./identity.js";
 import { relativeAlive } from "./life-course.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 export { characterPortrait } from "./portraits.js";
 import { characterPortrait, portraitStage } from "./portraits.js";
 function selectField(key, label, values, current, e) {

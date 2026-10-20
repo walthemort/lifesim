@@ -29,7 +29,8 @@ export function growPersonality(s, changes) {
       );
 }
 export function personalityChoice(s, option) {
-  if (s.startAge + Math.floor(s.week / 52) < 5) return;
+  if (s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) < 5)
+    return;
   growPersonality(s, {
     discipline: option.discipline > 0 || option.grade > 0 ? 0.5 : 0,
     ambition: option.skill > 0 ? 0.25 : 0,

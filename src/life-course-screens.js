@@ -4,7 +4,8 @@ import {
   relativeAlive,
   teenWorkHours,
 } from "./life-course.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 export function schoolLifeScreen(s, u) {
   const { panelHeading, money, e, tag } = u,
     c = s.lifeCourse.school,
@@ -66,7 +67,9 @@ export function originFamilyScreen(s, u) {
           alive = relativeAlive(s, r.id),
           years = alive
             ? a + p.ageOffset
-            : s.startAge + Math.floor(person.deceasedWeek / 52) + p.ageOffset;
+            : s.startAge +
+              Math.floor((person.deceasedWeek - (s.ageEpochWeek || 0)) / 52) +
+              p.ageOffset;
         return `<article class="everyday-card"><h3>${e(r.name)}</h3>${tag(r.role, "purple")}<p>${alive ? "Age" : "Died aged"} ${years} · ${e(p.job)}<br>Health ${Math.round(person.health)} · connection ${Math.round(r.bond)}<br>${money(p.weeklyPay)}/week · ${money(p.wealth)} savings</p><p>${e(p.plans)}</p>${alive ? `<div class="inline-actions"><button class="button secondary" data-action="relative-support" data-kind="visit" data-id="${e(r.id)}" ${a < 5 || !s.actions || s.event ? "disabled" : ""}>Visit</button><button class="button secondary" data-action="relative-support" data-kind="money" data-id="${e(r.id)}" ${a < 18 || !s.actions || s.event ? "disabled" : ""}>Send $100</button><button class="button secondary" data-action="relative-support" data-kind="care" data-id="${e(r.id)}" ${a < 18 || !s.actions || s.event ? "disabled" : ""}>Arrange care · $50</button></div>` : ""}</article>`;
       })
       .join("") ||

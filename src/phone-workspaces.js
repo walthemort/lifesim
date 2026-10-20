@@ -227,15 +227,98 @@ export function organizeWorkspace(main, view, s, selections) {
         const h = heading(n);
         if (h === "Your applications" || n.querySelector("[data-vacancy]"))
           return "Find a job";
-        if (h === "Education & qualifications" || h.includes("School life") || n.matches("[data-detailed-shortcut]"))
+        if (
+          h === "Education & qualifications" ||
+          h.includes("School life") ||
+          n.matches("[data-detailed-shortcut]")
+        )
           return "Education";
         return "Your work";
       },
       selections,
     );
-  } else if (["school-life", "health-record", "social-life", "garage", "home-design", "professional", "business-operations", "sport-lab", "race-engineering", "creative-production"].includes(view)) {
-    const labels = view === "creative-production" ? ["Recordings", "Rights", "Group & tour", "Audience", "Production team"] : view === "race-engineering" ? ["Weekend", "Reports", "Kart budget", "Components", "Career"] : view === "sport-lab" ? ["Football", "Basketball", "Tennis", "Boxing", "Motorsport"].sort((a,b)=>(((b==="Motorsport"?"racing":b.toLowerCase())===(s.employment?.jobId?s.career:s.aspiration))?1:0)-(((a==="Motorsport"?"racing":a.toLowerCase())===(s.employment?.jobId?s.career:s.aspiration))?1:0)) : view === "business-operations" ? ["Operations", "Employees", "Board", "Acquisitions", "Expansion", "Specialist clubs"] : view === "professional" ? ["Casework", "People", "Training", "Career"] : view === "school-life" ? ["Subjects", "School", "Support", "Home life"] : view === "health-record" ? ["Overview", "Care", "Recovery", "Habits"] : view === "garage" ? ["Fleet", "Journeys", "Licences", "Finance", "Used market"] : view === "home-design" ? ["Rooms", "Style", "Projects"] : ["People", "Plans", "Family", "Agreements"];
-    makeWorkspace(main, view, labels, (n) => n.dataset.simulationTab || labels[0], selections);
+  } else if (
+    [
+      "school-life",
+      "health-record",
+      "social-life",
+      "garage",
+      "home-design",
+      "professional",
+      "business-operations",
+      "sport-lab",
+      "race-engineering",
+      "creative-production",
+      "economic-world",
+      "life-planning",
+    ].includes(view)
+  ) {
+    const labels =
+      view === "life-planning"
+        ? ["Cases", "Supervision", "Will", "Estate", "Family history"]
+        : view === "economic-world"
+          ? ["Economy", "Corporate actions", "Crypto", "Budget", "Insolvency"]
+          : view === "creative-production"
+            ? [
+                "Recordings",
+                "Rights",
+                "Group & tour",
+                "Audience",
+                "Production team",
+              ]
+            : view === "race-engineering"
+              ? ["Weekend", "Reports", "Kart budget", "Components", "Career"]
+              : view === "sport-lab"
+                ? [
+                    "Football",
+                    "Basketball",
+                    "Tennis",
+                    "Boxing",
+                    "Motorsport",
+                  ].sort(
+                    (a, b) =>
+                      ((b === "Motorsport" ? "racing" : b.toLowerCase()) ===
+                      (s.employment?.jobId ? s.career : s.aspiration)
+                        ? 1
+                        : 0) -
+                      ((a === "Motorsport" ? "racing" : a.toLowerCase()) ===
+                      (s.employment?.jobId ? s.career : s.aspiration)
+                        ? 1
+                        : 0),
+                  )
+                : view === "business-operations"
+                  ? [
+                      "Operations",
+                      "Employees",
+                      "Board",
+                      "Acquisitions",
+                      "Expansion",
+                      "Specialist clubs",
+                    ]
+                  : view === "professional"
+                    ? ["Casework", "People", "Training", "Career"]
+                    : view === "school-life"
+                      ? ["Subjects", "School", "Support", "Home life"]
+                      : view === "health-record"
+                        ? ["Overview", "Care", "Recovery", "Habits"]
+                        : view === "garage"
+                          ? [
+                              "Fleet",
+                              "Journeys",
+                              "Licences",
+                              "Finance",
+                              "Used market",
+                            ]
+                          : view === "home-design"
+                            ? ["Rooms", "Style", "Projects"]
+                            : ["People", "Plans", "Family", "Agreements"];
+    makeWorkspace(
+      main,
+      view,
+      labels,
+      (n) => n.dataset.simulationTab || labels[0],
+      selections,
+    );
   } else if (view === "debug" && s.debug.enabled) {
     makeWorkspace(
       main,

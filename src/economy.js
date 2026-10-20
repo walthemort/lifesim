@@ -1,3 +1,4 @@
+import { macroPrices } from "./simulation/effects.js";
 import currencies from "./currencies.json" with { type: "json" };
 import { country } from "./geography.js";
 import { eraIndex, vehicleWearFactor } from "./simulation/effects.js";
@@ -163,8 +164,13 @@ export function economyProfile(code = "GB") {
 export const residenceCode = (s) => s.globalLife?.residence.country || "GB";
 export const localProfile = (s) => economyProfile(residenceCode(s));
 export const localPrice = (s, amount, kind = "retail") =>
-  Math.round(amount * (s.realWorld ? localProfile(s)[kind] || 1 : 1) * eraIndex(s) * 100) /
-  100;
+  Math.round(
+    amount *
+      (s.realWorld ? localProfile(s)[kind] || 1 : 1) *
+      eraIndex(s) *
+      macroPrices(s) *
+      100,
+  ) / 100;
 export function localCurrency(s, amount) {
   const c = localProfile(s).currency,
     rate = s.realWorld?.economy.rates[c] || FX[c];
@@ -251,5 +257,8 @@ export const rentTerms = (s, r) =>
       };
 export const resalePrice = (s, item) =>
   Math.round(
-    (s.realWorld?.economy.purchaseBasis[item.id] ?? item.price) * 0.8 * vehicleWearFactor(s, item.id) * 100,
+    (s.realWorld?.economy.purchaseBasis[item.id] ?? item.price) *
+      0.8 *
+      vehicleWearFactor(s, item.id) *
+      100,
   ) / 100;

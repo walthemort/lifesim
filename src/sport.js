@@ -47,7 +47,8 @@ export const SPORTS = [
     entryFee: 8,
   },
 ];
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n, a = 0, b = 100) => Math.max(a, Math.min(b, n));
 const log = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });

@@ -1,4 +1,9 @@
-import { creativeRecordingReady, creativeRoyaltyFactor, creativeDiscovery, recordCreativeComposition } from './simulation/creativity.js';
+import {
+  creativeRecordingReady,
+  creativeRoyaltyFactor,
+  creativeDiscovery,
+  recordCreativeComposition,
+} from "./simulation/creativity.js";
 import { promotionStreams } from "./experience.js";
 import { musicRightsShare, recordProducerRoyalty } from "./realism.js";
 import { recordingCampaignBoost } from "./pressure-effects.js";
@@ -31,7 +36,7 @@ const skillKey = (role) =>
     ({ singer: "vocals", rapper: "lyrics", producer: "production" })[role],
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100,
-  age = (s) => s.startAge + Math.floor(s.week / 52);
+  age = (s) => s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const log = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });
   s.log = s.log.slice(0, 40);
@@ -257,7 +262,10 @@ export function advanceMusic(s) {
   }
   for (const p of m.projects)
     if (p.status === "recording" && p.releaseWeek <= s.week) {
-      if (!creativeRecordingReady(s, p.id)) { p.releaseWeek++; continue; }
+      if (!creativeRecordingReady(s, p.id)) {
+        p.releaseWeek++;
+        continue;
+      }
       if (p.manualRelease) {
         p.status = "ready";
         log(
@@ -280,7 +288,8 @@ export function advanceMusic(s) {
           (m.label ? 1.2 : 1) *
           musicPromotionMultiplier(s) *
           recordingCampaignBoost(s, p.id) *
-          artisticDiscovery(s) * creativeDiscovery(s, p.id),
+          artisticDiscovery(s) *
+          creativeDiscovery(s, p.id),
       );
       const viral = p.quality >= 60 && rng(s) < 0.02;
       const streams =
@@ -321,7 +330,8 @@ export function advanceMusic(s) {
       const promoted = s.careerSupport.music.campaignUntil > s.week;
       r.weeklyStreams = Math.round(
         organic *
-          artisticRetention(s, r) * creativeDiscovery(s, r.id) *
+          artisticRetention(s, r) *
+          creativeDiscovery(s, r.id) *
           (promoted ? 1.08 + (currentMusicManager(s)?.skill || 0) * 0.2 : 1),
       );
       if (promoted) m.fans += Math.floor((r.weeklyStreams - organic) * 0.005);
@@ -335,7 +345,9 @@ export function advanceMusic(s) {
     r.totalStreams += r.weeklyStreams;
     const baseGross = r.weeklyStreams * 0.002 * musicReleaseShare(s, r.id);
     recordProducerRoyalty(s, r.id, baseGross);
-    const gross = round(baseGross * musicRightsShare(s, r.id) * creativeRoyaltyFactor(s, r.id));
+    const gross = round(
+      baseGross * musicRightsShare(s, r.id) * creativeRoyaltyFactor(s, r.id),
+    );
     let earned = m.label ? round(gross * m.label.share) : gross;
     if (m.label?.unrecouped > 0) {
       const recoup = Math.min(earned, m.label.unrecouped);

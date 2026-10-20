@@ -34,7 +34,8 @@ export const MUSIC_MANAGERS = [
     skill: 0.3,
   },
 ];
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100;
 const log = (s, text) => {

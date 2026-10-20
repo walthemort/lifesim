@@ -1,12 +1,22 @@
+import { lifePlanningScreen } from "./simulation/planning-screens.js";
+import { estateQuote } from "./simulation/legacy.js";
+import { economicWorldScreen } from "./simulation/economic-screens.js";
 import { creativeStudioScreen } from "./simulation/creative-screens.js";
 import { raceEngineeringScreen } from "./simulation/racing-screens.js";
 import { detailedSportScreen } from "./simulation/sport-screens.js";
 import { businessSimulationScreen } from "./simulation/business-screens.js";
 import { professionalScreen } from "./simulation/professional-screens.js";
 import { retailScreen } from "./retail-screens.js";
-import { educationScreen, healthScreen, socialLifeScreen } from "./simulation/screens.js";
+import {
+  educationScreen,
+  healthScreen,
+  socialLifeScreen,
+} from "./simulation/screens.js";
 import { simulationCommand } from "./simulation/index.js";
-import { mobilityScreen, homeDesignScreen } from "./simulation/ownership-screens.js";
+import {
+  mobilityScreen,
+  homeDesignScreen,
+} from "./simulation/ownership-screens.js";
 import { vehicleFinanceQuote, renovationQuote } from "./simulation/index.js";
 import { RETAIL_BUSINESSES, RETAIL_CATEGORIES } from "./retail-data.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
@@ -621,6 +631,8 @@ const nav = [
   ["sport-lab", "football", "Inside your sport"],
   ["race-engineering", "flag", "Race engineering"],
   ["creative-production", "spark", "Creative production"],
+  ["economic-world", "chart", "Economy & resilience"],
+  ["life-planning", "users", "Legal & family affairs"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -842,6 +854,8 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  "life-planning": () => lifePlanningScreen(state, ui()),
+  "economic-world": () => economicWorldScreen(state, ui()),
   "creative-production": () => creativeStudioScreen(state, ui()),
   "race-engineering": () => raceEngineeringScreen(state, ui()),
   "sport-lab": () => detailedSportScreen(state, ui()),
@@ -940,7 +954,7 @@ for (const id of [
 }
 function render() {
   app.innerHTML = displayDates(
-    `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span>${view !== "debug" ? '<button class="button secondary" data-view="debug">God mode</button>' : ""}</div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
+    `${sidebar()}<div class="workspace">${header()}<main id="main">${storageWarning ? `<div class="info-banner warning">${e(storageWarning)}</div>` : ""}${state.debug.used ? `<div class="info-banner warning sandbox-banner">${icon("settings")}<span>Sandbox life · Debug ${state.debug.enabled ? "enabled" : "previously used"}</span>${view !== "debug" ? '<button class="button secondary" data-view="debug">God mode</button>' : ""}</div>` : ""}${state.ended ? `<div class="info-banner">${icon("spark")}<span>Your life story is complete at age ${age(state)}, with a net worth of ${money(netWorth(state))}.</span><button class="button secondary" data-view="life-planning">Review estate & heirs</button><button class="button primary" data-action="new-game">Start a new life</button></div>` : ""}${pages[view]()}<footer><span>One life. Make it yours.</span><span>${storageWarning ? "Export to keep your progress" : "Progress saved on this device"} <span class="live-dot"></span></span></footer></main></div>`,
     state,
   );
   const main = document.querySelector("#main");
@@ -968,27 +982,94 @@ function render() {
   }
   const footer = main.querySelector(":scope > footer");
   const detailed = {
-    childhood: ["school-life", "School record", "Subjects, teachers, admissions and support."],
-    career: ["school-life", "Subject entrance records", "School results and adult catch-up classes."],
-    ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
-    relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
-    family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
-    music: ["creative-production", "Creative production", "Composition rights, videos, group agreements and audiences."],
-    social: ["creative-production", "Audience & production team", "Live communities, audience metrics and support staff."],
-    sports: ["sport-lab", "Inside your sport", "Passing, possessions, tournament draws and boxing."],
-    company: ["business-operations", "Business operations", "Named staff, supplies, investors and branches."],
-    teams: ["business-operations", "Boardroom & specialist clubs", "Diligence, matchday stands and more ownership formats."],
-    housing: ["home-design", "Rooms & renovations", "Furnish your space and manage building work."],
+    childhood: [
+      "school-life",
+      "School record",
+      "Subjects, teachers, admissions and support.",
+    ],
+    career: [
+      "school-life",
+      "Subject entrance records",
+      "School results and adult catch-up classes.",
+    ],
+    ageing: [
+      "health-record",
+      "Medical record",
+      "Appointments, care plans, sleep and recovery.",
+    ],
+    relationships: [
+      "social-life",
+      "Connected life",
+      "Specific memories, promises and shared plans.",
+    ],
+    family: [
+      "social-life",
+      "Extended family & ambitions",
+      "In-laws, blended families and independent children.",
+    ],
+    crime: [
+      "life-planning",
+      "Legal & family affairs",
+      "Investigations, hearings and supervised release.",
+    ],
+    investments: [
+      "economic-world",
+      "Economy & resilience",
+      "Earnings, corporate actions, crypto custody and household budgets.",
+    ],
+    banking: [
+      "economic-world",
+      "Budget & debt planning",
+      "Real cash reviews and court-supervised insolvency.",
+    ],
+    music: [
+      "creative-production",
+      "Creative production",
+      "Composition rights, videos, group agreements and audiences.",
+    ],
+    social: [
+      "creative-production",
+      "Audience & production team",
+      "Live communities, audience metrics and support staff.",
+    ],
+    sports: [
+      "sport-lab",
+      "Inside your sport",
+      "Passing, possessions, tournament draws and boxing.",
+    ],
+    company: [
+      "business-operations",
+      "Business operations",
+      "Named staff, supplies, investors and branches.",
+    ],
+    teams: [
+      "business-operations",
+      "Boardroom & specialist clubs",
+      "Diligence, matchday stands and more ownership formats.",
+    ],
+    housing: [
+      "home-design",
+      "Rooms & renovations",
+      "Furnish your space and manage building work.",
+    ],
   }[view];
   if (detailed) {
     const shortcut = `<section class="panel" data-detailed-shortcut><h3>${detailed[1]}</h3><p>${detailed[2]}</p><button class="button primary" data-view="${detailed[0]}">Open ${detailed[1].toLowerCase()}</button></section>`;
     const heading = main.querySelector(":scope > .page-title");
-    if (heading) heading.insertAdjacentHTML("afterend", shortcut); else footer.insertAdjacentHTML("beforebegin", shortcut);
+    if (heading) heading.insertAdjacentHTML("afterend", shortcut);
+    else footer.insertAdjacentHTML("beforebegin", shortcut);
   }
+  if (view === "family")
+    footer.insertAdjacentHTML(
+      "beforebegin",
+      `<section class="panel"><h3>Wills & family history</h3><p>Plan an estate and follow the next generation.</p><button class="button primary" data-view="life-planning">Open wills & family history</button></section>`,
+    );
   if (view === "career")
     footer.insertAdjacentHTML(
       "beforebegin",
-      `<section class="panel"><h3>Professional practice</h3><p>Cases, pupils, client mandates and real internal openings.</p><button class="button primary" data-view="professional">Open professional practice</button></section>` + careerCommitmentPanel() + workAssignmentScreen(state, ui()),
+      `<section class="panel"><h3>Professional practice</h3><p>Cases, pupils, client mandates and real internal openings.</p><button class="button primary" data-view="professional">Open professional practice</button></section>` +
+        careerCommitmentPanel() +
+        workAssignmentScreen(state, ui()),
     );
   if (view === "investments" && age(state) >= 12)
     footer.insertAdjacentHTML(
@@ -1077,7 +1158,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.17 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.18 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -1174,8 +1255,22 @@ document.addEventListener("click", (event) => {
   const id = button.dataset.id;
   switch (button.dataset.action) {
     case "simulation-confirm": {
-      try { if (update((s) => simulationCommand(s, button.dataset.operation, JSON.parse(button.dataset.params)), "Agreement recorded.")) modal.close(); }
-      catch (error) { notify(error.message); }
+      try {
+        if (
+          update(
+            (s) =>
+              simulationCommand(
+                s,
+                button.dataset.operation,
+                JSON.parse(button.dataset.params),
+              ),
+            "Agreement recorded.",
+          )
+        )
+          modal.close();
+      } catch (error) {
+        notify(error.message);
+      }
       break;
     }
     case "profession-current": {
@@ -1622,7 +1717,8 @@ document.addEventListener("click", (event) => {
             startingYear: Number(
               modal.querySelector('[name="startingYear"]').value,
             ),
-            historical: modal.querySelector('[name="historical"]')?.checked || false,
+            historical:
+              modal.querySelector('[name="historical"]')?.checked || false,
           }),
         );
       } catch (error) {
@@ -1775,7 +1871,10 @@ document.addEventListener("click", (event) => {
       window.scrollTo({ top: 0 });
       break;
     case "debug-birthday":
-      update((s) => debugAdvance(s, 52 - (s.week % 52)), "Birthday reached.");
+      update(
+        (s) => debugAdvance(s, 52 - ((s.week - (s.ageEpochWeek || 0)) % 52)),
+        "Birthday reached.",
+      );
       break;
     case "debug-time":
       update((s) => debugAdvance(s, Number(id)), "Time simulated.");
@@ -2467,6 +2566,25 @@ document.addEventListener("click", (event) => {
     case "meet":
       update(meet, "You met someone new.");
       break;
+    case "export-parent-life": {
+      const snapshot = state.simulation.legacy.previousLife;
+      if (!snapshot) break;
+      if (isNativeApp)
+        void shareNativeSave(snapshot, "lifesim-previous-life.json").catch(
+          (error) => notify(error.message),
+        );
+      else {
+        const url = URL.createObjectURL(
+            new Blob([snapshot], { type: "application/json" }),
+          ),
+          link = document.createElement("a");
+        link.href = url;
+        link.download = "lifesim-previous-life.json";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      break;
+    }
     case "export": {
       const blob = new Blob([JSON.stringify(state, null, 2)], {
           type: "application/json",
@@ -2488,14 +2606,51 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("submit", (event) => {
-  if (event.target.dataset.form === "simulation-action" && ["vehicle-finance", "renovate"].includes(event.target.dataset.operation)) {
+  if (
+    event.target.dataset.form === "simulation-action" &&
+    event.target.dataset.operation === "heir"
+  ) {
     event.preventDefault();
-    const operation = event.target.dataset.operation, params = Object.fromEntries(new FormData(event.target));
+    const params = Object.fromEntries(new FormData(event.target)),
+      q = estateQuote(state),
+      child = state.family.children.find((c) => c.id === params.child),
+      amount = q.distributions.find((d) => d.id === params.child)?.amount || 0;
+    if (!child || !state.ended) {
+      notify("Choose an existing adult heir after this life ends.");
+      return;
+    }
+    dialog(
+      `<h2>Continue as ${e(child.name)}?</h2><p>The executor will sell personal assets, settle ${money(q.debts)} liabilities and ${money(q.tax)} estate tax, then allocate ${money(amount)} to this heir. Younger beneficiaries retain their funds in the specified trust.</p><p>The world date and market history continue. Personal contracts and qualifications stay with the completed life. Its full save will remain available to export in Family history.</p><button class="button primary full-width" data-action="simulation-confirm" data-operation="heir" data-params="${e(JSON.stringify(params))}">Confirm estate settlement & continue</button>`,
+    );
+    return;
+  }
+  if (
+    event.target.dataset.form === "simulation-action" &&
+    ["vehicle-finance", "renovate"].includes(event.target.dataset.operation)
+  ) {
+    event.preventDefault();
+    const operation = event.target.dataset.operation,
+      params = Object.fromEntries(new FormData(event.target));
     try {
-      const q = operation === "vehicle-finance" ? vehicleFinanceQuote(state, params.vehicle, params.kind) : renovationQuote(state, params.property, params.type, params.contractor);
-      const terms = operation === "vehicle-finance" ? `<p>Price ${money(q.price)} · initial payment ${money(q.deposit)} plus $100 setup.</p><p>${money(q.payment)}/week for ${q.term} weeks. ${params.kind === "finance" ? `Secured principal ${money(q.principal)} at 7% APR; repay before sale.` : "Lease vehicles are not owned. Early exit costs 25% of remaining payments plus excess mileage."}</p><p>Keep ${money(q.payment * 12)} in cash after the initial payment. ${q.eligible ? "Current income, tenure, credit and reserve checks pass." : "Current income, tenure, credit or reserve requirements are not met."}</p>` : `<p>Contract quote ${money(q.price)} · deposit ${money(q.deposit)} plus ${money(q.permit)} approval/inspection fee.</p><p>${q.weeks} delivered stages, normally ${money(q.installment)} per stage. Delays and permit refusal are possible. Unused pre-approval deposits are refunded after refusal; application fees remain spent.</p>`;
-      dialog(`<h2>Review ${operation === "vehicle-finance" ? "vehicle agreement" : "building contract"}</h2>${terms}<button class="button primary full-width" data-action="simulation-confirm" data-operation="${operation}" data-params="${e(JSON.stringify(params))}" ${operation === "vehicle-finance" && !q.eligible ? "disabled" : ""}>Confirm agreement & initial payment</button>`);
-    } catch (error) { notify(error.message); }
+      const q =
+        operation === "vehicle-finance"
+          ? vehicleFinanceQuote(state, params.vehicle, params.kind)
+          : renovationQuote(
+              state,
+              params.property,
+              params.type,
+              params.contractor,
+            );
+      const terms =
+        operation === "vehicle-finance"
+          ? `<p>Price ${money(q.price)} · initial payment ${money(q.deposit)} plus $100 setup.</p><p>${money(q.payment)}/week for ${q.term} weeks. ${params.kind === "finance" ? `Secured principal ${money(q.principal)} at 7% APR; repay before sale.` : "Lease vehicles are not owned. Early exit costs 25% of remaining payments plus excess mileage."}</p><p>Keep ${money(q.payment * 12)} in cash after the initial payment. ${q.eligible ? "Current income, tenure, credit and reserve checks pass." : "Current income, tenure, credit or reserve requirements are not met."}</p>`
+          : `<p>Contract quote ${money(q.price)} · deposit ${money(q.deposit)} plus ${money(q.permit)} approval/inspection fee.</p><p>${q.weeks} delivered stages, normally ${money(q.installment)} per stage. Delays and permit refusal are possible. Unused pre-approval deposits are refunded after refusal; application fees remain spent.</p>`;
+      dialog(
+        `<h2>Review ${operation === "vehicle-finance" ? "vehicle agreement" : "building contract"}</h2>${terms}<button class="button primary full-width" data-action="simulation-confirm" data-operation="${operation}" data-params="${e(JSON.stringify(params))}" ${operation === "vehicle-finance" && !q.eligible ? "disabled" : ""}>Confirm agreement & initial payment</button>`,
+      );
+    } catch (error) {
+      notify(error.message);
+    }
     return;
   }
   if (event.target.id === "loan-quote-form") {
@@ -2512,7 +2667,8 @@ document.addEventListener("submit", (event) => {
     return;
   }
   const forms = {
-    "simulation-action": (s, data, form) => simulationCommand(s, form.dataset.operation, Object.fromEntries(data)),
+    "simulation-action": (s, data, form) =>
+      simulationCommand(s, form.dataset.operation, Object.fromEntries(data)),
     "sport-identity": (s, data, form) =>
       setSportRole(s, form.dataset.path, data.get("role")),
     "sport-block": (s, data, form) =>
@@ -2954,7 +3110,7 @@ document.addEventListener("change", async (event) => {
     const file = event.target.files[0];
     if (!file) return;
     try {
-      if (file.size > 1000000) throw new Error("Save file is too large.");
+      if (file.size > 4000000) throw new Error("Save file is too large.");
       const imported = restoreGame(await file.text());
       dialog(
         `<div class="eyebrow">IMPORT SAVE</div><h2>Continue ${e(imported.name)}’s story?</h2><p>Age ${age(imported)}, week ${imported.week}, net worth ${money(netWorth(imported))}. This replaces your current progress.</p><button class="button primary full-width" id="confirm-import">Replace current save</button>`,

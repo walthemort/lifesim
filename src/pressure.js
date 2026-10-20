@@ -1,3 +1,4 @@
+import { simulationMessages } from "./simulation/messages.js";
 import { availableCash } from "./world.js";
 import { careerPathReason, assertCareerPath } from "./career-commitment.js";
 import { spendTime, calendarForecast } from "./calendar.js";
@@ -11,7 +12,7 @@ import {
 } from "./pressure-effects.js";
 export { PERFORMANCE_CHOICES, fixtureContext } from "./pressure-effects.js";
 const sports = Object.keys(PERFORMANCE_CHOICES),
-  age = (s) => s.startAge + Math.floor(s.week / 52),
+  age = (s) => s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n)),
   round = (n) => Math.round(n * 100) / 100;
 const actor = (s, path) => (path === "football" ? s.football : s.sports[path]);
@@ -522,6 +523,8 @@ function sources(s) {
         o.expiresWeek,
       );
   }
+  for (const m of simulationMessages(s))
+    push("career-task", m.id, m.title, m.body, m.view, m.deadline);
   return result;
 }
 export function refreshInbox(s) {
@@ -902,6 +905,12 @@ export function validatePressure(s) {
           "teams",
           "company",
           "investments",
+          "health-record",
+          "professional",
+          "business-operations",
+          "life-planning",
+          "economic-world",
+          "creative-production",
         ].includes(m.view) ||
         !int(m.deadline) ||
         !int(m.createdWeek, 0, s.week) ||

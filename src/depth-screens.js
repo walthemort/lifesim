@@ -23,7 +23,8 @@ const names = {
 };
 const actor = (s, id) => (id === "football" ? s.football : s.sports[id]);
 const blocked = (s) => !s.actions || s.event || s.ended;
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 export function contractTermsFragment(s, sector, id, u) {
   const { e, money } = u,
     t = contractProposal(s, sector, id);

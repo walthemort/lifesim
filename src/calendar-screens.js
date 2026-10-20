@@ -1,4 +1,5 @@
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 import { calendarForecast, TIME_BLOCKS } from "./calendar.js";
 import { compatibility, CHILD_CLUBS, childExtraCosts } from "./connections.js";
 import { promotionCandidate } from "./careers.js";
@@ -57,7 +58,8 @@ export function connectionsScreen(s, u) {
     })
     .join("")}</div>`;
 }
-const ageOf = (s, p) => s.startAge + Math.floor(s.week / 52) + p.ageOffset;
+const ageOf = (s, p) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52) + p.ageOffset;
 export function workplaceScreen(s, u) {
   const { panelHeading, e, money } = u,
     w = s.workLife,

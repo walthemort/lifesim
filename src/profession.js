@@ -1,3 +1,4 @@
+import { marketVolume } from "./simulation/effects.js";
 import {
   availableCash,
   jobDefinition,
@@ -37,7 +38,8 @@ import { assertCareerPath, activeCareerPath } from "./career-commitment.js";
 export * from "./career-commitment.js";
 export * from "./career-style.js";
 export * from "./profession-data.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n)),
   round = (n) => Math.round(n * 100) / 100;
 const actor = (s, path) => (path === "football" ? s.football : s.sports[path]);
@@ -728,7 +730,7 @@ export function placeLimitOrder(
     !["buy", "sell"].includes(side) ||
     !Number.isFinite(quantity) ||
     quantity <= 0 ||
-    quantity > m.volume ||
+    quantity > marketVolume(state, m) ||
     (!m.fractional && !Number.isSafeInteger(quantity)) ||
     (m.fractional &&
       Math.abs(quantity - Math.round(quantity * 1e6) / 1e6) > 1e-10) ||
@@ -1273,7 +1275,11 @@ export function validateProfession(s, markets) {
         !text(o.id, 100) ||
         !known(o.asset) ||
         !["buy", "sell"].includes(o.side) ||
-        !n(o.quantity, 0.000001, known(o.asset)?.volume) ||
+        !n(
+          o.quantity,
+          0.000001,
+          known(o.asset) ? marketVolume(s, known(o.asset)) : 0,
+        ) ||
         (!known(o.asset)?.fractional && !Number.isSafeInteger(o.quantity)) ||
         Math.abs(o.quantity - Math.round(o.quantity * 1e6) / 1e6) > 1e-10 ||
         !n(o.limit, 0.01, 1e9) ||

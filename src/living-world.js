@@ -78,7 +78,8 @@ export const CONTACT_CAREERS = {
     "Established tour player",
   ],
 };
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const hash = (text) =>
   [...text].reduce((n, c) => (n * 31 + c.charCodeAt(0)) >>> 0, 17);

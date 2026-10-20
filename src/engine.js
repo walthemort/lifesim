@@ -1,4 +1,16 @@
-import { founderShare, additionalBusinessValue } from './simulation/effects.js';
+import {
+  effectiveShares,
+  marketVolume,
+  institutionalUnits,
+  cryptoMarketFlow,
+  macroGrowth,
+  legacyTrustValue,
+  cryptoWalletValue,
+  cryptoDealingReason,
+  cryptoFee,
+  recordBudget,
+} from "./simulation/effects.js";
+import { founderShare, additionalBusinessValue } from "./simulation/effects.js";
 import {
   initializeExperience,
   prepareExperience,
@@ -217,9 +229,21 @@ export * from "./everyday.js";
 export * from "./debug.js";
 import { EXTRA_SHOP, STUDIO_ITEMS } from "./catalogue.js";
 import { RETAIL_PRODUCTS } from "./retail-data.js";
-import { initializeSimulation, advanceSimulation, validateSimulation } from "./simulation/index.js";
-import { simulationCosts, historicalAvailability, eraIndex, mobilityDebt } from "./simulation/effects.js";
-import { recordVehiclePurchase, settleVehicleSale } from "./simulation/mobility.js";
+import {
+  initializeSimulation,
+  advanceSimulation,
+  validateSimulation,
+} from "./simulation/index.js";
+import {
+  simulationCosts,
+  historicalAvailability,
+  eraIndex,
+  mobilityDebt,
+} from "./simulation/effects.js";
+import {
+  recordVehiclePurchase,
+  settleVehicleSale,
+} from "./simulation/mobility.js";
 import { removeHomeItem } from "./simulation/home.js";
 import { creditClientDividend } from "./simulation/professions.js";
 export * from "./simulation/index.js";
@@ -655,7 +679,8 @@ export const SHOP = [
 ];
 const clamp = (n, a = 0, b = 100) => Math.max(a, Math.min(b, n));
 const clone = (s) => structuredClone(s);
-export const age = (s) => s.startAge + Math.floor(s.week / 52);
+export const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 export const careerLevel = (s) => s.progress[s.career].level;
 export const salary = (s) =>
   s.globalLife?.crime.prison
@@ -668,7 +693,8 @@ export const salary = (s) =>
           ? Math.round(
               Math.min(
                 Math.max(0, s.company.cash),
-                Math.max(0, s.company.profit) * founderShare(s) *
+                Math.max(0, s.company.profit) *
+                  founderShare(s) *
                   (s.company.strategy === "reinvest"
                     ? 0
                     : s.company.strategy === "dividends"
@@ -679,7 +705,13 @@ export const salary = (s) =>
           : 0;
 export const expenses = (
   s,
-  { education = true, sports = true, properties = true, banking = true, simulation = true } = {},
+  {
+    education = true,
+    sports = true,
+    properties = true,
+    banking = true,
+    simulation = true,
+  } = {},
 ) =>
   personalLivingCosts(
     s,
@@ -717,7 +749,10 @@ export const netWorth = (s) =>
   bankNetWorth(s) +
   (s.workLife?.pension || 0) +
   portfolioValue(s) +
-  (s.company?.value || 0) * founderShare(s) + additionalBusinessValue(s) +
+  cryptoWalletValue(s) +
+  legacyTrustValue(s) +
+  (s.company?.value || 0) * founderShare(s) +
+  additionalBusinessValue(s) +
   privateOwnershipValue(s) +
   collectibleValue(s) +
   SHOP.filter(
@@ -740,6 +775,8 @@ export function createGame({
   startingYear = 2026,
   historical = false,
   age: startAge = 0,
+  worldWeek = 0,
+  ageEpochWeek = 0,
   footballPosition = "Midfielder",
   city = "London",
   country: countryCode = null,
@@ -749,6 +786,14 @@ export function createGame({
   familyBackground = "comfortable",
   seed = Date.now() >>> 0,
 } = {}) {
+  if (
+    !Number.isInteger(worldWeek) ||
+    worldWeek < 0 ||
+    !Number.isInteger(ageEpochWeek) ||
+    ageEpochWeek < 0 ||
+    ageEpochWeek > worldWeek
+  )
+    throw new Error("Invalid world clock for character creation.");
   if (
     !Number.isInteger(Number(startAge)) ||
     Number(startAge) < 0 ||
@@ -772,6 +817,7 @@ export function createGame({
     startingYear: Number(startingYear),
     name: String(name).trim().slice(0, 32) || "Alex Morgan",
     startAge: Number(startAge),
+    ageEpochWeek,
     city:
       knownCity(city) && (!countryCode || validPlace(countryCode, city))
         ? city
@@ -780,7 +826,7 @@ export function createGame({
       ? trait
       : "Ambitious",
     career: "office",
-    week: 0,
+    week: worldWeek,
     money: 12500,
     health: 85,
     energy: 80,
@@ -828,7 +874,7 @@ export function createGame({
     seed,
     event: null,
     log: [],
-    history: [{ week: 0, value: 12500 }],
+    history: [{ week: worldWeek, value: 12500 }],
     teamStrategy: "balanced",
     teams: {},
     company: null,
@@ -846,7 +892,7 @@ export function createGame({
   }
   const background =
     ["none", "school", "business-degree"].includes(education) &&
-    (education !== "business-degree" || s.startAge >= 21)
+    (education !== "business-degree" || age(s) >= 21)
       ? education
       : "school";
   initializeWorld(s, { background });
@@ -869,11 +915,11 @@ export function createGame({
   initializeContracts(s);
   initializeMilestones(s);
   initializeLivingWorld(s);
-  if (s.startAge < 12) {
+  if (age(s) < 12) {
     s.money = 0;
     for (const k of Object.keys(s.skills))
       s.skills[k] = ["athletics", "charisma", "empathy"].includes(k) ? 5 : 0;
-  } else if (s.startAge < 18) s.money = 500;
+  } else if (age(s) < 18) s.money = 500;
   s.tradeVolumes = Object.fromEntries(MARKETS.map((m) => [m.id, 0]));
   s.history[0].value = netWorth(s);
   initializeIdentity(s);
@@ -884,7 +930,8 @@ export function createGame({
   initializeExperience(s);
   initializeProfession(s);
   initializeSimulation(s);
-  if (typeof historical !== "boolean") throw new Error("Choose whether historical-world rules are enabled.");
+  if (typeof historical !== "boolean")
+    throw new Error("Choose whether historical-world rules are enabled.");
   s.simulation.era.enabled = historical;
   if (historical) {
     const scale = eraIndex(s);
@@ -893,7 +940,8 @@ export function createGame({
       p.wealth = Math.round(p.wealth * scale * 100) / 100;
       p.weeklyPay = Math.round(p.weeklyPay * scale * 100) / 100;
     }
-    for (const [id, p] of Object.entries(s.simulation.education.parents)) p.lastPay = s.connections.profiles[id]?.weeklyPay || 0;
+    for (const [id, p] of Object.entries(s.simulation.education.parents))
+      p.lastPay = s.connections.profiles[id]?.weeklyPay || 0;
     s.history[0].value = netWorth(s);
   }
   addLog(
@@ -1003,19 +1051,37 @@ export function invest(state, id, quantity) {
     -quantity > state.holdings[id] - orderSharesReserved(state, id) + 1e-9
   )
     throw new Error("You cannot sell more units than you own.");
-  if ((state.tradeVolumes[id] || 0) + Math.abs(quantity) > m.volume)
+  const dealingReason = cryptoDealingReason(state, m);
+  if (dealingReason) throw new Error(dealingReason);
+  const fee = cryptoFee(state, m, cost);
+  if (quantity > 0 && availableCash(state) < cost + fee)
+    throw new Error("Cover the purchase and exchange fee.");
+  if (
+    (state.tradeVolumes[id] || 0) + Math.abs(quantity) >
+    marketVolume(state, m)
+  )
     throw new Error(
       "This order exceeds the remaining weekly market liquidity. Arrange a block acquisition for a large company stake.",
     );
   const issuer = BUSINESSES.find((b) => b.stock === id);
-  if (issuer && state.holdings[id] + quantity > issuer.shares)
+  if (
+    issuer &&
+    state.holdings[id] + quantity + institutionalUnits(state, id) >
+      effectiveShares(state, issuer)
+  )
     throw new Error("There are not that many shares outstanding.");
   const s = clone(state);
-  s.money = Math.round((s.money - cost) * 100) / 100;
-  recordTrade(s, id, quantity, Math.abs(cost), s.holdings[id]);
+  s.money = Math.round((s.money - cost - fee) * 100) / 100;
+  recordTrade(
+    s,
+    id,
+    quantity,
+    Math.abs(cost) + (quantity > 0 ? fee : -fee),
+    s.holdings[id],
+  );
   s.holdings[id] = Math.round((s.holdings[id] + quantity) * 1e6) / 1e6;
   s.tradeVolumes[id] = (s.tradeVolumes[id] || 0) + Math.abs(quantity);
-  if (issuer && s.holdings[id] / issuer.shares <= 0.5)
+  if (issuer && s.holdings[id] / effectiveShares(s, issuer) <= 0.5)
     s.businessResults[issuer.id].strategy = "balanced";
   addLog(
     s,
@@ -1034,7 +1100,12 @@ export function buy(state, id) {
       "Clubs and companies require a sale opportunity or an accepted acquisition offer.",
     );
   if (state.inventory.includes(id)) throw new Error("You already own this.");
-  if (state.simulation?.mobility.contracts.some((c) => c.vehicle === id && c.kind === "lease" && c.status === "active")) throw new Error("Return the current lease before buying this model.");
+  if (
+    state.simulation?.mobility.contracts.some(
+      (c) => c.vehicle === id && c.kind === "lease" && c.status === "active",
+    )
+  )
+    throw new Error("Return the current lease before buying this model.");
   const requirements = equipmentRequirements(state, id);
   if (requirements.length)
     throw new Error(`Requires: ${requirements.join(", ")}.`);
@@ -1049,6 +1120,7 @@ export function buy(state, id) {
     throw new Error("Not enough available cash.");
   const s = clone(state);
   s.money -= purchasePrice;
+  recordBudget(s, "shopping", -purchasePrice, item.name);
   if (s.realWorld) s.realWorld.economy.purchaseBasis[id] = purchasePrice;
   s.inventory.push(id);
   recordVehiclePurchase(s, id);
@@ -1725,6 +1797,12 @@ export function advanceWeek(state) {
     { deduction: pensionDue(s) + agentCommission(s) },
   );
   s.money -= costs;
+  recordBudget(
+    s,
+    "essentials",
+    -costs,
+    "Basic weekly living and ownership costs",
+  );
   teenWages(s);
   advanceSchoolLife(s);
   if (age(s) < 12) childhoodWeek(s);
@@ -1771,10 +1849,15 @@ export function advanceWeek(state) {
     const issuer = BUSINESSES.find((b) => b.stock === m.id);
     const fundamentals = issuer
       ? (s.businessResults[issuer.id].profit * 0.7) /
-        (s.market[m.id] * issuer.shares)
+        (s.market[m.id] * effectiveShares(s, issuer))
       : 0;
     const movement =
-      macro + (random(s) * 2 - 1) * m.volatility + m.drift + fundamentals;
+      macro +
+      macroGrowth(s, "market") +
+      cryptoMarketFlow(s, m) +
+      (random(s) * 2 - 1) * m.volatility +
+      m.drift +
+      fundamentals;
     s.market[m.id] = Math.max(
       1,
       Math.round(s.market[m.id] * (1 + movement) * 100) / 100,
@@ -1922,6 +2005,13 @@ export function restoreGame(raw) {
     throw new Error(
       "This save file is invalid or from an unsupported version.",
     );
+  if (
+    s.ageEpochWeek !== undefined &&
+    (!Number.isInteger(s.ageEpochWeek) ||
+      s.ageEpochWeek < 0 ||
+      s.ageEpochWeek > s.week)
+  )
+    throw new Error("Invalid character birth clock.");
   const needsSimulation = s.version < 17;
   const needsProfession = s.version < 16;
   const needsExperience = s.version < 15;
@@ -2065,7 +2155,7 @@ export function restoreGame(raw) {
       (m) =>
         !Number.isFinite(s.tradeVolumes[m.id]) ||
         s.tradeVolumes[m.id] < 0 ||
-        s.tradeVolumes[m.id] > m.volume,
+        s.tradeVolumes[m.id] > marketVolume(s, m),
     )
   )
     throw new Error("Invalid market liquidity data.");
@@ -2326,7 +2416,7 @@ export function createCustomCharacter(current, options = {}) {
     if (Object.keys(cheats).length) s = debugEdit(s, cheats);
   }
   // Birthplace is immutable history, independent of the household's current home.
-  if (s.startAge === 0)
+  if (age(s) === 0)
     s.characterLife.memories[0].text = `Born in ${s.characterLife.profile.birthplace}.`;
   s.history[0].value = netWorth(s);
   return s;

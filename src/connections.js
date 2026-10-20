@@ -3,7 +3,8 @@ import { routePartnerContribution } from "./realism.js";
 import { relativeAlive } from "./life-course.js";
 import { availableCash, rng } from "./world.js";
 import { spendTime, requiredHours } from "./calendar.js";
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
 const log = (s, text, kind = "info") => {
   s.log.unshift({ week: s.week, text, kind });
@@ -730,8 +731,20 @@ export function validateConnections(s) {
     ["trust", "mood"].every((k) => n(p[k], 0, 100)) &&
     n(
       p.ageOffset,
-      r?.role === "Parent" ? 18 : r?.role === "Sibling" ? -30 : -2,
-      r?.role === "Parent" ? 60 : r?.role === "Sibling" ? 30 : 2,
+      r?.role === "Family friend"
+        ? -100
+        : r?.role === "Parent"
+          ? 18
+          : r?.role === "Sibling"
+            ? -30
+            : -2,
+      r?.role === "Family friend"
+        ? 150
+        : r?.role === "Parent"
+          ? 100
+          : r?.role === "Sibling"
+            ? 30
+            : 2,
     ) &&
     typeof p.city === "string" &&
     typeof p.job === "string" &&

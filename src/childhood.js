@@ -6,7 +6,8 @@ import { ensurePeople } from "./connections.js";
 import { spendTime } from "./calendar.js";
 import { careerPathReason } from "./career-commitment.js";
 
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   clamp = (n) => Math.max(0, Math.min(100, n));
 const log = (s, text) => {
   s.log.unshift({ week: s.week, text, kind: "milestone" });
@@ -133,7 +134,7 @@ const MILESTONES = [
 ];
 export function initializeChildhood(s, { legacy = false } = {}) {
   s.childhood = {
-    startedAtBirth: !legacy && s.startAge === 0,
+    startedAtBirth: !legacy && age(s) === 0,
     lastAge: age(s),
     development: {
       movement: age(s) < 5 ? 5 : 60,
@@ -536,9 +537,7 @@ export function childhoodEvent(s) {
     (e) => age(s) >= e.minAge && age(s) <= e.maxAge,
   );
   return choices.length
-    ? structuredClone(
-        choices[(Math.floor(s.week / 52) + s.startAge) % choices.length],
-      )
+    ? structuredClone(choices[age(s) % choices.length])
     : null;
 }
 export function resolveChildhoodEffects(s, event, option) {

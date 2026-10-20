@@ -8,7 +8,8 @@ import { receiveIncome } from "./banking.js";
 import { assertCareerPath } from "./career-commitment.js";
 import { agreedJointShare } from "./simulation/social.js";
 
-const age = (s) => s.startAge + Math.floor(s.week / 52),
+const age = (s) =>
+    s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52),
   round = (n) => Math.round(n * 100) / 100,
   clamp = (n) => Math.max(0, Math.min(100, n));
 const note = (s, text, kind = "info") => {

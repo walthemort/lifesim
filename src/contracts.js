@@ -14,7 +14,8 @@ export const ENDORSEMENT_BRANDS = [
   { name: "Signal Audio", category: "equipment" },
   { name: "Northline Devices", category: "technology" },
 ];
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const round = (n) => Math.round(n * 100) / 100;
 const actor = (s, id) => (id === "football" ? s.football : s.sports[id]);
 function remember(s, text) {

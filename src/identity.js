@@ -188,7 +188,8 @@ export const ROUTINE_FOCUS = {
   network: "Communication & connections",
 };
 const sports = ["football", "racing", "basketball", "tennis"];
-const age = (s) => s.startAge + Math.floor(s.week / 52);
+const age = (s) =>
+  s.startAge + Math.floor((s.week - (s.ageEpochWeek || 0)) / 52);
 const clamp = (n) => Math.max(0, Math.min(100, n));
 const round = (n) => Math.round(n * 100) / 100;
 const actor = (s, path) => (path === "football" ? s.football : s.sports[path]);
@@ -335,7 +336,7 @@ export function initializeIdentity(s, { legacy = false } = {}) {
       "school",
     ][Math.floor(rng(s.characterLife) * 6)];
   if (!legacy) {
-    if (s.startAge === 0) remember(s, `Born in ${s.city}.`, "birth");
+    if (age(s) === 0) remember(s, `Born in ${s.city}.`, "birth");
     refreshLocalOffers(s);
   }
 }

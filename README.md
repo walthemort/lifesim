@@ -4,6 +4,19 @@ An iPhone-only, portrait life simulation with a Football Manager-inspired dashbo
 
 Sport & development keeps your active sporting path together. With no active career, browse sports in the sport bar; starting one locks the others until you leave. Leaving preserves development but does not grant entry qualifications for a new career. School, ordinary social accounts, shopping and passive investments remain life activities around your career.
 
+## v0.18: the connected simulation expansion
+
+All **100 planned additions** have playable first implementations, tracked with mechanics and verification in [the simulation roadmap](docs/SIMULATION_ROADMAP.md).
+
+- **Growing up and living:** hidden aptitudes, subjects and teachers, admissions, support plans, family instability, lasting social memories and grievances, shared plans, blended families, independent children, medical records, appointments, treatment, sleep, nutrition and habits.
+- **Things you own:** real vehicle use, licences, inspections, condition, insurance claims, finance/leases, storage, contextual clothing, unique furnishing placements and funded renovation stages.
+- **Work and business:** role-specific clinical cases, wards, classes, engineering/trade/hospitality/legal delivery, separate client portfolios, real promotion openings, references, named specialists, suppliers, competitors, customers, diluted funding, diligence, board votes, branches, matchday stands and more club formats.
+- **Sport:** passing relationships, substitute minutes and discipline; basketball possessions, salaries and development games; proper tennis sets/tiebreaks, entries and rolling points; a supervised boxing pathway; funded karting, engineering feedback, practice/qualifying, lap reports, component wear, team orders, Super Licence points, reserve duties, endurance and rally.
+- **Creative careers:** composition and master shares, sample clearance, alternate recordings, group agreements, paid city routing, staged videos, local fans, recommendation signals, live communities and a paid production team whose proposals need approval.
+- **Consequences and generations:** economic cycles, actual earnings, splits that preserve units/basis/orders, crypto custody and exchange risk, reconciled budgets, court-supervised unsecured insolvency, investigations/hearings, parole and supervision, wills and trusts, and adult-heir continuation in the same world. The executor sells the previous character’s personal assets, pays obligations and tax, and distributes the remaining cash once. The previous full life can be exported.
+
+The new controls live in focused mobile workspaces linked from their existing categories. Most detailed models start when explicitly enabled. The same cash, calendar, custody, qualifications and one-active-path rules apply. These are compact fictional simulations; the update does not claim to reproduce every league, jurisdiction or historical era. Save schema 17 upgrades earlier lives additively and keeps a pre-update backup. Pro remains a local preview; there are no real-money purchases.
+
 ## v0.17: a city of shops
 
 - **Categories first, businesses second.** Shopping opens with Vehicles, Clothing, Property, Electronics, Home & living, Hobbies & wellbeing, Luxury & accessories, Experiences and Barbers & salons. The nine districts contain 41 fictional businesses, each with its own name, colour, storefront and stock. Breadcrumbs and district shortcuts let you visit another business without scrolling through unrelated products. Search, sorting and the owned filter stay inside the selected shop and reset when changing businesses.
@@ -56,7 +69,7 @@ Version 13 saves upgrade additively to version 14. An exact pre-v0.14 backup is 
 Use Node 22.12+ and a current Xcode compatible with Capacitor 8:
 
 ```sh
-npm ci
+npm ci --include=dev
 npm run ios:sync
 npm run ios:check
 npm run ios:open
@@ -83,7 +96,7 @@ Existing saves migrate additively to version 13. The browser keeps an exact orig
 Use Node.js 22.12+ (Node 24 is verified) and npm.
 
 ```sh
-npm ci
+npm ci --include=dev
 npm run dev
 ```
 
@@ -261,9 +274,10 @@ Engine tests cover youth finances, school graduation, sporting recruitment and l
 - `src/calendar-screens.js`: calendar, dating, workplace and expanded family screens.
 - `src/debug.js`: opt-in sandbox edits and audit history; time simulation stays in the engine.
 - `src/everyday-screens.js`: homes, family, hobbies, journal, and debug interfaces.
+- `src/simulation/`: the connected v0.18 domains, typed save validation, weekly hooks, explicit commands and focused mobile workspaces.
 - `src/style.css`: responsive interface and locally drawn illustrations.
 - `tests/`: engine and browser integration tests.
 
-This is a playable foundation with fictional employers, markets, platforms, courses, and licences. Recruitment, audience growth, creative earnings, and ownership have prerequisites, waiting periods, and uncertain outcomes. Matches, races, tournaments, music distribution, algorithms, staffing, and company operations use simplified models. Cities share one economy. Actual sports regulations, copyright/licensing administration, jurisdiction-specific tax and full banking/credit rules, legal tenancy and adoption procedures, insolvency, and private-business exits are not yet modeled.
+This is a playable foundation with fictional employers, markets, platforms, courses, and licences. Recruitment, audience growth, creative earnings, and ownership have prerequisites, waiting periods, and uncertain outcomes. Matches, races, tournaments, music distribution, algorithms, staffing, and company operations use simplified models. Cities use regional prices and the connected world cycle. Sports rulebooks, national legal/medical rules, copyright administration and international financial regulations remain simplified. Insolvency and estate liquidation are fictional court/executor models.
 
-Possible expansions include deeper squad management and transfers, business recruitment and product launches, private-business exits, relocation and distinct economies, deeper family histories, employee recruitment, product launches, and a larger event/item catalogue. Keep these systems connected to the existing life, time, and financial simulation.
+Further depth can build on the connected systems in [the 100-feature roadmap](docs/SIMULATION_ROADMAP.md), especially league-specific regulations, richer events and artwork.
