@@ -3,8 +3,16 @@ import * as health from "./health.js";
 import * as social from "./social.js";
 import * as mobility from "./mobility.js";
 import * as home from "./home.js";
+import * as work from "./professions.js";
 export function simulationCommand(s, operation, p = {}) {
   const actions = {
+    "professional-open": () => work.openProfessionalDesk(s),
+    "professional-case": () => work.newProfessionalCase(s),
+    "professional-practice": () => work.professionalPractice(s, p.method),
+    "specialise": () => work.beginSpecialisation(s, p.field),
+    "specialist-assessment": () => work.assessSpecialisation(s),
+    "client-trade": () => work.tradeForClient(s, p.client, p.asset, Number(p.amount)),
+    "internal-vacancy": () => work.reviewInternalVacancy(s),
     "fleet-start": () => mobility.startFleetManagement(s),
     "licence-lesson": () => mobility.licenceLesson(s, p.licence),
     "licence-exam": () => mobility.sitLicenceExam(s, p.licence),

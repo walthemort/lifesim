@@ -220,6 +220,7 @@ import { initializeSimulation, advanceSimulation, validateSimulation } from "./s
 import { simulationCosts, historicalAvailability, eraIndex, mobilityDebt } from "./simulation/effects.js";
 import { recordVehiclePurchase, settleVehicleSale } from "./simulation/mobility.js";
 import { removeHomeItem } from "./simulation/home.js";
+import { creditClientDividend } from "./simulation/professions.js";
 export * from "./simulation/index.js";
 import {
   initializeLife,
@@ -1779,6 +1780,7 @@ export function advanceWeek(state) {
     );
     if (m.yield && s.week % 13 === 0) {
       const perUnit = (s.market[m.id] * m.yield) / 4;
+      creditClientDividend(s, m.id, perUnit);
       const dividend = Math.round(s.holdings[m.id] * perUnit * 100) / 100;
       receiveIncome(s, dividend, "investment");
       s.market[m.id] = Math.max(

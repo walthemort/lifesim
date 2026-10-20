@@ -1,6 +1,7 @@
 import { onParentalLeave, leavePayFactor } from "./realism.js";
 import { personalityModifier } from "./personality.js";
 import { outfitSuitability } from "./simulation/effects.js";
+import { professionalPromotionReason, promotionCompetition } from "./simulation/professions.js";
 import {
   JOBS,
   TRACK_SKILLS,
@@ -136,6 +137,8 @@ export function promotionCandidate(s) {
   );
 }
 export function requestPromotion(state) {
+  const opening = professionalPromotionReason(state);
+  if (opening) throw new Error(opening);
   const j = promotionCandidate(state);
   if (!j)
     throw new Error(
@@ -301,7 +304,7 @@ export function advanceWorkLife(s) {
       eligible &&
       p.performance >= 70 &&
       rng(s) <
-        Math.min(0.92, 0.35 + p.performance * 0.003 + w.managerBond * 0.003)
+        Math.max(.02, Math.min(0.92, 0.35 + p.performance * 0.003 + w.managerBond * 0.003 + promotionCompetition(s)))
     ) {
       Object.assign(w.promotion, {
         status: "offer",

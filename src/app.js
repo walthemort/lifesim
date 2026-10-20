@@ -1,3 +1,4 @@
+import { professionalScreen } from "./simulation/professional-screens.js";
 import { retailScreen } from "./retail-screens.js";
 import { educationScreen, healthScreen, socialLifeScreen } from "./simulation/screens.js";
 import { simulationCommand } from "./simulation/index.js";
@@ -611,6 +612,7 @@ const nav = [
   ["social-life", "users", "Connected life"],
   ["garage", "car", "Garage & journeys"],
   ["home-design", "home", "Rooms & renovations"],
+  ["professional", "briefcase", "Professional practice"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -832,6 +834,7 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  professional: () => professionalScreen(state, ui()),
   "school-life": () => educationScreen(state, ui()),
   "health-record": () => healthScreen(state, ui()),
   "social-life": () => socialLifeScreen(state, ui()),
@@ -968,7 +971,7 @@ function render() {
   if (view === "career")
     footer.insertAdjacentHTML(
       "beforebegin",
-      careerCommitmentPanel() + workAssignmentScreen(state, ui()),
+      `<section class="panel"><h3>Professional practice</h3><p>Cases, pupils, client mandates and real internal openings.</p><button class="button primary" data-view="professional">Open professional practice</button></section>` + careerCommitmentPanel() + workAssignmentScreen(state, ui()),
     );
   if (view === "investments" && age(state) >= 12)
     footer.insertAdjacentHTML(

@@ -42,16 +42,16 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 38. Contextual clothing
 - [x] 39. Furnished rooms
 - [x] 40. Renovation projects
-- [ ] 41. Medical specialisation
-- [ ] 42. Nursing wards
-- [ ] 43. Teaching classes
-- [ ] 44. Engineering projects
-- [ ] 45. Trades businesses
-- [ ] 46. Hospitality operations
-- [ ] 47. Legal caseloads
-- [ ] 48. Professional investment clients
-- [ ] 49. Real promotion vacancies
-- [ ] 50. Employment references
+- [x] 41. Medical specialisation
+- [x] 42. Nursing wards
+- [x] 43. Teaching classes
+- [x] 44. Engineering projects
+- [x] 45. Trades businesses
+- [x] 46. Hospitality operations
+- [x] 47. Legal caseloads
+- [x] 48. Professional investment clients
+- [x] 49. Real promotion vacancies
+- [x] 50. Employment references
 - [ ] 51. Individual employees
 - [ ] 52. Supply chains
 - [ ] 53. Persistent competing businesses
@@ -110,3 +110,7 @@ Items 1–30 have implemented controls, persistent records and weekly consequenc
 ## Ownership batch
 
 Items 31–40 now have garage/journey/licence/finance/used-market and room/style/project workspaces. Verification: fifteen focused simulation tests and four phone-browser flows, including three phone widths and a quote-before-payment flow. Vehicle principal is deducted from net worth, liens clear on sale, lease returns retain penalties, deficiencies survive repossession, and claim payments require actual repair invoices. Earlier mileage is not invented. Furnishing placements retain their existing inventory value; renovations use staged costs and the real housing ledger.
+
+## Professional practice batch
+
+Items 41–50 have role-specific cases, ward staffing, individual learners, staged engineering/trade/hospitality/legal delivery, supervised specialisation, separate client portfolios and genuine internal vacancy checks. Ten focused simulation tests and two phone-browser flows passed. Client cost basis, withholding, mandates and market liquidity remain separate from personal assets. Department budgets are fictional employer budgets; they are not a player-owned business balance.

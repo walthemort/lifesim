@@ -18,6 +18,7 @@ import { beginEmployment } from "./careers.js";
 import { orderCashReserved } from "./profession-effects.js";
 import { assertCareerPath, careerPathReason } from "./career-commitment.js";
 import { eraIndex, subjectAdmissionReason, historicalJobReason } from "./simulation/effects.js";
+import { recordWorkReference, referenceModifier, creditClientDividend } from "./simulation/professions.js";
 
 // Employment, qualifications, and ownership share the same clock and cash balance.
 export const PROGRAMS = [
@@ -842,6 +843,7 @@ export function jobEligibility(s, vacancy) {
   if (!j) return { eligible: false, missing: ["Vacancy unavailable"] };
   const eraReason = historicalJobReason(s, j);
   if (eraReason) missing.push(eraReason);
+  if (s.simulation?.professions.active && j.track === "medicine" && j.level >= 3 && s.simulation.professions.specialisation?.status !== "certified") missing.push("completed supervised medical specialisation and final assessment");
   const locked = careerPathReason(s, j.track);
   if (locked) missing.push(locked);
   if (s.globalLife?.crime.prison) missing.push("release from custody");
@@ -912,6 +914,7 @@ export function acceptJobOffer(state, id) {
     throw new Error(
       "Sporting contracts must come through development and scouting.",
     );
+  recordWorkReference(s);
   clearPlayingContracts(s);
   s.employment = {
     jobId: j.id,
@@ -941,6 +944,7 @@ export function resignJob(state) {
   if (!state.employment)
     throw new Error("You do not have an employment contract.");
   const s = clone(state);
+  recordWorkReference(s);
   log(
     s,
     `Resigned from ${jobDefinition(s.employment.jobId).employer}. Your pay stops immediately.`,
@@ -1385,7 +1389,7 @@ function employmentTick(s) {
           surplus * 0.004 +
           s.skills.charisma * 0.002,
       );
-      if (rng(s) < Math.max(0.05, chance - publicHiringPenalty(s))) {
+      if (rng(s) < Math.max(0.05, chance - publicHiringPenalty(s) + referenceModifier(s, j.track))) {
         a.status = "offer";
         a.offeredPay = Math.round(
           j.pay *
@@ -1599,6 +1603,7 @@ function businessesTick(s) {
         Math.max(0, r.cash),
       );
       const dividend = round((distribution * stakePercent(s, b.id)) / 100);
+      if (b.stock) creditClientDividend(s, b.stock, distribution / b.shares);
       r.cash -= distribution;
       receiveIncome(s, dividend, "investment");
       r.periodProfit = 0;

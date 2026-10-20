@@ -25,6 +25,8 @@ export function act(state, { minAge = 6, cost = 0, hours = 2, energy = 0, label 
 export function once(s, records, key, interval = 1) {
   if (records[key] !== undefined && s.week - records[key] < interval) throw new Error("Wait for the next review before repeating this activity.");
   records[key] = s.week;
+  const keys = Object.keys(records).sort((a, b) => records[a] - records[b]);
+  for (const old of keys.slice(0, Math.max(0, keys.length - 256))) delete records[old];
 }
 export function text(value, max = 60) {
   if (typeof value !== "string" || !value.trim() || value.trim().length > max) throw new Error(`Enter text from one to ${max} characters.`);
@@ -37,4 +39,4 @@ export function bool(b) { if (typeof b !== "boolean") fail(); }
 export function one(value, choices) { if (!choices.includes(value)) fail(); }
 export function arr(a, max = 100) { if (!Array.isArray(a) || a.length > max) fail(); return a; }
 export function obj(o) { if (!o || typeof o !== "object" || Array.isArray(o)) fail(); return o; }
-export function stamps(o, week) { obj(o); if (Object.keys(o).length > 100) fail(); for (const [k, v] of Object.entries(o)) { str(k, 100); num(v, -5200, week, true); } }
+export function stamps(o, week) { obj(o); if (Object.keys(o).length > 256) fail(); for (const [k, v] of Object.entries(o)) { str(k, 100); num(v, -5200, week, true); } }
