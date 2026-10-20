@@ -3,6 +3,7 @@ export const PATH_NAMES = {
   racing: "Motorsport",
   basketball: "Basketball",
   tennis: "Tennis",
+  boxing: "Boxing",
   music: "Music",
   creator: "Content creation",
   business: "Founder",
@@ -18,6 +19,7 @@ export const PATH_NAMES = {
 };
 export const SPORT_PATHS = ["football", "racing", "basketball", "tennis"];
 export function activeCareerPath(s) {
+  if (["amateur", "professional"].includes(s.simulation?.sports.boxing.stage)) return "boxing";
   if (s.employment) return s.career;
   if (s.company && s.career === "business" && !s.profession?.company.delegated)
     return "business";

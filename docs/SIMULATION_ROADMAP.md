@@ -62,26 +62,26 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 58. Branches and franchises
 - [x] 59. Detailed stadium operations
 - [x] 60. More ownership formats
-- [ ] 61. Football passing relationships
-- [ ] 62. Meaningful substitute appearances
-- [ ] 63. Football discipline
-- [ ] 64. Basketball possessions
-- [ ] 65. Basketball roster economics
-- [ ] 66. Basketball development assignments
-- [ ] 67. Proper tennis scoring
-- [ ] 68. Rolling tennis rankings
-- [ ] 69. Tennis tournament entry
-- [ ] 70. Boxing pathway
-- [ ] 71. Itemised karting seasons
-- [ ] 72. Kart chassis and engine choices
-- [ ] 73. Engineering feedback
-- [ ] 74. Complete race weekends
-- [ ] 75. Lap-by-lap races
-- [ ] 76. Component lifetimes
-- [ ] 77. Team orders
-- [ ] 78. Super Licence qualification
-- [ ] 79. Reserve-driver duties
-- [ ] 80. Other motorsport disciplines
+- [x] 61. Football passing relationships
+- [x] 62. Meaningful substitute appearances
+- [x] 63. Football discipline
+- [x] 64. Basketball possessions
+- [x] 65. Basketball roster economics
+- [x] 66. Basketball development assignments
+- [x] 67. Proper tennis scoring
+- [x] 68. Rolling tennis rankings
+- [x] 69. Tennis tournament entry
+- [x] 70. Boxing pathway
+- [x] 71. Itemised karting seasons
+- [x] 72. Kart chassis and engine choices
+- [x] 73. Engineering feedback
+- [x] 74. Complete race weekends
+- [x] 75. Lap-by-lap races
+- [x] 76. Component lifetimes
+- [x] 77. Team orders
+- [x] 78. Super Licence qualification
+- [x] 79. Reserve-driver duties
+- [x] 80. Other motorsport disciplines
 - [ ] 81. Publishing and master rights
 - [ ] 82. Sample clearance
 - [ ] 83. Recording versions
@@ -118,3 +118,7 @@ Items 41–50 have role-specific cases, ward staffing, individual learners, stag
 ## Businesses and ownership batch
 
 Items 51–60 have named additional specialists, funded supply orders, persistent competitors and customer segments, diluted fundraising, dated diligence, delayed board votes, branches/franchises, additional matchday stands and three specialist ownership formats. Eight simulation tests and two phone-browser flows passed. New divisions are explicitly additional to existing base operations. Investor cash stays in company funds, founder equity scales net worth and distributions, and gates require scheduled home fixtures. Specialist clubs use compact fictional competitions; these do not claim to reproduce professional league rules.
+
+## Sport and race engineering batch
+
+Items 61–80 have persistent passing links, selected substitute minutes, suspensions, possession-based basketball reports, salary limits and development games, point-by-point tennis sets/tiebreaks and paid tournament entry, rolling rankings, supervised boxing progression, and funded race engineering. Sixteen focused simulation tests and three phone-browser flows passed. Race preparation feeds the same fixture classification and championship points. Karting escrow uses the actual parent/player payer and refunds unused funds; component wear follows sessions and laps. Formula, endurance and rally are compact fictional formats, not licensed rulebook reproductions. Three-season Super Licence points supplement existing course, experience and vacancy requirements.

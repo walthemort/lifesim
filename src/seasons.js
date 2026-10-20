@@ -1,3 +1,5 @@
+import { racingEntryReady, detailedRaceResult, racingLicenceReason } from './simulation/racing.js';
+import { sportSelection, detailedTeamMatch, detailedTennisResult, tennisEntryAllowed, basketballCapReason } from './simulation/sports.js';
 import { claimRivalSeat, rivalField, rivalName } from "./rivals.js";
 import {
   performanceBonus,
@@ -464,6 +466,8 @@ export function negotiateSportOffer(state, id, offerId, approach) {
   return s;
 }
 export function checkSportSigning(s, id, o) {
+  if (id === "racing" && o.jobId === "racing-4") { const reason = racingLicenceReason(s, "super-license"); if (reason) throw new Error(reason); }
+  if (id === "basketball") { const reason = basketballCapReason(s, o); if (reason) throw new Error(reason); }
   if (o.terms?.negotiation?.status === "pending")
     throw new Error(
       "Wait for the contract negotiation to finish before signing.",
@@ -630,7 +634,7 @@ function bonus(s, id, gross) {
 function result(s, id, path, f) {
   const p = actor(s, id),
     unfunded = sportFundingCost(s, id) > 0 && s.money < 0;
-  const selected =
+  let selected =
     path.blocked === "ready" &&
     path.trainedWeek === s.week &&
     !unfunded &&
@@ -645,6 +649,9 @@ function result(s, id, path, f) {
         sportChemistryBonus(s, id) +
         (p.contract.role === "starter" ? 8 : 0) >=
         55 + path.level * 10);
+  selected = sportSelection(s, id, selected, path.blocked === "ready" && path.trainedWeek === s.week && !unfunded && !p.injuryWeeks);
+  if (id === "tennis" && !tennisEntryAllowed(s, f)) selected = false;
+  if (id === "racing" && !racingEntryReady(s, f)) selected = false;
   const status = selected
     ? "played"
     : p.injuryWeeks
@@ -707,6 +714,8 @@ function result(s, id, path, f) {
         : Math.round(65 + strength(a) * 0.4 + rng(s) * 25);
       let homeGoals = hs,
         awayGoals = as;
+      const detailed = detailedTeamMatch(s, id, path, f, match, selected);
+      if (detailed) { homeGoals = detailed.home; awayGoals = detailed.away; }
       if (!football && homeGoals === awayGoals) homeGoals++;
       h.played++;
       a.played++;
@@ -744,7 +753,8 @@ function result(s, id, path, f) {
       p.reputation = clamp(p.reputation + (score >= 60 ? 0.22 : 0.04));
     }
   } else {
-    const field = path.table
+    const detailedRace = id === "racing" ? detailedRaceResult(s, f, selected, score) : null;
+    const field = detailedRace || path.table
       .map((t) => ({
         id: t.id,
         score:
@@ -757,7 +767,9 @@ function result(s, id, path, f) {
       }))
       .sort((a, b) => b.score - a.score || a.id - b.id);
     position = selected ? field.findIndex((x) => x.id === 0) + 1 : 0;
-    won = position === 1;
+    const detailed = id === "tennis" ? detailedTennisResult(s, f, selected, score) : null;
+    if (detailed) position = detailed.position;
+    won = position === 1 && !field.find(e => e.id === 0)?.retired;
     const distribution =
       id === "racing"
         ? [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
@@ -766,7 +778,7 @@ function result(s, id, path, f) {
       const t = path.table[entry.id];
       if (entry.id === 0 && !selected) return;
       t.played++;
-      const awarded = distribution[i] || 0;
+      const awarded = entry.retired ? 0 : entry.id === 0 && detailed ? detailed.points : distribution[i] || 0;
       t.points += awarded;
       if (i === 0) t.wins++;
       if (entry.id === 0) points = awarded;

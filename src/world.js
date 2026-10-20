@@ -1,3 +1,4 @@
+import { racingLicenceReason } from './simulation/racing.js';
 import { businessOperations } from './simulation/businesses.js';
 import { founderShare } from './simulation/effects.js';
 import { localProfile } from "./economy.js";
@@ -1005,6 +1006,8 @@ export function requestRaise(state) {
 }
 export function enrolEducation(state, id) {
   writable(state);
+  const racingReason = racingLicenceReason(state, id);
+  if (racingReason) throw new Error(racingReason);
   const subjectReason = subjectAdmissionReason(state, id);
   if (subjectReason) throw new Error(subjectReason);
   if (state.startAge + Math.floor(state.week / 52) < 12)

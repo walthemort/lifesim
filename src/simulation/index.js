@@ -1,3 +1,5 @@
+import { initializeRacing, advanceRacing, validateRacing } from './racing.js';
+import { initializeDetailedSports, advanceDetailedSports, validateDetailedSports } from './sports.js';
 import { initializeBusinesses, advanceBusinesses, validateBusinesses } from './businesses.js';
 import { initializeEducation, advanceEducation, validateEducation } from "./education.js";
 import { initializeHealth, advanceHealth, validateHealth } from "./health.js";
@@ -14,8 +16,10 @@ export * from "./mobility.js";
 export * from "./home.js";
 export * from "./professions.js";
 export * from "./businesses.js";
+export * from "./sports.js";
+export * from "./racing.js";
 export function initializeSimulation(s) {
-  s.simulation = { schema: 1, originSeed: s.seed, seed: (s.seed ^ 0x7b615d) >>> 0, serial: 0, lastWeek: s.week, journal: [], era: { enabled: false }, education: initializeEducation(s), health: initializeHealth(s), social: initializeSocial(s), mobility: initializeMobility(s), home: initializeHome(s), professions: initializeProfessions(s), businesses: initializeBusinesses(s) };
+  s.simulation = { schema: 1, originSeed: s.seed, seed: (s.seed ^ 0x7b615d) >>> 0, serial: 0, lastWeek: s.week, journal: [], era: { enabled: false }, education: initializeEducation(s), health: initializeHealth(s), social: initializeSocial(s), mobility: initializeMobility(s), home: initializeHome(s), professions: initializeProfessions(s), businesses: initializeBusinesses(s), sports: initializeDetailedSports(s), racing: initializeRacing(s) };
   syncSocial(s);
 }
 export function advanceSimulation(s) {
@@ -26,6 +30,8 @@ export function advanceSimulation(s) {
   advanceHome(s);
   advanceProfessions(s);
   advanceBusinesses(s);
+  advanceDetailedSports(s);
+  advanceRacing(s);
 }
 export function validateSimulation(s) {
   const sim = obj(s.simulation); if (sim.schema !== 1) throw new Error("Unsupported detailed simulation data.");
@@ -36,4 +42,6 @@ export function validateSimulation(s) {
   validateHome(s);
   validateProfessions(s);
   validateBusinesses(s);
+  validateDetailedSports(s);
+  validateRacing(s);
 }

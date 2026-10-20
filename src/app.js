@@ -1,3 +1,5 @@
+import { raceEngineeringScreen } from "./simulation/racing-screens.js";
+import { detailedSportScreen } from "./simulation/sport-screens.js";
 import { businessSimulationScreen } from "./simulation/business-screens.js";
 import { professionalScreen } from "./simulation/professional-screens.js";
 import { retailScreen } from "./retail-screens.js";
@@ -615,6 +617,8 @@ const nav = [
   ["home-design", "home", "Rooms & renovations"],
   ["professional", "briefcase", "Professional practice"],
   ["business-operations", "rocket", "Business operations"],
+  ["sport-lab", "football", "Inside your sport"],
+  ["race-engineering", "flag", "Race engineering"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -836,6 +840,8 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  "race-engineering": () => raceEngineeringScreen(state, ui()),
+  "sport-lab": () => detailedSportScreen(state, ui()),
   "business-operations": () => businessSimulationScreen(state, ui()),
   professional: () => professionalScreen(state, ui()),
   "school-life": () => educationScreen(state, ui()),
@@ -964,6 +970,7 @@ function render() {
     ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
     relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
     family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
+    sports: ["sport-lab", "Inside your sport", "Passing, possessions, tournament draws and boxing."],
     company: ["business-operations", "Business operations", "Named staff, supplies, investors and branches."],
     teams: ["business-operations", "Boardroom & specialist clubs", "Diligence, matchday stands and more ownership formats."],
     housing: ["home-design", "Rooms & renovations", "Furnish your space and manage building work."],

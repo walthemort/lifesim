@@ -782,6 +782,7 @@ function racingAdvance(s) {
   };
   r.history.push(entry);
   r.history = r.history.slice(-20);
+  if (s.simulation?.racing.active && s.simulation.racing.discipline !== "formula") return;
   const i = RACING_TIERS.findIndex((t) => t.id === r.tier),
     target = RACING_TIERS[i + 1];
   if (!target) return;

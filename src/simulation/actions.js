@@ -1,3 +1,5 @@
+import * as racing from './racing.js';
+import * as sport from './sports.js';
 import * as firms from './businesses.js';
 import * as school from "./education.js";
 import * as health from "./health.js";
@@ -7,6 +9,29 @@ import * as home from "./home.js";
 import * as work from "./professions.js";
 export function simulationCommand(s, operation, p = {}) {
   const actions = {
+    'racing-detail':()=>racing.openRaceEngineering(s),
+    'kart-budget':()=>racing.fundKartSeason(s),
+    'kart-equipment':()=>racing.chooseKartEquipment(s,p.chassis,p.engine),
+    'race-weekend':()=>racing.startRaceWeekend(s,p.fixture),
+    'race-practice':()=>racing.practiceRace(s),
+    'race-feedback':()=>racing.raceFeedback(s),
+    'race-setup':()=>racing.configureRace(s,{balance:Number(p.balance),downforce:Number(p.downforce),strategy:p.strategy,tyre:p.tyre,teamOrder:p.teamOrder}),
+    'race-qualifying':()=>racing.qualifyRace(s),
+    'race-service':()=>racing.serviceRaceComponent(s,p.component),
+    'race-discipline':()=>racing.changeRacingDiscipline(s,p.discipline),
+    'race-reserve':()=>racing.beginReserveDuties(s),
+    'reserve-duty':()=>racing.deliverReserveDuties(s,p.kind),
+    'sport-detail':()=>sport.openDetailedSport(s,p.sport),
+    'combination':()=>sport.footballCombination(s,p.teammate),
+    'card-appeal':()=>sport.appealFootballCard(s),
+    'basketball-assignment':()=>sport.requestDevelopmentAssignment(s),
+    'tennis-entry':()=>sport.enterTennisTournament(s,p.fixture,p.draw),
+    'boxing-join':()=>sport.joinBoxingGym(s),
+    'boxing-leave':()=>sport.leaveBoxing(s),
+    'boxing-train':()=>sport.trainBoxing(s,p.focus),
+    'boxing-medical':()=>sport.boxingMedical(s),
+    'boxing-bout':()=>sport.requestBoxingBout(s),
+    'boxing-licence':()=>sport.applyBoxingLicence(s),
     'business-open':()=>firms.openBusinessOperations(s,p.firm),
     'employee-hire':()=>firms.hireEmployee(s,p.firm,p.role),
     'employee-manage':()=>firms.manageEmployee(s,p.firm,p.employee,p.method),
