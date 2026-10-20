@@ -166,3 +166,19 @@ test("school basketball does not invent professional wages; signed payroll follo
     null,
   );
 });
+test("God mode can edit new boxing skills and detailed school grades and aptitudes", () => {
+  let s = g.toggleDebug(g.createGame({ age: 18, seed: 8 }), true);
+  s = g.debugEdit(s, {
+    specialistSkills: {
+      "boxing.technique": 85,
+      "boxing.defence": 90,
+      "school.science.grade": 92,
+      "school.science.aptitude": 95,
+    },
+  });
+  assert.equal(s.simulation.sports.boxing.technique, 85);
+  assert.equal(s.simulation.sports.boxing.defence, 90);
+  assert.equal(s.simulation.education.subjects.science.grade, 92);
+  assert.equal(s.simulation.education.subjects.science.aptitude, 95);
+  assert.deepEqual(g.restoreGame(s), s);
+});

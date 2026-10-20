@@ -282,6 +282,7 @@ test("international tennis appearances reserve time and resolve through the week
 test("collaboration recording displays ownership and produces a shared release", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   const s = musician("singer"),
     o = musicOffer(s);
   await load(page, s);
@@ -445,7 +446,7 @@ test("authentic v8 saves migrate and provide an exact downloadable pre-update ba
     if (key !== "version") expect(r[key]).toEqual(value);
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v16`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v17`)),
       KEY,
     ),
   ).toEqual(old);

@@ -3,6 +3,24 @@ import { HOBBIES } from "./everyday.js";
 import { SPORT_SPECIALTIES } from "./profession-data.js";
 
 export const DEBUG_SPECIALIST_SKILLS = [
+  ...["technique", "defence", "conditioning"].map((key) => ({
+    id: `boxing.${key}`,
+    label: `Boxing: ${key}`,
+    path: ["simulation", "sports", "boxing", key],
+  })),
+  ...Object.entries({
+    maths: "Mathematics",
+    language: "Language & literature",
+    science: "Science",
+    arts: "Arts",
+    physical: "Physical education",
+  }).flatMap(([subject, label]) =>
+    ["grade", "aptitude"].map((key) => ({
+      id: `school.${subject}.${key}`,
+      label: `School: ${label} ${key}`,
+      path: ["simulation", "education", "subjects", subject, key],
+    })),
+  ),
   ...Object.entries(SPORT_SPECIALTIES).flatMap(([path, skills]) =>
     Object.entries(skills).map(([key, label]) => ({
       id: `${path}.${key}`,

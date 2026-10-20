@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { form, select, panel } from "./screens.js";
 import { gameDate } from "../dates.js";
 import { CREATIVE_TEAM, VIDEO_BUDGETS } from "./creativity.js";
@@ -41,7 +42,7 @@ export function creativeStudioScreen(s, u) {
       "Recordings",
       "Music-video production",
       "A 25% deposit begins production; storyboard, shoot and edit each cost another 25%. A delivered video supports eight weeks of discovery on the same recording.",
-      `${form(s, "video-start", select(u, "project", "Recording for the video", projects) + select(u, "budget", "Production budget", Object.fromEntries(Object.entries(VIDEO_BUDGETS).map(([id, d]) => [id, `${d.name} · ${u.money(d.cost)}`]))), "Commission video & pay 25% deposit", 12)}${c.videos.map((v) => `<article class="career-brief"><h3>${u.e(s.music.projects.find((p) => p.id === v.project)?.title || "Catalogue video")}</h3><p>${v.status} · ${v.stage}/3 stages · ${u.money(v.paid)}/${u.money(v.quote)} paid · deadline ${gameDate(v.deadline, s)}</p>${v.status === "production" ? form(s, "video-work", `<input name="video" type="hidden" value="${v.id}"><input name="method" type="hidden" value="${["storyboard", "shoot", "edit"][v.stage]}">`, `Deliver ${["storyboard", "shoot", "edit"][v.stage]} · ${u.money(v.quote * 0.25)}`, 12) : ""}</article>`).join("")}`,
+      `${form(s, "video-start", select(u, "project", "Recording for the video", projects) + select(u, "budget", "Production budget", Object.fromEntries(Object.entries(VIDEO_BUDGETS).map(([id, d]) => [id, `${d.name} · ${u.money(d.cost)}`]))), "Commission video & pay 25% deposit", 12)}${c.videos.map((v) => `<article class="career-brief"><h3>${u.e(s.music.projects.find((p) => p.id === v.project)?.title || "Catalogue video")}</h3><p>${v.status} · ${v.stage}/3 stages · ${u.money(v.paid)}/${u.money(v.quote)} paid · deadline ${gameDate(v.deadline, s)}</p>${v.status === "production" ? form(s, "video-work", `<input name="video" type="hidden" value="${escapeHtml(v.id)}"><input name="method" type="hidden" value="${["storyboard", "shoot", "edit"][v.stage]}">`, `Deliver ${["storyboard", "shoot", "edit"][v.stage]} · ${u.money(v.quote * 0.25)}`, 12) : ""}</article>`).join("")}`,
     ) +
     panel(
       u,
@@ -62,7 +63,7 @@ export function creativeStudioScreen(s, u) {
       "Rights",
       "Sample clearance",
       "Declared samples block release until licensed or re-recorded. An application costs $20 and takes two weeks. Accepted licences cost a quoted fee plus 10% of future receipts.",
-      `${form(s, "sample-request", select(u, "project", "Recording containing a sample", unreleased) + '<label class="field-label">Sample rights holder / source<input name="source" maxlength="60" required></label>', "Request permission · $20", 12)}${c.samples.map((x) => `<article class="career-brief"><h3>${u.e(x.source)}</h3><p>${x.status} · ${u.money(x.fee)} licence fee + 10% recording receipts</p>${!["licensed", "removed"].includes(x.status) ? form(s, "sample-resolve", `<input name="sample" type="hidden" value="${x.id}">` + select(u, "decision", "Your decision", { ...(x.status === "offered" ? { license: "Accept licence & pay quoted fee" } : {}), remove: "Re-record without sample · $50" }), "Confirm sample decision", 12) : ""}</article>`).join("")}`,
+      `${form(s, "sample-request", select(u, "project", "Recording containing a sample", unreleased) + '<label class="field-label">Sample rights holder / source<input name="source" maxlength="60" required></label>', "Request permission · $20", 12)}${c.samples.map((x) => `<article class="career-brief"><h3>${u.e(x.source)}</h3><p>${x.status} · ${u.money(x.fee)} licence fee + 10% recording receipts</p>${!["licensed", "removed"].includes(x.status) ? form(s, "sample-resolve", `<input name="sample" type="hidden" value="${escapeHtml(x.id)}">` + select(u, "decision", "Your decision", { ...(x.status === "offered" ? { license: "Accept licence & pay quoted fee" } : {}), remove: "Re-record without sample · $50" }), "Confirm sample decision", 12) : ""}</article>`).join("")}`,
     ) +
     panel(
       u,
@@ -106,7 +107,7 @@ export function creativeStudioScreen(s, u) {
       "Production team",
       "People behind the work",
       "Staff cost real weekly salaries. Editorial, publicity and community proposals need your approval and a separate budget.",
-      `${form(s, "creative-hire", select(u, "role", "Production support", Object.fromEntries(Object.entries(CREATIVE_TEAM).map(([id, d]) => [id, `${d.name} · ${u.money(d.fee)} setup / ${u.money(d.weekly)} weekly`]))), "Hire production support", 18)}${c.team.map((t) => `<article class="career-brief"><h3>${u.e(t.name)} · ${CREATIVE_TEAM[t.role].name}</h3><p>${u.money(t.weekly)}/week</p>${t.proposal ? `<p>Proposal ${t.proposal.status} · ${u.money(t.proposal.cost)} budget</p>${t.proposal.status === "pending" ? form(s, "creative-approve", `<input name="employee" type="hidden" value="${t.id}">`, "Approve & fund this proposal", 18) : ""}` : ""}${form(s, "creative-dismiss", `<input name="employee" type="hidden" value="${t.id}">`, "End support arrangement", 18)}</article>`).join("")}`,
+      `${form(s, "creative-hire", select(u, "role", "Production support", Object.fromEntries(Object.entries(CREATIVE_TEAM).map(([id, d]) => [id, `${d.name} · ${u.money(d.fee)} setup / ${u.money(d.weekly)} weekly`]))), "Hire production support", 18)}${c.team.map((t) => `<article class="career-brief"><h3>${u.e(t.name)} · ${CREATIVE_TEAM[t.role].name}</h3><p>${u.money(t.weekly)}/week</p>${t.proposal ? `<p>Proposal ${t.proposal.status} · ${u.money(t.proposal.cost)} budget</p>${t.proposal.status === "pending" ? form(s, "creative-approve", `<input name="employee" type="hidden" value="${escapeHtml(t.id)}">`, "Approve & fund this proposal", 18) : ""}` : ""}${form(s, "creative-dismiss", `<input name="employee" type="hidden" value="${escapeHtml(t.id)}">`, "End support arrangement", 18)}</article>`).join("")}`,
     )
   );
 }

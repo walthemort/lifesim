@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { gameDate } from "../dates.js";
 import { form, select, panel } from "./screens.js";
 import { TENNIS_ENTRIES } from "./sports.js";
@@ -25,7 +26,7 @@ export function detailedSportScreen(s, u) {
             form(
               s,
               "sport-detail",
-              `<input name="sport" value="${id}" type="hidden">`,
+              `<input name="sport" value="${escapeHtml(id)}" type="hidden">`,
               "Open detailed " + id,
               6,
             ) +

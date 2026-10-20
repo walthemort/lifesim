@@ -327,7 +327,7 @@ test("authentic v5 saves upgrade with an unchanged pre-v9 download and preserved
   expect((await pending).suggestedFilename()).toBe("lifesim-before-v17.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v16`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v17`)),
       KEY,
     ),
   ).toEqual(raw);

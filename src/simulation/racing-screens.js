@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { gameDate } from "../dates.js";
 import { form, select, panel } from "./screens.js";
 import {
@@ -81,7 +82,7 @@ export function raceEngineeringScreen(s, u) {
       Object.entries(d.components)
         .map(
           ([id, value]) =>
-            `<article class="career-brief"><h3>${id} · ${value.toFixed(1)}%</h3>${form(s, "race-service", `<input name="component" type="hidden" value="${id}">`, "Pay for component service", 6)}</article>`,
+            `<article class="career-brief"><h3>${escapeHtml(id)} · ${value.toFixed(1)}%</h3>${form(s, "race-service", `<input name="component" type="hidden" value="${escapeHtml(id)}">`, "Pay for component service", 6)}</article>`,
         )
         .join(""),
     ) +

@@ -5,7 +5,7 @@ This repository now contains an iPhone-only, portrait iOS app in `ios/App/App.xc
 ## Build and run on a Mac
 
 1. Install Node 22.12 or newer and a current stable Xcode compatible with Capacitor 8 and Apple's current submission SDK requirements. Open Xcode once, install its iOS platform, and accept its license.
-2. In the repository, run `npm ci`, `npm run ios:sync`, and `npm run ios:check`.
+2. In the repository, run `npm ci --include=dev`, `npm run ios:sync`, and `npm run ios:check`.
 3. Run `npm run ios:open`. Select the **App** target → **Signing & Capabilities**, choose your Apple Developer team, and enable automatic signing. Change the bundle identifier in both Capacitor config and Xcode if your team needs a different identifier.
 4. Select an iPhone simulator and press Run. For a physical iPhone, connect it, trust the Mac, enable Developer Mode when prompted, select it in Xcode and Run.
 5. Re-run `npm run ios:sync` after every web/game change. `ios:check` verifies that the native asset copy matches the current production build. An already-built app does not contact a development server.

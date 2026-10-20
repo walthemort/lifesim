@@ -1,3 +1,12 @@
+export function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (character) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        character
+      ],
+  );
+}
 import { age } from "./common.js";
 import {
   SUBJECTS,
@@ -13,7 +22,7 @@ const off = (s, min = 6) =>
     ? "disabled"
     : "";
 const select = (u, name, label, values, chosen = null) =>
-  `<label class="field-label">${u.e(label)}<select name="${name}">${Object.entries(
+  `<label class="field-label">${u.e(label)}<select name="${escapeHtml(name)}">${Object.entries(
     values,
   )
     .map(
@@ -83,7 +92,7 @@ export function educationScreen(s, u) {
       )
         .map(([id, d]) => {
           const q = schoolAdmissions(s, id);
-          return `<article class="education-card"><h3>${d.name}</h3><p>Teaching ${d.quality}/100 · ${q.capacity} available places · entry average ${d.entry}</p><p>${u.money(d.fee)}/week. A thirteen-week fee reserve is required; parents pay when able.</p>${form(s, "school", `<input type="hidden" name="school" value="${id}">`, q.eligible && student ? "Apply to school" : "Review entry requirements", 5)}</article>`;
+          return `<article class="education-card"><h3>${d.name}</h3><p>Teaching ${d.quality}/100 · ${q.capacity} available places · entry average ${d.entry}</p><p>${u.money(d.fee)}/week. A thirteen-week fee reserve is required; parents pay when able.</p>${form(s, "school", `<input type="hidden" name="school" value="${escapeHtml(id)}">`, q.eligible && student ? "Apply to school" : "Review entry requirements", 5)}</article>`;
         })
         .join("")}</div>`,
     ) +
@@ -199,7 +208,7 @@ export function healthScreen(s, u) {
             `<article class="career-brief"><h3>${CONDITIONS[c.type].name}</h3><p>Severity ${c.severity.toFixed(1)} · ${c.treatment ? TREATMENTS[c.treatment].name : "no current treatment"}</p>${form(
               s,
               "treatment",
-              `<input type="hidden" name="condition" value="${c.id}">` +
+              `<input type="hidden" name="condition" value="${escapeHtml(c.id)}">` +
                 select(
                   u,
                   "treatment",
@@ -226,7 +235,7 @@ export function healthScreen(s, u) {
       h.injuries
         .map(
           (i) =>
-            `<article class="career-brief"><h3>${i.path} · ${i.type}</h3><p>${i.status} · ${i.diagnosed ? "assessed" : "assessment needed"} · rehabilitation ${i.progress}/100</p>${i.diagnosed && i.status !== "recovered" ? form(s, "rehab", `<input type="hidden" name="injury" value="${i.id}">`, "Attend rehabilitation · $35", 8) : ""}</article>`,
+            `<article class="career-brief"><h3>${i.path} · ${i.type}</h3><p>${i.status} · ${i.diagnosed ? "assessed" : "assessment needed"} · rehabilitation ${i.progress}/100</p>${i.diagnosed && i.status !== "recovered" ? form(s, "rehab", `<input type="hidden" name="injury" value="${escapeHtml(i.id)}">`, "Attend rehabilitation · $35", 8) : ""}</article>`,
         )
         .join("") || "<p>No detailed injury records.</p>",
     ) +
@@ -300,7 +309,7 @@ export function socialLifeScreen(s, u) {
         .filter((g) => g.status === "open")
         .map(
           (g) =>
-            `<article class="career-brief"><p>${u.e(people[g.personId] || "Past contact")}: ${u.e(g.reason)} · severity ${g.severity}</p>${form(s, "grievance", `<input type="hidden" name="grievance" value="${g.id}">`, "Address this disagreement", 8)}</article>`,
+            `<article class="career-brief"><p>${u.e(people[g.personId] || "Past contact")}: ${u.e(g.reason)} · severity ${g.severity}</p>${form(s, "grievance", `<input type="hidden" name="grievance" value="${escapeHtml(g.id)}">`, "Address this disagreement", 8)}</article>`,
         )
         .join("")}`,
     ) +
@@ -341,7 +350,7 @@ export function socialLifeScreen(s, u) {
       "Family",
       "Extended & blended families",
       "Get to know your partner's relatives. Minor stepchildren living with you require $25 and four care hours each week.",
-      `${form(s, "family-intro", "", "Meet your partner's family", 18)}${[...n.extended, ...n.stepChildren].map((p) => `<article class="career-brief"><h3>${u.e(p.name)}</h3><p>Family connection ${p.bond}/100</p>${form(s, "family-visit", `<input type="hidden" name="person" value="${p.id}">`, "Spend time together · $15", 18)}</article>`).join("")}`,
+      `${form(s, "family-intro", "", "Meet your partner's family", 18)}${[...n.extended, ...n.stepChildren].map((p) => `<article class="career-brief"><h3>${u.e(p.name)}</h3><p>Family connection ${p.bond}/100</p>${form(s, "family-visit", `<input type="hidden" name="person" value="${escapeHtml(p.id)}">`, "Spend time together · $15", 18)}</article>`).join("")}`,
     ) +
     panel(
       u,
@@ -354,7 +363,7 @@ export function socialLifeScreen(s, u) {
             const r = n.children[c.id];
             return !r
               ? ""
-              : `<article class="career-brief"><h3>${u.e(c.name)}</h3><p>Ambition: ${u.e(r.ambition)} · autonomy ${r.autonomy}/100</p>${form(s, "ambition", `<input type="hidden" name="child" value="${c.id}">` + select(u, "support", "Your response", { yes: "Support their interest", no: "Insist on another direction" }), "Discuss their future", 18)}${r.adult ? `<p>Independent ${r.adult.role} · personal savings ${u.money(r.adult.savings)} · ${r.adult.children.length} children of their own.</p>${form(s, "adult-support", `<input type="hidden" name="child" value="${c.id}"><label class="field-label">Support amount<input name="amount" type="number" min="10" max="100000" value="100" required></label>`, "Send financial support", 18)}` : ""}</article>`;
+              : `<article class="career-brief"><h3>${u.e(c.name)}</h3><p>Ambition: ${u.e(r.ambition)} · autonomy ${r.autonomy}/100</p>${form(s, "ambition", `<input type="hidden" name="child" value="${escapeHtml(c.id)}">` + select(u, "support", "Your response", { yes: "Support their interest", no: "Insist on another direction" }), "Discuss their future", 18)}${r.adult ? `<p>Independent ${r.adult.role} · personal savings ${u.money(r.adult.savings)} · ${r.adult.children.length} children of their own.</p>${form(s, "adult-support", `<input type="hidden" name="child" value="${escapeHtml(c.id)}"><label class="field-label">Support amount<input name="amount" type="number" min="10" max="100000" value="100" required></label>`, "Send financial support", 18)}` : ""}</article>`;
           })
           .join("") ||
         "<p>Children's own ambitions appear as your family grows.</p>"

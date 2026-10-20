@@ -230,3 +230,28 @@ test("new legal deadlines reach the existing notification inbox without performi
   assert.equal(s.money, cash);
   assert.deepEqual(g.restoreGame(s), s);
 });
+test("an heir retains their own completed university course without inheriting the parent’s professional licence", () => {
+  let s = parent();
+  s.family.children[0].bornWeek = 0;
+  s.simulation.social.children.heir = {
+    id: "heir",
+    ambition: "medicine",
+    supported: true,
+    autonomy: 80,
+    nextFamilyWeek: s.week + 52,
+    adult: {
+      startedWeek: 936,
+      role: "junior",
+      savings: 1200,
+      qualified: true,
+      partner: null,
+      children: [],
+    },
+  };
+  s.education.completed.push("medical-license");
+  s.ended = true;
+  const n = g.continueAsHeir(s, "heir");
+  assert.ok(n.education.completed.includes("medicine-degree"));
+  assert.ok(!n.education.completed.includes("medical-license"));
+  assert.deepEqual(g.restoreGame(n), n);
+});

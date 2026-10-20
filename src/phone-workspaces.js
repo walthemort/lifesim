@@ -1,3 +1,4 @@
+import { activeCareerPath } from "./career-commitment.js";
 // Organize the existing controls into one accessible workspace per activity.
 function makeWorkspace(scope, key, labels, classify, selections, defaultTab) {
   const nodes = [...scope.children].filter(
@@ -278,11 +279,11 @@ export function organizeWorkspace(main, view, s, selections) {
                   ].sort(
                     (a, b) =>
                       ((b === "Motorsport" ? "racing" : b.toLowerCase()) ===
-                      (s.employment?.jobId ? s.career : s.aspiration)
+                      (activeCareerPath(s) || s.aspiration)
                         ? 1
                         : 0) -
                       ((a === "Motorsport" ? "racing" : a.toLowerCase()) ===
-                      (s.employment?.jobId ? s.career : s.aspiration)
+                      (activeCareerPath(s) || s.aspiration)
                         ? 1
                         : 0),
                   )

@@ -256,7 +256,7 @@ test("authentic v4 lives upgrade with a downloadable unmodified pre-v9 snapshot"
   await navigate(page, "Export pre-update save");
   expect((await pending).suggestedFilename()).toBe("lifesim-before-v17.json");
   const backup = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(`${key}-before-v16`)),
+    (key) => JSON.parse(localStorage.getItem(`${key}-before-v17`)),
     KEY,
   );
   expect(backup).toEqual(old);

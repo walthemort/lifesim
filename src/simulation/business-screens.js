@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { BUSINESSES, stakePercent } from "../world.js";
 import { gameDate } from "../dates.js";
 import { form, select, panel } from "./screens.js";
@@ -18,7 +19,8 @@ export function businessSimulationScreen(s, u) {
       ]),
     ]),
     opened = Object.values(b.firms),
-    hidden = (id) => `<input name="firm" type="hidden" value="${id}">`;
+    hidden = (id) =>
+      `<input name="firm" type="hidden" value="${escapeHtml(id)}">`;
   return (
     u.title(
       "INSIDE THE BUSINESS",
@@ -71,7 +73,7 @@ export function businessSimulationScreen(s, u) {
           "Employees",
           f.name,
           "These are additional named specialists. Their weekly wages enter the company ledger once; unpaid or unhappy workers can leave.",
-          `${form(s, "employee-hire", hidden(f.id) + select(u, "role", "Specialist role", STAFF_ROLES), "Hire · two-week signing cost / eight-week reserve", 18)}${f.staff.map((e) => `<article class="career-brief"><h3>${u.e(e.name)}</h3><p>${STAFF_ROLES[e.role]} · ${u.money(e.wage)}/week · skill ${e.skill} · morale ${Math.round(e.morale)} · ${e.missed} unpaid weeks</p>${form(s, "employee-manage", hidden(f.id) + `<input type="hidden" name="employee" value="${e.id}">` + select(u, "method", "Management conversation", { listen: "Listen & address concerns", train: "Fund training · $250", dismiss: "Dismiss · four weeks’ severance" }), "Meet this employee", 18)}</article>`).join("")}`,
+          `${form(s, "employee-hire", hidden(f.id) + select(u, "role", "Specialist role", STAFF_ROLES), "Hire · two-week signing cost / eight-week reserve", 18)}${f.staff.map((e) => `<article class="career-brief"><h3>${u.e(e.name)}</h3><p>${STAFF_ROLES[e.role]} · ${u.money(e.wage)}/week · skill ${e.skill} · morale ${Math.round(e.morale)} · ${e.missed} unpaid weeks</p>${form(s, "employee-manage", hidden(f.id) + `<input type="hidden" name="employee" value="${escapeHtml(e.id)}">` + select(u, "method", "Management conversation", { listen: "Listen & address concerns", train: "Fund training · $250", dismiss: "Dismiss · four weeks’ severance" }), "Meet this employee", 18)}</article>`).join("")}`,
         ),
       )
       .join("") +
@@ -121,7 +123,7 @@ export function businessSimulationScreen(s, u) {
         .filter(([id]) => !b.venues.some((v) => v.kind === id))
         .map(
           ([id, d]) =>
-            `<article class="career-brief"><h3>${d.name}</h3><p>Guide ${u.money(d.price)} · base costs ${u.money(d.weekly)}/week · ${ownershipFormatOffers(s).some((o) => o.id === id) ? "Currently for sale" : "Owners are not currently advertising"}</p>${form(s, "venue-approach", `<input name="kind" type="hidden" value="${id}">`, "Request meeting · nonrefundable 2% fee / 25% price premium", 18)}${ownershipFormatOffers(s).some((o) => o.id === id) || b.approaches.some((a) => a.kind === id && a.status === "offered" && a.expires >= s.week) ? form(s, "venue-buy", `<input name="kind" type="hidden" value="${id}">`, "Acquire the available business", 18) : ""}</article>`,
+            `<article class="career-brief"><h3>${d.name}</h3><p>Guide ${u.money(d.price)} · base costs ${u.money(d.weekly)}/week · ${ownershipFormatOffers(s).some((o) => o.id === id) ? "Currently for sale" : "Owners are not currently advertising"}</p>${form(s, "venue-approach", `<input name="kind" type="hidden" value="${escapeHtml(id)}">`, "Request meeting · nonrefundable 2% fee / 25% price premium", 18)}${ownershipFormatOffers(s).some((o) => o.id === id) || b.approaches.some((a) => a.kind === id && a.status === "offered" && a.expires >= s.week) ? form(s, "venue-buy", `<input name="kind" type="hidden" value="${escapeHtml(id)}">`, "Acquire the available business", 18) : ""}</article>`,
         )
         .join("")}${b.approaches
         .slice(0, 5)
@@ -141,7 +143,7 @@ export function businessSimulationScreen(s, u) {
               )
               .join(
                 "",
-              )}</tbody></table></div>${form(s, "venue-fund", `<input name="venue" type="hidden" value="${v.id}"><label class="field-label">Owner funding<input name="amount" type="number" value="1000" min="100" required></label>`, "Transfer personal funds to the club", 18)}</article>`,
+              )}</tbody></table></div>${form(s, "venue-fund", `<input name="venue" type="hidden" value="${escapeHtml(v.id)}"><label class="field-label">Owner funding<input name="amount" type="number" value="1000" min="100" required></label>`, "Transfer personal funds to the club", 18)}</article>`,
         )
         .join("")}`,
     )

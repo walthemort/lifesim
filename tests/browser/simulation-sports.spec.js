@@ -46,7 +46,9 @@ test("racing desk reserves an itemised season and fits all phone widths", async 
   let s = player("racing");
   s = g.openRaceEngineering(s);
   await load(page, s);
-  await page.getByRole("tab", { name: "Motorsport", exact: true }).click();
+  await expect(
+    page.getByRole("tab", { name: "Motorsport", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
   await page
     .getByRole("button", { name: "Open race engineering", exact: true })
     .click();
@@ -100,4 +102,29 @@ test("tennis and boxing entry controls fit a small phone", async ({ page }) => {
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+test("God mode exposes boxing and subject controls in their own groups", async ({
+  page,
+}) => {
+  let s = g.toggleDebug(g.createGame({ age: 18, seed: 8 }), true);
+  await page.addInitScript(
+    (s) => localStorage.setItem("lifesim-save-v1", JSON.stringify(s)),
+    s,
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "God mode", exact: true }).click();
+  await page.getByRole("tab", { name: "Skills", exact: true }).click();
+  const group = page
+    .locator("[data-god-skills] details")
+    .filter({ has: page.locator("#god-skills-form-boxing") });
+  await group.locator("summary").click();
+  await group
+    .getByRole("spinbutton", { name: "technique", exact: true })
+    .fill("88");
+  await group.getByRole("button", { name: "Save boxing", exact: true }).click();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("lifesim-save-v1")),
+  );
+  expect(saved.simulation.sports.boxing.technique).toBe(88);
+  expect(g.restoreGame(saved)).toEqual(saved);
 });

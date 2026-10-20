@@ -360,7 +360,7 @@ test("v12 saves get an exact downloadable backup before additive migration", asy
     if (k !== "version") expect(r[k]).toEqual(v);
   expect(
     await page.evaluate(
-      (key) => localStorage.getItem(key + "-before-v16"),
+      (key) => localStorage.getItem(key + "-before-v17"),
       KEY,
     ),
   ).toBe(JSON.stringify(old));

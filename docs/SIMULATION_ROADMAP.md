@@ -136,3 +136,12 @@ Items 91–100 connect economic cycles, actual quarterly earnings, value-preserv
 Open School record from Childhood/Work; Medical record from Health; Connected life from Relationships/Family; Garage from Vehicles; Rooms from Property/Home; Professional practice from Your work; Business operations from Company/Ownership; Inside your sport and Race engineering from Sports; Creative production from Music/Social; Economy & resilience from Investments/Banking; and Legal & family affairs from Crime/Family or the completed-life banner. New deadlines reach the existing inbox and notification bell.
 
 Version 16 and earlier saves migrate additively to save schema 17 with an exact pre-update backup. Most detailed systems begin through an explicit control; the migration does not invent past mileage, credentials, payments, contracts or inherited wealth. Existing starting years retain modern fictional-world rules unless historical mode was explicitly selected. Newborn children in future family lines and heirs use independent character age clocks while the world calendar continues. Save imports accept up to 4 MB to allow the previous-life snapshot.
+
+## Release verification — v0.18.0 (5)
+
+- All 100 checklist items have a playable first implementation.
+- The final complete simulation run passed **558 tests**, with no failures or skips.
+- **223 distinct browser scenarios** were verified: the full 221-case run passed 215; five stale backup-key assertions and one multi-week scenario timeout were corrected, and all six passed on rerun. All 25 expansion scenarios passed after the final UI changes, including two additional checks for imported-identifier escaping and God mode. Existing assertions for exact backup preservation remain intact.
+- Phone layouts were exercised at 320, 390 and 430 pixels. Active motorsport is the initial detail tab; boxing and detailed subject attributes are editable in God mode.
+- The production build, Capacitor iOS sync and iPhone packaging checks passed for **0.18.0, build 5**. Native compilation, signing and device testing require macOS/Xcode and were not performed in this Linux environment.
+- Heirs retain their own recorded completed university courses; a parent's professional licences do not transfer. Imported identifiers are escaped when rendered in controls. Most recent completed-life exports remain exact portable save snapshots.

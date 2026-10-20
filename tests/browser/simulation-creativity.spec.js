@@ -64,3 +64,28 @@ test("creative rights and audience workspaces fit three phone widths", async ({
   }
   expect(errors).toEqual([]);
 });
+test("imported identifiers stay text in hidden controls rather than becoming markup", async ({
+  page,
+}) => {
+  const s = g.openCreativeStudio(artist());
+  s.simulation.creativity.samples = [
+    {
+      id: '"><img data-save-payload src=x onerror="window.__savePayload=1">',
+      project: "record:external",
+      source: 'Quoted "archive"',
+      since: 0,
+      due: 2,
+      fee: 200,
+      share: 0.1,
+      status: "offered",
+    },
+  ];
+  g.restoreGame(s);
+  await load(page, s);
+  await page.getByRole("tab", { name: "Rights", exact: true }).click();
+  await expect(page.locator("img[data-save-payload]")).toHaveCount(0);
+  expect(await page.evaluate(() => window.__savePayload)).toBeUndefined();
+  await expect(
+    page.locator('[data-operation="sample-resolve"] input[name="sample"]'),
+  ).toHaveValue(s.simulation.creativity.samples[0].id);
+});

@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { COUNTRIES } from "../geography.js";
 import { CRIMES } from "../expansion-data.js";
 import { form, select, panel } from "./screens.js";
@@ -27,7 +28,7 @@ export function lifePlanningScreen(s, u) {
       "Cases",
       "Investigations & court",
       "Detailed legal records replace instant outcomes for future crime attempts. Evidence develops over time; a solicitor can review a case, and a court can acquit or convict.",
-      `${!j.active ? `<form data-form="simulation-action" data-operation="justice-open"><button class="button secondary" ${s.ended ? "disabled" : ""}>Start detailed legal records</button></form>` : ""}${j.cases.map((c) => `<article class="career-brief"><h3>${CRIMES[c.crime].name} · ${c.status}</h3><p>Investigation opened ${gameDate(c.since, s)} · ${c.hearing ? `court date ${gameDate(c.hearing, s)}` : `next review ${gameDate(c.due, s)}`} · ${c.lawyer ? "solicitor retained" : "no solicitor retained"}</p><p>${u.e(c.outcome || "The evidence has not yet produced a final decision.")}</p>${["interview", "charged"].includes(c.status) ? form(s, "case-response", `<input name="case" value="${c.id}" type="hidden">` + select(u, "choice", "Legal response", { ...(!c.lawyer ? { lawyer: "Retain a solicitor · $500" } : {}), trial: "Contest the charge at trial", guilty: "Enter a guilty plea" }), "Record your legal response", 12) : ""}</article>`).join("") || "<p>No detailed investigations are pending.</p>"}<button class="text-button" data-view="crime">Crime scenarios & custody activities</button>`,
+      `${!j.active ? `<form data-form="simulation-action" data-operation="justice-open"><button class="button secondary" ${s.ended ? "disabled" : ""}>Start detailed legal records</button></form>` : ""}${j.cases.map((c) => `<article class="career-brief"><h3>${CRIMES[c.crime].name} · ${c.status}</h3><p>Investigation opened ${gameDate(c.since, s)} · ${c.hearing ? `court date ${gameDate(c.hearing, s)}` : `next review ${gameDate(c.due, s)}`} · ${c.lawyer ? "solicitor retained" : "no solicitor retained"}</p><p>${u.e(c.outcome || "The evidence has not yet produced a final decision.")}</p>${["interview", "charged"].includes(c.status) ? form(s, "case-response", `<input name="case" value="${escapeHtml(c.id)}" type="hidden">` + select(u, "choice", "Legal response", { ...(!c.lawyer ? { lawyer: "Retain a solicitor · $500" } : {}), trial: "Contest the charge at trial", guilty: "Enter a guilty plea" }), "Record your legal response", 12) : ""}</article>`).join("") || "<p>No detailed investigations are pending.</p>"}<button class="text-button" data-view="crime">Crime scenarios & custody activities</button>`,
     ) +
     panel(
       u,

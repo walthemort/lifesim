@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { SHOP, HOMES, age } from "../engine.js";
 import { localPrice } from "../economy.js";
 import { off, select, form, panel } from "./screens.js";
@@ -20,7 +21,7 @@ import { mobilityDebt, renovationRentBonus } from "./effects.js";
 import { retailIllustration } from "../retail-art.js";
 import { gameDate } from "../dates.js";
 const hidden = (name, id) =>
-  `<input type="hidden" name="${name}" value="${id}">`;
+  `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(id)}">`;
 export function mobilityScreen(s, u) {
   const m = s.simulation.mobility,
     definitions = SHOP.filter((i) => vehicleKind(i)),

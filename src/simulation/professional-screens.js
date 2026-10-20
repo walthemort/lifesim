@@ -1,3 +1,4 @@
+import { escapeHtml } from "./screens.js";
 import { jobDefinition, JOBS } from "../world.js";
 import { MARKETS } from "../engine.js";
 import { gameDate } from "../dates.js";
@@ -67,7 +68,7 @@ export function professionalScreen(s, u) {
                 )
                 .join(
                   "",
-                )}${form(s, "client-trade", `<input type="hidden" name="client" value="${c.id}">` + select(u, "asset", "Client investment", Object.fromEntries(MARKETS.map((m) => [m.id, `${m.name} · ${u.money(s.market[m.id])}`]))) + '<label class="field-label">Units (negative to sell)<input name="amount" type="number" value="1" step="any" required></label>', "Submit client order", 18)}</article>`,
+                )}${form(s, "client-trade", `<input type="hidden" name="client" value="${escapeHtml(c.id)}">` + select(u, "asset", "Client investment", Object.fromEntries(MARKETS.map((m) => [m.id, `${m.name} · ${u.money(s.market[m.id])}`]))) + '<label class="field-label">Units (negative to sell)<input name="amount" type="number" value="1" step="any" required></label>', "Submit client order", 18)}</article>`,
           )
           .join("") ||
         (!p.class.length

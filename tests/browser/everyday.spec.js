@@ -426,7 +426,7 @@ test("v3 upgrades preserve the old life and provide the exact pre-upgrade save f
   expect((await download).suggestedFilename()).toBe("lifesim-before-v17.json");
   expect(
     await page.evaluate(
-      (key) => JSON.parse(localStorage.getItem(`${key}-before-v16`)),
+      (key) => JSON.parse(localStorage.getItem(`${key}-before-v17`)),
       KEY,
     ),
   ).toEqual(old);

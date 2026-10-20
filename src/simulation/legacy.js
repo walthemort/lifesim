@@ -224,6 +224,15 @@ export function continueAsHeir(state, childId) {
   n.health = clamp(child.wellbeing);
   n.happiness = clamp(child.bond);
   n.skills.knowledge = clamp(child.education * 0.6);
+  const ownDegree = adult?.qualified
+    ? {
+        medicine: "medicine-degree",
+        engineering: "engineering-degree",
+        teaching: "teaching-degree",
+      }[state.simulation.social.children[child.id]?.ambition]
+    : null;
+  if (ownDegree && !n.education.completed.includes(ownDegree))
+    n.education.completed.push(ownDegree);
   n.school.grade = child.education;
   const family = [],
     profiles = {},
@@ -520,7 +529,7 @@ export function continueAsHeir(state, childId) {
   n.log = [];
   note(
     n,
-    `Continued as ${child.name}, age ${years}, in the same world. The executor liquidated personal assets, paid estate liabilities and tax, and allocated $${inheritance}. Qualifications and career invitations must be earned in this life.`,
+    `Continued as ${child.name}, age ${years}, in the same world. The executor liquidated personal assets, paid estate liabilities and tax, and allocated $${inheritance}. The heir retains their own recorded education; parental qualifications and career contracts do not transfer.`,
   );
   return n;
 }
