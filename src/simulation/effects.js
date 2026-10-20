@@ -60,3 +60,6 @@ export function historicalAvailability(s, id, kind = "product") {
   const since = kind === "social" ? ({ lens: 2010, video: 2005, stream: 2011 })[id] || 2004 : kind === "market" ? /coin|crypto|btc|eth|orbit/i.test(id) ? 2009 : 1900 : dates[id] || 1900;
   return y < since ? `Available from ${since} in historical-world mode (current year ${y}).` : null;
 }
+
+export function founderShare(s) { return (s.simulation?.businesses.firms.founder?.founderShare ?? 100) / 100; }
+export function additionalBusinessValue(s) { return (s.simulation?.businesses.venues || []).reduce((n,v)=>n+v.value+v.cash,0); }

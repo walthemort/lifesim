@@ -1,3 +1,4 @@
+import { founderShare, additionalBusinessValue } from './simulation/effects.js';
 import {
   initializeExperience,
   prepareExperience,
@@ -667,7 +668,7 @@ export const salary = (s) =>
           ? Math.round(
               Math.min(
                 Math.max(0, s.company.cash),
-                Math.max(0, s.company.profit) *
+                Math.max(0, s.company.profit) * founderShare(s) *
                   (s.company.strategy === "reinvest"
                     ? 0
                     : s.company.strategy === "dividends"
@@ -716,7 +717,7 @@ export const netWorth = (s) =>
   bankNetWorth(s) +
   (s.workLife?.pension || 0) +
   portfolioValue(s) +
-  (s.company?.value || 0) +
+  (s.company?.value || 0) * founderShare(s) + additionalBusinessValue(s) +
   privateOwnershipValue(s) +
   collectibleValue(s) +
   SHOP.filter(

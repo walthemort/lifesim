@@ -1,3 +1,5 @@
+import { businessOperations } from './simulation/businesses.js';
+import { founderShare } from './simulation/effects.js';
 import { localProfile } from "./economy.js";
 import { productTrading, onParentalLeave } from "./realism.js";
 import { industry } from "./expansion-data.js";
@@ -1585,7 +1587,8 @@ function businessesTick(s) {
       if (s.week % 52 >= 40) revenue *= 0.7;
     }
     ({ revenue, costs } = ownerOperatingAdjustment(s, b.id, revenue, costs));
-    r.profit = Math.round(revenue - costs);
+    const detailed = businessOperations(s, b.id);
+    r.profit = Math.round(revenue + detailed.revenue - costs - detailed.costs);
     r.cash += r.profit;
     r.periodProfit += r.profit;
     if (t) t.profit = r.profit;
@@ -1660,8 +1663,9 @@ function businessesTick(s) {
       c.costs,
     );
     const product = productTrading(s);
+    const detailed = businessOperations(s, "founder");
     c.profit = round(
-      operations.revenue + product.revenue - operations.costs - product.costs,
+      operations.revenue + product.revenue + detailed.revenue - operations.costs - product.costs - detailed.costs,
     );
     c.cash += c.profit;
     c.periodProfit += c.profit;
@@ -1682,7 +1686,7 @@ function businessesTick(s) {
             Math.min(Math.max(0, c.periodProfit * share), Math.max(0, c.cash)),
           );
       c.cash -= payout;
-      receiveIncome(s, round(payout), "investment");
+      receiveIncome(s, round(payout * founderShare(s)), "investment");
       c.periodProfit = 0;
       if (payout)
         log(

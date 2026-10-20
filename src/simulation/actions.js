@@ -1,3 +1,4 @@
+import * as firms from './businesses.js';
 import * as school from "./education.js";
 import * as health from "./health.js";
 import * as social from "./social.js";
@@ -6,6 +7,21 @@ import * as home from "./home.js";
 import * as work from "./professions.js";
 export function simulationCommand(s, operation, p = {}) {
   const actions = {
+    'business-open':()=>firms.openBusinessOperations(s,p.firm),
+    'employee-hire':()=>firms.hireEmployee(s,p.firm,p.role),
+    'employee-manage':()=>firms.manageEmployee(s,p.firm,p.employee,p.method),
+    'supplies':()=>firms.orderSupplies(s,p.firm,p.supplier,Number(p.units)),
+    'segment':()=>firms.setCustomerSegment(s,p.firm,p.segment,Number(p.price)),
+    'equity-seek':()=>firms.seekEquity(s,p.firm),
+    'equity-accept':()=>firms.acceptEquity(s,p.firm),
+    'diligence':()=>firms.conductDueDiligence(s,p.target),
+    'board':()=>firms.proposeBoardDecision(s,p.firm,p.proposal),
+    'branch':()=>firms.openBranch(s,p.firm,p.city,p.kind),
+    'stadium':()=>firms.buildMatchdayStand(s,p.firm),
+    'tickets':()=>firms.setTicketPrice(s,p.firm,Number(p.price)),
+    'venue-approach':()=>firms.approachOwnershipFormat(s,p.kind),
+    'venue-buy':()=>firms.buyOwnershipFormat(s,p.kind),
+    'venue-fund':()=>firms.fundOwnershipFormat(s,p.venue,Number(p.amount)),
     "professional-open": () => work.openProfessionalDesk(s),
     "professional-case": () => work.newProfessionalCase(s),
     "professional-practice": () => work.professionalPractice(s, p.method),

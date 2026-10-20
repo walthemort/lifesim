@@ -52,16 +52,16 @@ Status is tracked against playable controls, persistent state, consequences and 
 - [x] 48. Professional investment clients
 - [x] 49. Real promotion vacancies
 - [x] 50. Employment references
-- [ ] 51. Individual employees
-- [ ] 52. Supply chains
-- [ ] 53. Persistent competing businesses
-- [ ] 54. Customer segments
-- [ ] 55. Equity fundraising
-- [ ] 56. Acquisition due diligence
-- [ ] 57. Boardroom politics
-- [ ] 58. Branches and franchises
-- [ ] 59. Detailed stadium operations
-- [ ] 60. More ownership formats
+- [x] 51. Individual employees
+- [x] 52. Supply chains
+- [x] 53. Persistent competing businesses
+- [x] 54. Customer segments
+- [x] 55. Equity fundraising
+- [x] 56. Acquisition due diligence
+- [x] 57. Boardroom politics
+- [x] 58. Branches and franchises
+- [x] 59. Detailed stadium operations
+- [x] 60. More ownership formats
 - [ ] 61. Football passing relationships
 - [ ] 62. Meaningful substitute appearances
 - [ ] 63. Football discipline
@@ -114,3 +114,7 @@ Items 31–40 now have garage/journey/licence/finance/used-market and room/style
 ## Professional practice batch
 
 Items 41–50 have role-specific cases, ward staffing, individual learners, staged engineering/trade/hospitality/legal delivery, supervised specialisation, separate client portfolios and genuine internal vacancy checks. Ten focused simulation tests and two phone-browser flows passed. Client cost basis, withholding, mandates and market liquidity remain separate from personal assets. Department budgets are fictional employer budgets; they are not a player-owned business balance.
+
+## Businesses and ownership batch
+
+Items 51–60 have named additional specialists, funded supply orders, persistent competitors and customer segments, diluted fundraising, dated diligence, delayed board votes, branches/franchises, additional matchday stands and three specialist ownership formats. Eight simulation tests and two phone-browser flows passed. New divisions are explicitly additional to existing base operations. Investor cash stays in company funds, founder equity scales net worth and distributions, and gates require scheduled home fixtures. Specialist clubs use compact fictional competitions; these do not claim to reproduce professional league rules.

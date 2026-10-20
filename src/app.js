@@ -1,3 +1,4 @@
+import { businessSimulationScreen } from "./simulation/business-screens.js";
 import { professionalScreen } from "./simulation/professional-screens.js";
 import { retailScreen } from "./retail-screens.js";
 import { educationScreen, healthScreen, socialLifeScreen } from "./simulation/screens.js";
@@ -613,6 +614,7 @@ const nav = [
   ["garage", "car", "Garage & journeys"],
   ["home-design", "home", "Rooms & renovations"],
   ["professional", "briefcase", "Professional practice"],
+  ["business-operations", "rocket", "Business operations"],
   ["identity", "spark", "Character & hometown"],
   ["ageing", "heart", "Health & ageing"],
   ["calendar", "calendar", "Weekly calendar"],
@@ -834,6 +836,7 @@ function teamsView() {
   return ownershipScreen(state, ui());
 }
 const pages = {
+  "business-operations": () => businessSimulationScreen(state, ui()),
   professional: () => professionalScreen(state, ui()),
   "school-life": () => educationScreen(state, ui()),
   "health-record": () => healthScreen(state, ui()),
@@ -961,6 +964,8 @@ function render() {
     ageing: ["health-record", "Medical record", "Appointments, care plans, sleep and recovery."],
     relationships: ["social-life", "Connected life", "Specific memories, promises and shared plans."],
     family: ["social-life", "Extended family & ambitions", "In-laws, blended families and independent children."],
+    company: ["business-operations", "Business operations", "Named staff, supplies, investors and branches."],
+    teams: ["business-operations", "Boardroom & specialist clubs", "Diligence, matchday stands and more ownership formats."],
     housing: ["home-design", "Rooms & renovations", "Furnish your space and manage building work."],
   }[view];
   if (detailed) {
