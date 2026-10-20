@@ -1,3 +1,5 @@
+import { retailScreen } from "./retail-screens.js";
+import { RETAIL_BUSINESSES, RETAIL_CATEGORIES } from "./retail-data.js";
 import { DEBUG_SPECIALIST_SKILLS } from "./debug.js";
 import { organizeWorkspace } from "./phone-workspaces.js";
 import {
@@ -53,7 +55,6 @@ import {
   resalePrice,
 } from "./economy.js";
 import {
-  retailScreen,
   relocationDialog,
   crimeScreen,
   studioScreen,
@@ -320,12 +321,7 @@ import {
   EXPERIENCES,
 } from "./engine.js";
 import { workScreen, ownershipScreen, collectiblesScreen } from "./screens.js";
-import {
-  sportsScreen,
-  socialScreen,
-  musicScreen,
-  shoppingScreen,
-} from "./life-screens.js";
+import { sportsScreen, socialScreen, musicScreen } from "./life-screens.js";
 import {
   housingScreen,
   familyScreen,
@@ -468,6 +464,8 @@ const nativeSaveWarning = await hydrateNativeSave();
 let state,
   view = "overview",
   retailStore = null,
+  retailCategory = null,
+  retailOwned = false,
   focusedSport = null,
   focusedOwnership = null,
   inboxArchived = false,
@@ -805,37 +803,12 @@ function investmentsView() {
   )}</div></section><div class="info-banner">${icon("chart")}<span>Global funds are steadier. Individual stocks fluctuate more. Digital assets can swing sharply. Company share prices respond to trading profits as well as market conditions. Funds and profitable issuers can distribute quarterly income; crypto has no dividend. Large trades are limited by weekly liquidity.</span></div>${collectiblesScreen(state, ui())}`;
 }
 function lifestyleView() {
-  const head = retailScreen(state, ui(), retailStore);
-  if (
-    !retailStore ||
-    ["Budget wardrobe", "High street", "Designer atelier", "Barbers"].includes(
-      retailStore,
-    )
-  )
-    return head;
-  if (retailStore === "Experiences") {
-    const page = shoppingScreen(state, ui(), { category: "All" });
-    return (
-      head +
-      page.slice(page.indexOf('<section class="panel experiences-panel">'))
-    );
-  }
-  const categories =
-    retailStore === "Car dealers"
-      ? ["Garage"]
-      : retailStore === "Electronics"
-        ? ["Essentials", "Creator gear", "Workspace"]
-        : ["Property", "Hobbies", "Wellbeing", "Style"];
-  const selected = categories.includes(shopFilters.category)
-    ? shopFilters.category
-    : categories[0];
-  return (
-    head +
-    shoppingScreen(state, ui(), {
-      ...shopFilters,
-      category: shopFilters.category === "All" ? "All" : selected,
-    })
-  );
+  return retailScreen(state, ui(), {
+    category: retailCategory,
+    storeId: retailStore,
+    filters: shopFilters,
+    belongings: retailOwned,
+  });
 }
 function lifeOverview() {
   const pending =
@@ -1057,7 +1030,7 @@ function eventDialog() {
 }
 function settingsDialog() {
   dialog(
-    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.16 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
+    `<div class="eyebrow">YOUR WORLD, SAFE AND SOUND</div><h2>Save & settings</h2><p>Your progress saves automatically on this device. Export a backup to keep it across devices.</p><div class="settings-actions"><button class="button primary full-width" data-action="export">${icon("download")} Export save</button><label class="button secondary full-width import-label">Import save<input id="import-save" type="file" accept=".json,application/json" hidden></label><button class="button secondary full-width" data-action="new-game">Create a new life</button><button class="button secondary full-width" data-action="toggle-debug">${state.debug.enabled ? "Disable debug mode" : "Enable debug mode"}</button>${state.debug.enabled ? `<button class="button secondary full-width" data-action="open-debug">Open debug controls</button>` : ""}${debugBackup ? `<button class="button secondary full-width" data-action="export-debug-backup">Export pre-debug save</button><button class="button secondary full-width" data-action="restore-debug-backup">Restore pre-debug save</button>` : ""}</div><p class="muted">Lifesim v0.17 · iPhone edition. The accounting ledger uses USD. Saves stay on your device; no account or server is required.</p>`,
   );
   const creatorSettings = document.createElement("div");
   creatorSettings.className = "everyday-card";
@@ -1399,11 +1372,34 @@ document.addEventListener("click", (event) => {
     case "setback-work":
       update((s) => workOnSetback(s, id), "Recovery plan progressed.");
       break;
-    case "retail-store":
-      retailStore = id;
-      shopFilters.category = "";
+    case "retail-home":
+    case "retail-category":
+    case "retail-belongings":
+    case "retail-store": {
+      if (button.dataset.action === "retail-store") {
+        const business = RETAIL_BUSINESSES.find((b) => b.id === id);
+        if (!business) break;
+        retailStore = business.id;
+        retailCategory = business.category;
+      } else {
+        retailStore = null;
+        retailCategory =
+          button.dataset.action === "retail-category" &&
+          RETAIL_CATEGORIES.some(([key]) => key === id)
+            ? id
+            : null;
+      }
+      retailOwned = button.dataset.action === "retail-belongings";
+      shopFilters = {
+        category: "All",
+        query: "",
+        sort: "catalogue",
+        owned: false,
+      };
       render();
+      window.scrollTo({ top: 0 });
       break;
+    }
     case "retail-reset": {
       const area = document.querySelector("[data-dressing-room]");
       if (area) {
@@ -1720,6 +1716,14 @@ document.addEventListener("click", (event) => {
       update((s) => debugEdit(s, changes), "Sandbox values updated.");
       break;
     }
+    case "god-open-time":
+      workspaceSelections.god = "Time";
+      render();
+      window.scrollTo({ top: 0 });
+      break;
+    case "debug-birthday":
+      update((s) => debugAdvance(s, 52 - (s.week % 52)), "Birthday reached.");
+      break;
     case "debug-time":
       update((s) => debugAdvance(s, Number(id)), "Time simulated.");
       break;
@@ -2347,7 +2351,7 @@ document.addEventListener("click", (event) => {
       const item = SHOP.find((i) => i.id === id);
       if (!item) break;
       dialog(
-        `<div class="eyebrow">SELL A POSSESSION</div><h2>Let go of ${item.name.toLowerCase()}?</h2><p>You’ll receive ${money(item.price * 0.8)}. You can buy it again later at its full price.</p><button class="button primary full-width" data-action="confirm-sale" data-id="${id}">Confirm sale ${icon("arrow")}</button>`,
+        `<div class="eyebrow">SELL A POSSESSION</div><h2>Let go of ${item.name.toLowerCase()}?</h2><p>You’ll receive ${money(resalePrice(state, item))}. You can buy it again later at its full price.</p><button class="button primary full-width" data-action="confirm-sale" data-id="${id}">Confirm sale ${icon("arrow")}</button>`,
       );
       break;
     }
@@ -2614,6 +2618,7 @@ document.addEventListener("submit", (event) => {
     "identity-goal-form": (s, data) => choosePersonalGoal(s, data.get("goal")),
     "identity-routine": (s, data, form) =>
       setCareerRoutine(s, form.dataset.path, data.get("focus")),
+    "debug-time-form": (s, data) => debugAdvance(s, Number(data.get("weeks"))),
     "debug-stats-form": (s, data) =>
       debugEdit(
         s,

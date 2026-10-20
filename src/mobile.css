@@ -942,3 +942,268 @@ body.modal-open {
   margin-bottom: 0;
   padding-top: 6px;
 }
+/* Category -> business -> showroom. Each business keeps its own stock. */
+.retail-wallet,
+.retail-breadcrumbs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.retail-wallet > span {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.retail-wallet strong {
+  color: var(--text);
+  font-size: 20px;
+}
+.retail-wallet .button {
+  flex: 0 0 auto;
+}
+.retail-breadcrumbs {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.retail-breadcrumbs button {
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 8px 0;
+  min-height: 44px;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.retail-breadcrumbs [aria-current] {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.retail-categories,
+.retail-businesses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.retail-category-card,
+.retail-business-tile {
+  position: relative;
+  min-width: 0;
+  border: 1px solid #ffffff12;
+  border-radius: 18px;
+  padding: 18px 14px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--retail-accent) 9%, #141c25),
+    #101820
+  );
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.retail-category-card:hover,
+.retail-business-tile:hover {
+  border-color: var(--retail-accent);
+}
+.retail-category-card:focus-visible,
+.retail-business-tile:focus-visible {
+  outline: 3px solid var(--retail-accent);
+  outline-offset: 3px;
+}
+.retail-category-card > span:first-child {
+  color: var(--retail-accent);
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffff08;
+}
+.retail-category-card strong {
+  font-size: 18px;
+  line-height: 1.25;
+}
+.retail-category-card small,
+.retail-business-tile
+  > span:not(.eyebrow, .retail-business-mark, .visit-business) {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.category-business-count {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--retail-accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.category-business-count .icon,
+.visit-business .icon {
+  width: 14px;
+  height: 14px;
+}
+.retail-business-tile {
+  gap: 8px;
+  padding-top: 14px;
+}
+.retail-business-mark {
+  font-size: 10px;
+  color: var(--retail-accent);
+  letter-spacing: 2px;
+  font-weight: 800;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 5px;
+}
+.retail-business-tile .retail-art {
+  width: 100%;
+  height: 85px;
+  margin: -2px 0 0;
+}
+.retail-business-tile .eyebrow {
+  font-size: 9px;
+  color: var(--retail-accent);
+  letter-spacing: 1px;
+}
+.retail-business-tile strong {
+  font-size: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.retail-business-tile small {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--retail-accent);
+  margin-top: auto;
+}
+.visit-business {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  margin-top: 8px;
+}
+.retail-storefront {
+  border: 1px solid #ffffff15;
+  border-radius: 20px;
+  padding: 28px 20px;
+  margin: 0 0 20px;
+  background:
+    radial-gradient(
+      ellipse at top right,
+      color-mix(in srgb, var(--retail-accent) 20%, transparent),
+      transparent 75%
+    ),
+    #141d26;
+  border-top: 3px solid var(--retail-accent);
+}
+.retail-storefront > .eyebrow {
+  color: var(--retail-accent);
+}
+.retail-storefront h1 {
+  font-family: var(--font-display, inherit);
+  font-size: 34px;
+  line-height: 1.1;
+  margin: 16px 0;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+.retail-storefront p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.retail-storefront .text-button {
+  color: var(--retail-accent);
+  text-align: left;
+  min-height: 44px;
+}
+.retail-product-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 165px;
+  background: radial-gradient(ellipse, #35596b38, transparent 75%), #111a23;
+  overflow: hidden;
+}
+.retail-product-scene .retail-art {
+  width: 100%;
+  max-width: 340px;
+  height: 175px;
+}
+.retail-product-scene .tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.retail-stock .product-copy h2 {
+  font-size: 24px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.retail-stock .product-copy p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.retail-stock .product-price {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.retail-stock .product-price strong {
+  font-size: 26px;
+}
+.retail-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 16px 0;
+}
+.retail-specs span {
+  font-size: 10px;
+  padding: 5px 8px;
+  border: 1px solid #ffffff15;
+  border-radius: 6px;
+  color: var(--muted);
+}
+.retail-career-link p,
+.barber-price {
+  color: var(--muted);
+  line-height: 1.7;
+}
+[data-god-time] form {
+  margin-top: 24px;
+  display: grid;
+  gap: 12px;
+}
+[data-god-time] > .button {
+  margin-top: 16px;
+}
+.workspace-tabs[aria-label="god workspace"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 350px) {
+  .retail-categories,
+  .retail-businesses {
+    gap: 8px;
+  }
+  .retail-category-card,
+  .retail-business-tile {
+    padding: 14px 10px;
+  }
+  .retail-business-tile strong {
+    font-size: 16px;
+  }
+  .retail-wallet strong {
+    font-size: 17px;
+  }
+}

@@ -215,6 +215,7 @@ import {
 export * from "./everyday.js";
 export * from "./debug.js";
 import { EXTRA_SHOP, STUDIO_ITEMS } from "./catalogue.js";
+import { RETAIL_PRODUCTS } from "./retail-data.js";
 import {
   initializeLife,
   advanceLife,
@@ -496,6 +497,7 @@ export const MARKETS = [
   },
 ];
 export const SHOP = [
+  ...RETAIL_PRODUCTS,
   ...EXTRA_SHOP,
   ...STUDIO_ITEMS,
   {
@@ -2139,8 +2141,8 @@ export function restoreGame(raw) {
 // Time skips run the same simulation and resolve life choices with the last, free option.
 export function debugAdvance(state, weeks) {
   if (!state.debug.enabled) throw new Error("Enable debug mode first.");
-  if (![1, 4, 13, 52].includes(weeks))
-    throw new Error("Choose one, four, thirteen, or fifty-two weeks.");
+  if (!Number.isInteger(weeks) || weeks < 1 || weeks > 52)
+    throw new Error("Choose a whole number from one to fifty-two weeks.");
   if (state.ended) throw new Error("This life is complete.");
   let s = clone(state);
   const start = s.week;

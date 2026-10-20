@@ -1,4 +1,4 @@
-import { tap, interact, reveal } from "./mobile-helpers.js";
+import { tap, interact, reveal, visitStore } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -350,11 +350,7 @@ test("fractional crypto and company shares trade, while shopping and relationshi
     page.locator(".market-row").filter({ hasText: "Horizon Technologies" }),
   ).toContainText("0.000010% owned");
   await tap(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Home & hobbies"]'),
-    "click",
-  );
+  await visitStore(page, "luxury", "minute-hand");
   await interact(
     page,
     page.getByLabel("Shopping category"),

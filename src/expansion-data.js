@@ -1,3 +1,4 @@
+import { RETAIL_CLOTHING } from "./retail-data.js";
 export const PRO_HAIRSTYLES = [
   "Braids",
   "Dreadlocks",
@@ -40,14 +41,16 @@ export const CLOTHING = [
     "Orange",
     "Knitwear",
   ],
-].map(([id, name, store, price, outfit, garment]) => ({
-  id,
-  name,
-  store,
-  price,
-  outfit,
-  garment,
-}));
+]
+  .map(([id, name, store, price, outfit, garment]) => ({
+    id,
+    name,
+    store,
+    price,
+    outfit,
+    garment,
+  }))
+  .concat(RETAIL_CLOTHING);
 export const INDUSTRIES = [
   ["Technology", 5000, 0.012, 400, 380, "Software & digital services"],
   ["Consumer goods", 5000, 0.008, 400, 380, "Everyday products"],

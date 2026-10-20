@@ -1,4 +1,4 @@
-import { tap, interact, reveal } from "./mobile-helpers.js";
+import { tap, interact, reveal, visitStore } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -78,11 +78,7 @@ test("shopping starts with stores and outfit previews do not spend cash until pu
   await load(page);
   await nav(page, "Lifestyle & shopping");
   await expect(page.locator(".shop-card")).toHaveCount(0);
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Budget wardrobe"]'),
-    "click",
-  );
+  await visitStore(page, "clothing", "Budget wardrobe");
   const before = await saved(page);
   await interact(
     page,
@@ -107,21 +103,11 @@ test("barbers offer previews, real appointment fees and free-user premium gates"
 }) => {
   await load(page);
   await nav(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Barbers"]'),
-    "click",
-  );
+  await visitStore(page, "grooming", "city-salon");
   await expect(
     page.getByLabel("Hair style").locator("option", { hasText: "Braids" }),
   ).toHaveCount(0);
   await interact(page, page.getByLabel("Hair style"), "selectOption", "Fade");
-  await interact(
-    page,
-    page.getByLabel("Barber", { exact: true }),
-    "selectOption",
-    "salon",
-  );
   const before = await saved(page);
   await nav(page, "Book haircut");
   const r = await saved(page);
@@ -134,16 +120,12 @@ test("car dealers show cars and keep unrelated possessions out of the selected d
 }) => {
   await load(page);
   await nav(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Car dealers"]'),
-    "click",
-  );
+  await visitStore(page, "vehicles", "Car dealers");
   await expect(page.locator(".shop-card")).not.toHaveCount(0);
   await expect(
     page.locator(".shop-card").filter({ hasText: "The everyday watch" }),
   ).toHaveCount(0);
-  await expect(page.getByLabel("Shopping category")).toHaveValue("Garage");
+  await expect(page.getByLabel("Shopping category")).toHaveValue("All");
 });
 test("relocation country/city search and a paid application preserve birthplace and passport", async ({
   page,
@@ -412,11 +394,7 @@ test("expanded character, retail, company and career interfaces fit a phone with
     ).toBeTruthy();
   }
   await nav(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Designer atelier"]'),
-    "click",
-  );
+  await visitStore(page, "clothing", "Designer atelier");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

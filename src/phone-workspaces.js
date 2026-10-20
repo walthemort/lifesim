@@ -237,14 +237,16 @@ export function organizeWorkspace(main, view, s, selections) {
     makeWorkspace(
       main,
       "god",
-      ["Quick controls", "Skills", "Advanced"],
+      ["Quick controls", "Time", "Skills", "Advanced"],
       (n) =>
-        n.matches("[data-god-skills]")
-          ? "Skills"
-          : n.matches("[data-god-locks],[data-god-money]") ||
-              heading(n) === "Quick controls"
-            ? "Quick controls"
-            : "Advanced",
+        n.matches("[data-god-time]")
+          ? "Time"
+          : n.matches("[data-god-skills]")
+            ? "Skills"
+            : n.matches("[data-god-locks],[data-god-money]") ||
+                heading(n) === "Quick controls"
+              ? "Quick controls"
+              : "Advanced",
       selections,
     );
   } else if (view === "company" && s.company) {

@@ -120,7 +120,7 @@ export function debugScreen(s, u) {
   const { title, panelHeading, e, money } = u;
   if (!s.debug.enabled)
     return `${title("SANDBOX TOOLS", "Debug mode is off.", "Enable it from Save & settings to experiment with your current life.")}<button class="button primary" data-action="settings">Open Save & settings</button>`;
-  return `${title("YOUR LIFE, YOUR RULES", "God mode.", "Quick money, grouped skills and always-full wellbeing. This life keeps its sandbox label.")}<div class="info-banner warning">${u.hasDebugBackup ? "A pre-debug backup is available in Save & settings." : "Export a backup before experimenting."} Time skips still run wages, expenses, markets, recruitment, and deadlines.</div><section class="panel">${panelHeading("Quick controls", `Current cash ${money(s.money)} · ${s.actions} actions left this week.`)}<div class="everyday-actions">${[
+  return `${title("YOUR LIFE, YOUR RULES", "God mode.", "Quick money, grouped skills and always-full wellbeing. This life keeps its sandbox label.")}<div class="info-banner warning">${u.hasDebugBackup ? "A pre-debug backup is available in Save & settings." : "Export a backup before experimenting."} Open the Time tab to skip weeks or reach your next birthday. Wages, expenses, markets, recruitment and deadlines still run.</div><section class="panel">${panelHeading("Quick controls", `Current cash ${money(s.money)} · ${s.actions} actions left this week.`)}<div class="everyday-actions">${[
     ["cash-small", "Add $10,000"],
     ["cash-million", "Add $1 million"],
     ["cash-billion", "Add $1 billion"],
@@ -134,7 +134,7 @@ export function debugScreen(s, u) {
     )
     .join(
       "",
-    )}</div></section><section class="panel">${panelHeading("Character controls", "Set exact values. Apply changes explicitly.")}<form id="debug-stats-form"><div class="everyday-grid">${[
+    )}<button class="button primary" data-action="god-open-time">Advance time</button></div></section><section class="panel">${panelHeading("Character controls", "Set exact values. Apply changes explicitly.")}<form id="debug-stats-form"><div class="everyday-grid">${[
     ["money", "Cash balance", s.money, -1e9, 1e12],
     ["health", "Health", s.health, 0, 100],
     ["energy", "Energy", s.energy, 0, 100],
@@ -154,11 +154,17 @@ export function debugScreen(s, u) {
     .map((k) => `<option value="career:${k}">${e(k)}</option>`)
     .join(
       "",
-    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}${DEBUG_SPECIALIST_SKILLS.filter(k=>k.id!=="social.contentSkill").map((k) => `<option value="specialist:${k.id}">${e(k.label)}</option>`).join("")}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
+    )}${HOBBIES.map((h) => `<option value="hobby:${h.id}">${e(h.name)}</option>`).join("")}${DEBUG_SPECIALIST_SKILLS.filter(
+    (k) => k.id !== "social.contentSkill",
+  )
+    .map((k) => `<option value="specialist:${k.id}">${e(k.label)}</option>`)
+    .join(
+      "",
+    )}</select></label><label class="field-label">Skill value<input name="value" type="number" min="0" max="100" step="0.1" value="80" required></label></div><button class="button secondary" type="submit">Apply skill</button></form><form id="debug-audience-form"><div class="form-row"><label class="field-label">Platform audience<select name="platform">${Object.keys(
     s.social.profiles,
   )
     .map((id) => `<option>${id}</option>`)
     .join(
       "",
-    )}</select></label><label class="field-label">Followers<input name="followers" type="number" min="0" max="1000000000" step="1" value="10000" required></label></div><button class="button secondary" type="submit">Apply audience</button></form><form id="debug-qualification-form"><label class="field-label">Qualification to grant<select name="qualification">${PROGRAMS.map((p) => `<option value="${p.id}">${e(p.name)}${s.education.completed.includes(p.id) ? " — already completed" : ""}</option>`).join("")}</select></label><button class="button secondary" type="submit">Grant qualification</button></form></section><section class="panel">${panelHeading("Advance time", "Every week is simulated. Pending life choices use their last option; a choice generated on the final week remains for you. Recruitment and sale windows can expire.")}<div class="everyday-actions">${[1, 4, 13, 52].map((n) => `<button class="button secondary" data-action="debug-time" data-id="${n}">Simulate ${n} week${n === 1 ? "" : "s"}</button>`).join("")}</div></section><section class="panel">${panelHeading("Debug history", "Your most recent changes.")}<div class="story-list">${s.debug.edits.map((x) => `<div class="story-row"><span class="story-dot orange"></span><div><p>${e(x.text)}</p><small>Week ${x.week}</small></div></div>`).join("")}</div></section>`;
+    )}</select></label><label class="field-label">Followers<input name="followers" type="number" min="0" max="1000000000" step="1" value="10000" required></label></div><button class="button secondary" type="submit">Apply audience</button></form><form id="debug-qualification-form"><label class="field-label">Qualification to grant<select name="qualification">${PROGRAMS.map((p) => `<option value="${p.id}">${e(p.name)}${s.education.completed.includes(p.id) ? " — already completed" : ""}</option>`).join("")}</select></label><button class="button secondary" type="submit">Grant qualification</button></form></section><section class="panel" data-god-time>${panelHeading("Advance time", "Every week is simulated. Pending life choices use their last option; a choice generated on the final week remains for you. Recruitment and sale windows can expire.")}<div class="everyday-actions">${[1, 4, 13, 52].map((n) => `<button class="button secondary" data-action="debug-time" data-id="${n}">Simulate ${n} week${n === 1 ? "" : "s"}</button>`).join("")}</div><button class="button primary full-width" data-action="debug-birthday" ${s.ended ? "disabled" : ""}>Go to next birthday · ${52 - (s.week % 52)} weeks</button><form id="debug-time-form"><label class="field-label">Weeks to simulate<input name="weeks" type="number" min="1" max="52" step="1" value="4" required></label><button class="button secondary" ${s.ended ? "disabled" : ""}>Simulate chosen weeks</button></form><p class="muted">Your current age is ${age(s)}. A time skip does not grant qualifications or undo an ended life.</p></section><section class="panel">${panelHeading("Debug history", "Your most recent changes.")}<div class="story-list">${s.debug.edits.map((x) => `<div class="story-row"><span class="story-dot orange"></span><div><p>${e(x.text)}</p><small>Week ${x.week}</small></div></div>`).join("")}</div></section>`;
 }

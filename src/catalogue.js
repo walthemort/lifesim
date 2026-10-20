@@ -1,3 +1,4 @@
+import { RETAIL_EXPERIENCES } from "./retail-data.js";
 const item = (
   id,
   name,
@@ -458,6 +459,7 @@ export const EXTRA_SHOP = [
   ),
 ];
 export const EXPERIENCES = [
+  ...RETAIL_EXPERIENCES,
   {
     id: "dinner",
     name: "Dinner with friends",

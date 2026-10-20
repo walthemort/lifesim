@@ -19,6 +19,17 @@ const categories = new Set([
   "Lifestyle & shopping",
   "Businesses & clubs",
 ]);
+export async function visitStore(page, category, store) {
+  const district = page
+    .locator(`[data-action="retail-category"][data-id="${category}"]`)
+    .first();
+  if (!(await district.count()))
+    await page.locator('[data-action="retail-home"]').click();
+  await district.click();
+  await page
+    .locator(`[data-action="retail-store"][data-id="${store}"]`)
+    .click();
+}
 // Follow the visible tab UI when a control belongs to a different workspace pane.
 export async function reveal(page, locator) {
   if (!(await locator.count())) {

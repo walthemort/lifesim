@@ -1,4 +1,4 @@
-import { tap, interact, reveal } from "./mobile-helpers.js";
+import { tap, interact, reveal, visitStore } from "./mobile-helpers.js";
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import * as g from "../../src/engine.js";
@@ -199,11 +199,7 @@ test("shopping filters find equipment and publishing content produces delayed au
 }) => {
   await load(page);
   await tap(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Electronics"]'),
-    "click",
-  );
+  await visitStore(page, "technology", "Electronics");
   await interact(
     page,
     page.getByLabel("Shopping category"),
@@ -415,11 +411,7 @@ test("repeatable experiences spend cash and an action then enforce their cooldow
   const initial = g.createGame({ seed: 1, age: 18, career: "office" });
   await load(page, initial);
   await tap(page, "Lifestyle & shopping");
-  await interact(
-    page,
-    page.locator('[data-action="retail-store"][data-id="Experiences"]'),
-    "click",
-  );
+  await visitStore(page, "experiences", "Experiences");
   await interact(
     page,
     page.locator('[data-action="experience"][data-id="dinner"]'),

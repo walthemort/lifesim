@@ -1,4 +1,3 @@
-import { localPrice, resalePrice } from "./economy.js";
 import { careerCockpit } from "./expansion-screens.js";
 import {
   performanceScreen,
@@ -9,23 +8,18 @@ import { seasonScreen } from "./finance-season-screens.js";
 import { contractsScreen, milestonesScreen } from "./depth-screens.js";
 import { sportWorldScreen, musicWorldScreen } from "./career-world-screens.js";
 import { careerSupportScreen } from "./career-support.js";
-import {
-  careerEquipmentScreen,
-  equipmentRequirements,
-} from "./career-equipment.js";
+import { careerEquipmentScreen } from "./career-equipment.js";
 import {
   SPORTS,
   FOOTBALL_TRAINING,
   FOOTBALL_POSITIONS,
   PLATFORMS,
-  EXPERIENCES,
   MUSIC_ROLES,
   musicLabel,
   totalFollowers,
   fameLabel,
   availableCash,
   age,
-  SHOP,
   footballCosts,
   sportCosts,
 } from "./engine.js";
@@ -199,55 +193,4 @@ export function musicScreen(s, u) {
     .join(
       "",
     )}</div>${m.label ? `<div class="info-banner">${e(m.label.name)} · 50% royalty share · ${money(m.label.unrecouped, 2)} advance still to recoup · ${m.label.expiresWeek - s.week} contract weeks remaining.</div>` : '<p class="muted">Label interest needs substantial practice, three releases, strong craft, and public recognition. A label advance is repaid from your 50% royalty share before you receive more royalty cash.</p>'}</section>`;
-}
-export function shoppingScreen(
-  s,
-  u,
-  { category = "All", query = "", sort = "catalogue", owned = false } = {},
-) {
-  const { title, panelHeading, tag, icon, money, e } = u;
-  const catalogue = SHOP.filter((i) => i.category !== "Ownership").map((i) => ({
-      ...i,
-      resale: resalePrice(s, i),
-      price: localPrice(s, i.price),
-    })),
-    categories = ["All", ...new Set(catalogue.map((i) => i.category))];
-  let products = catalogue.filter(
-    (i) =>
-      (category === "All" || i.category === category) &&
-      (!owned || s.inventory.includes(i.id)) &&
-      `${i.name} ${i.description} ${i.category}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
-  if (sort === "low") products.sort((a, b) => a.price - b.price);
-  if (sort === "high") products.sort((a, b) => b.price - a.price);
-  return `${title("POSSESSIONS, EXPERIENCES & EVERYDAY LIFE", "More ways to make it yours.", "Build a wardrobe, a studio, a home, and memories. Equipment supports habits; upkeep keeps costing money.", tag(`${catalogue.length} possessions · ${EXPERIENCES.length} experiences`, "blue"))}<section class="panel shop-controls"><div class="form-row"><label class="field-label">Shopping category<select id="shop-category">${categories.map((c) => `<option ${c === category ? "selected" : ""}>${e(c)}</option>`).join("")}</select></label><label class="field-label">Search shopping<input id="shop-query" type="search" value="${e(query)}" placeholder="Find a phone, guitar, home…"></label><label class="field-label">Sort shopping<select id="shop-sort"><option value="catalogue">Catalogue order</option><option value="low" ${sort === "low" ? "selected" : ""}>Price: low to high</option><option value="high" ${sort === "high" ? "selected" : ""}>Price: high to low</option></select></label></div><label class="check-label"><input id="shop-owned" type="checkbox" ${owned ? "checked" : ""}> Show owned possessions only</label><p class="muted">${products.length} results · ${money(availableCash(s))} uncommitted cash · ${money(catalogue.filter((i) => s.inventory.includes(i.id)).reduce((n, i) => n + i.upkeep, 0))} weekly upkeep. You own ${s.inventory.length} possessions.</p></section><div class="shop-grid">${
-    products
-      .map((i) => {
-        const held = s.inventory.includes(i.id),
-          min =
-            i.minAge ||
-            (["Garage", "Property", "Travel"].includes(i.category) ? 18 : 12),
-          young = age(s) < min,
-          requirements = equipmentRequirements(s, i.id);
-        return `<section class="panel shop-card"><div class="product-scene ${i.color}">${icon(i.icon)}<span>${e(i.category.toUpperCase())}</span>${held ? tag("Owned", i.color) : ""}</div><div class="product-copy"><span class="eyebrow">${e(i.category)}</span><h2>${e(i.name)}</h2><p>${e(i.description)}</p>${!held && requirements.length ? `<p class="muted">Requires: ${e(requirements.join(", "))}</p>` : ""}<div class="product-price"><strong>${money(i.price)}</strong><span>${i.upkeep ? money(i.upkeep) + "/wk upkeep" : "No upkeep"}</span></div><button class="button ${held ? "secondary" : "primary"} full-width" data-action="${held ? "sell-item" : "buy"}" data-id="${i.id}" ${!held && (young || requirements.length || availableCash(s) < i.price) ? "disabled" : ""}>${held ? `Sell for ${money(i.resale)}` : young ? `Available at age ${min}` : requirements.length ? "Requirements not met" : availableCash(s) < i.price ? "Keep building your savings" : "Make it yours"} ${icon(held ? "arrow" : "bag")}</button></div></section>`;
-      })
-      .join("") || '<p class="muted">No possessions match these filters.</p>'
-  }</div><section class="panel experiences-panel">${panelHeading("Spend time, make memories", "Repeatable experiences use cash and one free-time action.")}<div class="education-grid">${EXPERIENCES.map(
-    (x) => {
-      const remaining = Math.max(
-          0,
-          (s.experienceCooldowns[x.id] || 0) - s.week,
-        ),
-        blocked =
-          age(s) < (x.minAge || 12) ||
-          remaining ||
-          availableCash(s) < x.price ||
-          !s.actions ||
-          (x.football &&
-            !["school", "academy", "community"].includes(s.football.stage));
-      return `<div class="education-card"><h3>${e(x.name)}</h3><p>${e(x.description)}</p><strong>${money(x.price)}</strong><small>${remaining ? `Available again in ${remaining} weeks` : `Available every ${x.cooldown} week(s)`}</small><button class="button secondary full-width" data-action="experience" data-id="${x.id}" ${blocked ? "disabled" : ""}>Plan experience</button></div>`;
-    },
-  ).join("")}</div></section>`;
 }
